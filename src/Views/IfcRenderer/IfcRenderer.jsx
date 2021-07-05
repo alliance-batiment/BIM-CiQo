@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { IfcViewerAPI } from 'web-ifc-viewer';
 import Dropzone from 'react-dropzone';
+import { Rnd } from 'react-rnd';
 import {
   Backdrop,
   makeStyles,
@@ -10,14 +11,18 @@ import {
   Grid,
   Card,
   Checkbox,
-  FormControlLabel
+  FormControlLabel,
+  Avatar,
+  CardHeader,
+  CardContent,
+  CardMedia
 } from '@material-ui/core';
 import FolderOpenOutlinedIcon from '@material-ui/icons/FolderOpenOutlined';
 import CropIcon from '@material-ui/icons/Crop';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import DescriptionIcon from '@material-ui/icons/Description';
 import LayersIcon from '@material-ui/icons/Layers';
-
+import MoreVertIcon from '@material-ui/icons/MoreVert';
 import SpatialStructure from './Components/SpatialStructure';
 import Properties from './Components/Properties';
 
@@ -50,19 +55,47 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: 'white'
   },
   cardInfo: {
-    position: 'absolute',
-    marginTop: '1em',
-    left: '5em',
+    // position: 'absolute',
+    // marginTop: '1em',
+    // left: '5em',
     zIndex: 100,
-    width: 400,
-    height: 400,
+    width: '100%',
+    height: '100%',
+  },
+  cardContent: {
+    height: '90%',
+    overflowY: 'auto',    /* Trigger vertical scroll    */
+    overflowX: 'hidden',
+    '&::-webkit-scrollbar': {
+      width: '0.4em'
+    },
+    '&::-webkit-scrollbar-track': {
+      '-webkit-box-shadow': 'inset 0 0 6px rgba(0,0,0,0.00)'
+    },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: 'rgba(0,0,0,.1)',
+      outline: '0px solid slategrey'
+    }
   },
   treeView: {
     height: 240,
     flexGrow: 1,
     maxWidth: 400,
-  }
+  },
 }));
+
+const style = {
+  position: 'absolute',
+  marginTop: '1em',
+  display: "flex",
+  left: '5em',
+  alignItems: "center",
+  justifyContent: "center",
+  // border: "solid 1px #ddd",
+  // background: "#f0f0f0",
+  zIndex: 100
+};
+
 
 const IfcRenderer = () => {
   const classes = useStyles();
@@ -75,7 +108,13 @@ const IfcRenderer = () => {
   const [state, setState] = useState({
     bcfDialogOpen: false,
     loaded: false,
-    loadingIfc: false
+    loadingIfc: false,
+    openLeftView: false,
+    leftView: 'spatialStructure',
+    width: 400,
+    height: 400,
+    x: 50,
+    y: 10
   });
 
   useEffect(() => {
@@ -139,6 +178,14 @@ const IfcRenderer = () => {
   };
 
 
+  const handleOpenLeftView = (prop) => {
+    setState({
+      ...state,
+      openLeftView: true,
+      leftView: `${prop}`
+    });
+  };
+
   const handleOpenBcfDialog = () => {
     setState({
       ...state,
@@ -169,16 +216,36 @@ const IfcRenderer = () => {
 					onOpenViewpoint={this.handleOpenViewpoint}
 				/> */}
         {informations &&
-          <Card className={classes.cardInfo}>
-            {/* <SpatialStructure
-               viewer={viewer}
-               spatialStructure={spatialStructure}
-             /> */}
+
+          <Rnd
+            style={style}
+            size={{ width: state.width, height: state.height }}
+            position={{ x: state.x, y: state.y }}
+            onDragStop={(e, d) => {
+              setState({ x: d.x, y: d.y });
+            }}
+            onResizeStop={(e, direction, ref, delta, position) => {
+              setState({
+                width: ref.style.width,
+                height: ref.style.height,
+                ...position
+              });
+            }}
+          >
+            {/* {state.leftView === 'spatialStructure' &&
+              <SpatialStructure
+                viewer={viewer}
+                spatialStructure={spatialStructure}
+              />
+            }
+            {state.leftView === 'properties' && */}
             <Properties
               viewer={viewer}
               element={element}
             />
-          </Card>
+            {/* } */}
+          </Rnd>
+
         }
         <Grid item xs={2} className={classes.infoPannel}>
           <Grid item xs={12}>
@@ -251,11 +318,11 @@ const IfcRenderer = () => {
       <Backdrop
         style={{
           zIndex: 200,
-          // display: "flex",
+          display: "flex",
           alignItems: "center",
           alignContent: "center"
         }}
-        open={state.loading_ifc}
+        open={state.loadingIfc}
       >
         <CircularProgress />
       </Backdrop>
