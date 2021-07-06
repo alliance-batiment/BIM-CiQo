@@ -100,38 +100,37 @@ const SpatialStructure = ({
   );
 
   return (
-    <>
-      {spatialStructure.length > 0 &&
-        <Card className={classes.cardInfo}>
-          <CardHeader
-            avatar={
-              <Avatar aria-label="recipe" className={classes.avatar}>
-                S
+
+    <Card className={classes.cardInfo}>
+      <CardHeader
+        avatar={
+          <Avatar aria-label="recipe" className={classes.avatar}>
+            S
               </Avatar>
-            }
-            action={
-              <IconButton aria-label="settings">
-                <MoreVertIcon />
-              </IconButton>
-            }
-            // title={`${element.Name.value}`}
-            subheader="Spatial Structure"
-          />
-          <CardContent
-            className={classes.cardContent}
+        }
+        action={
+          <IconButton aria-label="settings">
+            <MoreVertIcon />
+          </IconButton>
+        }
+        // title={`${element.Name.value}`}
+        subheader="Spatial Structure"
+      />
+      <CardContent
+        className={classes.cardContent}
+      >
+        {(spatialStructure.children && spatialStructure.children.length > 0) &&
+          <TreeView
+            className={classes.treeView}
+            defaultCollapseIcon={<ExpandMoreIcon />}
+            defaultExpanded={['root']}
+            defaultExpandIcon={<ChevronRightIcon />}
           >
-            <TreeView
-              className={classes.treeView}
-              defaultCollapseIcon={<ExpandMoreIcon />}
-              defaultExpanded={['root']}
-              defaultExpandIcon={<ChevronRightIcon />}
-            >
-              {renderTree(spatialStructure)}
-            </TreeView>
-          </CardContent>
-        </Card>
-      }
-    </>
+            {renderTree(spatialStructure)}
+          </TreeView>
+        }
+      </CardContent>
+    </Card>
   );
 };
 

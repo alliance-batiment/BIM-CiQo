@@ -22,9 +22,11 @@ import CropIcon from '@material-ui/icons/Crop';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import DescriptionIcon from '@material-ui/icons/Description';
 import LayersIcon from '@material-ui/icons/Layers';
+import GetAppIcon from '@material-ui/icons/GetApp';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import SpatialStructure from './Components/SpatialStructure';
 import Properties from './Components/Properties';
+import DraggableCard from './Components/DraggableCard';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -44,44 +46,22 @@ const useStyles = makeStyles((theme) => ({
       maxWidth: '100%'
     },
   },
-  infoPannel: {
+  infoLeftPannel: {
     marginTop: '1em',
     left: '1em',
+    position: 'absolute',
+    zIndex: 100
+  },
+  infoRightPannel: {
+    marginTop: '1em',
+    right: '1em',
     position: 'absolute',
     zIndex: 100
   },
   fab: {
     margin: '0.5em',
     backgroundColor: 'white'
-  },
-  cardInfo: {
-    // position: 'absolute',
-    // marginTop: '1em',
-    // left: '5em',
-    zIndex: 100,
-    width: '100%',
-    height: '100%',
-  },
-  cardContent: {
-    height: '90%',
-    overflowY: 'auto',    /* Trigger vertical scroll    */
-    overflowX: 'hidden',
-    '&::-webkit-scrollbar': {
-      width: '0.4em'
-    },
-    '&::-webkit-scrollbar-track': {
-      '-webkit-box-shadow': 'inset 0 0 6px rgba(0,0,0,0.00)'
-    },
-    '&::-webkit-scrollbar-thumb': {
-      backgroundColor: 'rgba(0,0,0,.1)',
-      outline: '0px solid slategrey'
-    }
-  },
-  treeView: {
-    height: 240,
-    flexGrow: 1,
-    maxWidth: 400,
-  },
+  }
 }));
 
 const style = {
@@ -105,16 +85,14 @@ const IfcRenderer = () => {
   const [informations, setInformations] = useState(false);
   const [spatialStructure, setSpatialStructure] = useState([]);
   const [element, setElement] = useState(null);
+  const [showSpatialStructure, setShowSpatialStructure] = useState(false);
+  const [showProperties, setShowProperties] = useState(false);
   const [state, setState] = useState({
     bcfDialogOpen: false,
     loaded: false,
     loadingIfc: false,
     openLeftView: false,
     leftView: 'spatialStructure',
-    width: 400,
-    height: 400,
-    x: 50,
-    y: 10
   });
 
   useEffect(() => {
@@ -173,17 +151,16 @@ const IfcRenderer = () => {
     dropzoneRef.current.open();
   };
 
-  const handleTreeViewOpen = () => {
-    setInformations(!informations);
+  const handleShowSpatialStructure = () => {
+    setShowSpatialStructure(!showSpatialStructure);
   };
 
+  const handleShowProperties = () => {
+    setShowProperties(!showProperties);
+  };
 
-  const handleOpenLeftView = (prop) => {
-    setState({
-      ...state,
-      openLeftView: true,
-      leftView: `${prop}`
-    });
+  const handleTreeViewOpen = () => {
+    setInformations(!informations);
   };
 
   const handleOpenBcfDialog = () => {
@@ -215,39 +192,25 @@ const IfcRenderer = () => {
 					onClose={this.handleCloseBcfDialog}
 					onOpenViewpoint={this.handleOpenViewpoint}
 				/> */}
-        {informations &&
+        {showSpatialStructure &&
+          <DraggableCard>
+            <SpatialStructure
+              viewer={viewer}
+              spatialStructure={spatialStructure}
+            />
+          </DraggableCard>
 
-          <Rnd
-            style={style}
-            size={{ width: state.width, height: state.height }}
-            position={{ x: state.x, y: state.y }}
-            onDragStop={(e, d) => {
-              setState({ x: d.x, y: d.y });
-            }}
-            onResizeStop={(e, direction, ref, delta, position) => {
-              setState({
-                width: ref.style.width,
-                height: ref.style.height,
-                ...position
-              });
-            }}
-          >
-            {/* {state.leftView === 'spatialStructure' &&
-              <SpatialStructure
-                viewer={viewer}
-                spatialStructure={spatialStructure}
-              />
-            }
-            {state.leftView === 'properties' && */}
+        }
+        {showProperties &&
+          <DraggableCard>
             <Properties
               viewer={viewer}
               element={element}
             />
-            {/* } */}
-          </Rnd>
+          </DraggableCard>
 
         }
-        <Grid item xs={2} className={classes.infoPannel}>
+        <Grid item xs={2} className={classes.infoLeftPannel}>
           <Grid item xs={12}>
             <Fab
               size="small"
@@ -272,7 +235,7 @@ const IfcRenderer = () => {
             <Fab
               size="small"
               className={classes.fab}
-              onClick={handleTreeViewOpen}
+              onClick={handleShowSpatialStructure}
             >
               <AccountTreeIcon />
             </Fab>
@@ -281,7 +244,7 @@ const IfcRenderer = () => {
             <Fab
               size="small"
               className={classes.fab}
-              onClick={handleTreeViewOpen}
+              onClick={handleShowProperties}
             >
               <DescriptionIcon />
             </Fab>
@@ -296,6 +259,18 @@ const IfcRenderer = () => {
             </Fab>
           </Grid>
         </Grid >
+        <Grid item xs={2} className={classes.infoRightPannel}>
+          <Grid item xs={12}>
+            <Fab
+              size="small"
+              className={classes.fab}
+              onClick={handleClickOpen}
+            >
+              <GetAppIcon />
+            </Fab >
+
+          </Grid >
+        </Grid>
         <Grid item xs={10}>
           {/* <div style={{ display: 'flex', flexDirection: 'row', height: '100vh' }}>
           <div style={{ flex: '1 1 auto', minWidth: 0 }}> */}

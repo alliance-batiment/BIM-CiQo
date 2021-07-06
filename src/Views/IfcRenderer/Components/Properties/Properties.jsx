@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { makeStyles } from '@material-ui/core/styles';
 import {
   Typography,
+  makeStyles,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -72,7 +72,7 @@ const Properties = ({
       <CardHeader
         avatar={
           <Avatar aria-label="recipe" className={classes.avatar}>
-            R
+            P
           </Avatar>
         }
         action={
