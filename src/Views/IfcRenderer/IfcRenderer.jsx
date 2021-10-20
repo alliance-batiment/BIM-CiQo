@@ -1,32 +1,26 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { IfcViewerAPI } from 'web-ifc-viewer';
 import Dropzone from 'react-dropzone';
-import { Rnd } from 'react-rnd';
 import {
   Backdrop,
   makeStyles,
   CircularProgress,
-  IconButton,
   Fab,
-  Grid,
-  Card,
-  Checkbox,
-  FormControlLabel,
-  Avatar,
-  CardHeader,
-  CardContent,
-  CardMedia
+  Grid
 } from '@material-ui/core';
 import FolderOpenOutlinedIcon from '@material-ui/icons/FolderOpenOutlined';
 import CropIcon from '@material-ui/icons/Crop';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import DescriptionIcon from '@material-ui/icons/Description';
-import LayersIcon from '@material-ui/icons/Layers';
-import GetAppIcon from '@material-ui/icons/GetApp';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
 import SpatialStructure from './Components/SpatialStructure';
 import Properties from './Components/Properties';
 import DraggableCard from './Components/DraggableCard';
+
+import {
+  Color
+} from 'three';
+
+
 
 
 const useStyles = makeStyles((theme) => ({
@@ -47,13 +41,13 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   infoLeftPannel: {
-    marginTop: '1em',
+    // marginTop: '1em',
     left: '1em',
     position: 'absolute',
     zIndex: 100
   },
   infoRightPannel: {
-    marginTop: '1em',
+    // marginTop: '1em',
     right: '1em',
     position: 'absolute',
     zIndex: 100
@@ -64,25 +58,12 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-const style = {
-  position: 'absolute',
-  marginTop: '1em',
-  display: "flex",
-  left: '5em',
-  alignItems: "center",
-  justifyContent: "center",
-  // border: "solid 1px #ddd",
-  // background: "#f0f0f0",
-  zIndex: 100
-};
-
-
 const IfcRenderer = () => {
   const classes = useStyles();
   const dropzoneRef = useRef(null);
   const [viewer, setViewer] = useState(null);
   const [modelID, setModelID] = useState(-1);
-  const [informations, setInformations] = useState(false);
+  const [transformControls, setTransformControls] = useState(null);
   const [spatialStructure, setSpatialStructure] = useState([]);
   const [element, setElement] = useState(null);
   const [showSpatialStructure, setShowSpatialStructure] = useState(false);
@@ -96,15 +77,32 @@ const IfcRenderer = () => {
   });
 
   useEffect(() => {
-    const container = document.getElementById('viewer-container');
-    const newViewer = new IfcViewerAPI({ container });
-    newViewer.addAxes();
-    newViewer.addGrid();
-    newViewer.setWasmPath('../../');
+    async function init() {
+      setState({
+        ...state,
+        loadingIfc: true
+      });
+      const container = document.getElementById('viewer-container');
+      const newViewer = new IfcViewerAPI({ container, backgroundColor: new Color(0xffffff) });
+      newViewer.IFC.applyWebIfcConfig({ COORDINATE_TO_ORIGIN: false, USE_FAST_BOOLS: true });
+      newViewer.addAxes();
+      newViewer.addGrid();
+      newViewer.IFC.setWasmPath('../../');
 
-    setViewer(newViewer);
-    window.onmousemove = newViewer.prepickIfcItem;
-    window.ondblclick = newViewer.addClippingPlane;
+      await newViewer.IFC.loadIfcUrl('https://aryatowers.s3.eu-west-3.amazonaws.com/Pylone+trellis.ifc', true);
+      setViewer(newViewer);
+
+      const modelID = await newViewer.IFC.getModelID();
+
+      const spatialStructure = await newViewer.IFC.getSpatialStructure(modelID)
+      setSpatialStructure(spatialStructure);
+
+      window.ondblclick = newViewer.addClippingPlane;
+      setState({
+        ...state, loaded: true, loadingIfc: false
+      });
+    }
+    init();
   }, [])
 
   const onDrop = async (files) => {
@@ -112,35 +110,52 @@ const IfcRenderer = () => {
       ...state,
       loadingIfc: true
     });
-    await viewer.loadIfc(files[0], true);
-    console.log('TREE', viewer.getSpatialStructure(0))
-    setSpatialStructure(viewer.getSpatialStructure(0));
+    await viewer.IFC.loadIfc(files[0], true);
     setState({
       ...state, loaded: true, loadingIfc: false
     });
   };
 
   const select = (modelID, expressID, pick = true) => {
-    if (pick) viewer.pickIfcItemByID(modelID, expressID);
+    if (pick) viewer.IFC.pickIfcItemsByID(modelID, expressID);
     setModelID(modelID);
-    //this.onSelectActions.forEach((action) => action(modelID, expressID));
   }
 
+  const handleClick = async () => {
+    const found = await viewer.IFC.pickIfcItem(true, 1);
 
-
-  const handleClick = () => {
-    const found = viewer.pickIfcItem();
-    console.log('FOUND', found);
     if (found == null || found == undefined) return;
-    //select(found.modelID, found.id, false);
-    console.log('PROPERTIES', viewer.getProperties(found.modelID, found.id, true));
-    const elem = viewer.getProperties(found.modelID, found.id, true);
-    if (elem) {
-      setElement(viewer.getProperties(found.modelID, found.id, true));
-    }
 
-    //const typeList = viewer.getAllItemsOfType(found.modelID, 'IfcWallStandardCase', true);
-    //console.log('TYPES LIST', typeList);
+    select(found.modelID, found.id, false);
+    const itemProperties = await viewer.IFC.loader.ifcManager.getItemProperties(found.modelID, found.id);
+    const propertySets = await viewer.IFC.loader.ifcManager.getPropertySets(found.modelID, found.id);
+
+    const psets = await Promise.all(propertySets.map(async (pset) => {
+      const newPset = await Promise.all(pset.HasProperties.map(async (property) => {
+        const prop = await viewer.IFC.loader.ifcManager.getItemProperties(found.modelID, property.value);
+        const label = prop.Name.value;
+        const value = prop.NominalValue ? prop.NominalValue.value : null;
+        return {
+          label,
+          value
+        }
+      }));
+
+      return {
+        ...pset,
+        HasProperties: [...newPset]
+      }
+    }));
+
+    const elem = {
+      ...itemProperties,
+      modelID: found.modelID,
+      psets
+    };
+
+    if (elem) {
+      setElement(elem);
+    }
   }
 
   const handleToggleClipping = () => {
@@ -159,44 +174,15 @@ const IfcRenderer = () => {
     setShowProperties(!showProperties);
   };
 
-  const handleTreeViewOpen = () => {
-    setInformations(!informations);
-  };
-
-  const handleOpenBcfDialog = () => {
-    setState({
-      ...state,
-      bcfDialogOpen: true
-    });
-  };
-
-  const handleCloseBcfDialog = () => {
-    setState({
-      ...state,
-      bcfDialogOpen: false
-    });
-  };
-
-  const handleOpenViewpoint = (viewpoint) => {
-    viewer.currentViewpoint = viewpoint;
-  };
-
-
-
-
   return (
     <>
       <Grid container>
-        {/* <BcfDialog
-					open={this.state.bcfDialogOpen}
-					onClose={this.handleCloseBcfDialog}
-					onOpenViewpoint={this.handleOpenViewpoint}
-				/> */}
         {showSpatialStructure &&
           <DraggableCard>
             <SpatialStructure
               viewer={viewer}
               spatialStructure={spatialStructure}
+              handleShowSpatialStructure={handleShowSpatialStructure}
             />
           </DraggableCard>
 
@@ -206,9 +192,10 @@ const IfcRenderer = () => {
             <Properties
               viewer={viewer}
               element={element}
+              transformControls={transformControls}
+              handleShowProperties={handleShowProperties}
             />
           </DraggableCard>
-
         }
         <Grid item xs={2} className={classes.infoLeftPannel}>
           <Grid item xs={12}>
@@ -249,37 +236,13 @@ const IfcRenderer = () => {
               <DescriptionIcon />
             </Fab>
           </Grid>
-          <Grid item xs={12}>
-            <Fab
-              size="small"
-              className={classes.fab}
-              onClick={handleTreeViewOpen}
-            >
-              <LayersIcon />
-            </Fab>
-          </Grid>
         </Grid >
-        <Grid item xs={2} className={classes.infoRightPannel}>
-          <Grid item xs={12}>
-            <Fab
-              size="small"
-              className={classes.fab}
-              onClick={handleClickOpen}
-            >
-              <GetAppIcon />
-            </Fab >
-
-          </Grid >
-        </Grid>
         <Grid item xs={10}>
-          {/* <div style={{ display: 'flex', flexDirection: 'row', height: '100vh' }}>
-          <div style={{ flex: '1 1 auto', minWidth: 0 }}> */}
           <div
             id='viewer-container'
-            style={{ position: 'absolute', height: '100%', width: '100%', left: '0' }}
+            style={{ position: 'absolute', height: '100%', width: '100%', left: '0', top: '0' }}
             onClick={handleClick}
           />
-          {/* </div> */}
           <Dropzone ref={dropzoneRef} onDrop={onDrop}>
             {({ getRootProps, getInputProps }) => (
               <div {...getRootProps({ className: 'dropzone' })}>
@@ -287,7 +250,6 @@ const IfcRenderer = () => {
               </div>
             )}
           </Dropzone>
-          {/* </div> */}
         </Grid>
       </Grid >
       <Backdrop

@@ -1,26 +1,4 @@
-import React, { useEffect, useState, useRef, Children } from 'react';
-import {
-  Typography,
-  makeStyles,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Card,
-  CardHeader,
-  CardContent,
-  Avatar,
-  IconButton
-} from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
+import React, { useState } from 'react';
 import { Rnd } from 'react-rnd';
 
 const style = {

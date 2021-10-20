@@ -3,9 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emotion/react": "^11.5.0",
+    "@emotion/styled": "^11.3.0",
     "@material-ui/core": "^4.11.4",
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "^4.0.0-alpha.58",
+    "@mui/material": "^5.0.4",
     "@tensorflow-models/coco-ssd": "^2.0.1",
     "@tensorflow-models/facemesh": "0.0.1",
     "@tensorflow-models/handpose": "0.0.3",
@@ -36,11 +39,12 @@
     "react-webcam": "^5.0.1",
     "reactstrap": "^7.1.0",
     "styled-components": "^5.0.1",
-    "three": "^0.130.0",
+    "three": "^0.133.1",
     "three-css2drender": "^1.0.0",
     "use-tensorflow": "^0.3.2",
-    "web-ifc-three": "0.0.31",
-    "web-ifc-viewer": "^1.0.14"
+    "web-ifc": "0.0.24",
+    "web-ifc-three": "0.0.61",
+    "web-ifc-viewer": "^1.0.91"
   },
   "devDependencies": {
     "env-cmd": "^8.0.2",

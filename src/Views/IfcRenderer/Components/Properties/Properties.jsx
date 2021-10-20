@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Typography,
   makeStyles,
@@ -9,19 +9,21 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
   TableRow,
-  Paper,
   Card,
   CardHeader,
   CardContent,
   Avatar,
-  IconButton
+  IconButton,
+  Popover,
+  ListItem,
+  ListItemIcon,
+  ListItemText
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
-
+import ClearIcon from '@material-ui/icons/Clear';
+import VisibilityIcon from '@material-ui/icons/Visibility';
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -56,16 +58,35 @@ const useStyles = makeStyles((theme) => ({
 
 const Properties = ({
   viewer,
-  element
+  element,
+  handleShowProperties
 }) => {
   const classes = useStyles();
   const [ifcElement, setIfcElement] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
 
   useEffect(() => {
     if (element) {
       setIfcElement(element);
     }
   }, []);
+
+  const handleShowElement = async () => {
+    const modelID = element.modelID;
+    const ids = [element.expressID]
+    await viewer.IFC.loader.ifcManager.hideItems(modelID, ids);
+  }
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+  const id = open ? 'simple-popover' : undefined;
 
   return (
     <Card className={classes.cardInfo}>
@@ -76,9 +97,48 @@ const Properties = ({
           </Avatar>
         }
         action={
-          <IconButton aria-label="settings">
-            <MoreVertIcon />
-          </IconButton>
+          <div>
+            <IconButton
+              aria-label="settings"
+              aria-describedby={id}
+              onClick={handleClick}
+            >
+              <MoreVertIcon />
+            </IconButton>
+            <Popover
+              id={id}
+              open={open}
+              anchorEl={anchorEl}
+              onClose={handleClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'center',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'center',
+              }}
+            >
+              <ListItem
+                button
+                onClick={handleShowElement}
+              >
+                <ListItemIcon>
+                  <VisibilityIcon />
+                </ListItemIcon>
+                <ListItemText primary="Visibility" />
+              </ListItem>
+              <ListItem
+                button
+                onClick={handleShowProperties}
+              >
+                <ListItemIcon>
+                  <ClearIcon />
+                </ListItemIcon>
+                <ListItemText primary="Quit" />
+              </ListItem>
+            </Popover>
+          </div>
         }
         title={`${element ? element.Name.value : 'Undefined'}`}
         subheader="Properties"
@@ -86,7 +146,7 @@ const Properties = ({
       <CardContent
         className={classes.cardContent}
       >
-        {ifcElement &&
+        {element &&
           <>
             <Accordion>
               <AccordionSummary
@@ -128,7 +188,7 @@ const Properties = ({
                       <TableBody>
                         {pset.HasProperties && pset.HasProperties.length > 0 && pset.HasProperties.map((property, index) => (
                           <TableRow key={index}>
-                            <TableCell>{`${property.type}`}</TableCell>
+                            <TableCell>{`${property.label}`}</TableCell>
                             <TableCell>{`${property.value}`}</TableCell>
                           </TableRow>
                         ))}

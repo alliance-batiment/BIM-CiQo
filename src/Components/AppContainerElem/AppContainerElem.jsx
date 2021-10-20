@@ -11,15 +11,11 @@ import {
   IconButton,
   ListItem,
   ListItemIcon,
-	ListItemText,
-  Typography,
+  ListItemText,
   Icon
 } from '@material-ui/core';
-import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import MailIcon from '@material-ui/icons/Mail';
 import NavBarElem from '../NavBarElem';
 
 const drawerWidth = 240;
@@ -81,9 +77,9 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function PersistentDrawerLeft({
-	title,
-	menu,
-	children
+  title,
+  menu,
+  children
 }) {
   const classes = useStyles();
   const theme = useTheme();
@@ -100,12 +96,12 @@ export default function PersistentDrawerLeft({
   return (
     <div className={classes.root}>
       <CssBaseline />
-			<NavBarElem 
-				title={title}
-				classes={classes}
-				handleDrawerOpen={handleDrawerOpen}
-				open={open}
-			/>
+      <NavBarElem
+        title={title}
+        classes={classes}
+        handleDrawerOpen={handleDrawerOpen}
+        open={open}
+      />
       <Drawer
         className={classes.drawer}
         variant="persistent"
@@ -124,22 +120,22 @@ export default function PersistentDrawerLeft({
         <List>
           {menu.MenuSideBarSup.map((item, index) => (
             <Link to={item.link} style={{ textDecoration: 'none' }}>
-							<ListItem button key={index}>
-								<ListItemIcon><Icon>{item.icon}</Icon></ListItemIcon>
-								<ListItemText primary={item.text} />
-							</ListItem>
-						</Link>
+              <ListItem button key={index}>
+                <ListItemIcon><Icon>{item.icon}</Icon></ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItem>
+            </Link>
           ))}
         </List>
         <Divider />
         <List>
           {menu.MenuSideBarInf.map((item, index) => (
             <a href={item.href} target='_blank' style={{ textDecoration: 'none' }}>
-							<ListItem button key={index}>
-								<ListItemIcon><Icon>{item.icon}</Icon></ListItemIcon>
-								<ListItemText primary={item.text} />
-							</ListItem>
-						</a>
+              <ListItem button key={index}>
+                <ListItemIcon><Icon>{item.icon}</Icon></ListItemIcon>
+                <ListItemText primary={item.text} />
+              </ListItem>
+            </a>
           ))}
         </List>
       </Drawer>
@@ -149,9 +145,9 @@ export default function PersistentDrawerLeft({
         })}
       >
         <div className={classes.drawerHeader} />
-				<Container maxWidth="lg" className={classes.container}>
-					{children}
-				</Container>
+        <Container maxWidth="lg" className={classes.container}>
+          {children}
+        </Container>
       </main>
     </div>
   );
