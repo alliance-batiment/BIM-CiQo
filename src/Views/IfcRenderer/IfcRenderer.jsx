@@ -64,7 +64,7 @@ const IfcRenderer = () => {
   const [viewer, setViewer] = useState(null);
   const [modelID, setModelID] = useState(-1);
   const [transformControls, setTransformControls] = useState(null);
-  const [spatialStructure, setSpatialStructure] = useState([]);
+  const [spatialStructure, setSpatialStructure] = useState(null);
   const [element, setElement] = useState(null);
   const [showSpatialStructure, setShowSpatialStructure] = useState(false);
   const [showProperties, setShowProperties] = useState(false);
@@ -89,15 +89,17 @@ const IfcRenderer = () => {
       newViewer.addGrid();
       newViewer.IFC.setWasmPath('../../');
 
-      await newViewer.IFC.loadIfcUrl('https://aryatowers.s3.eu-west-3.amazonaws.com/Pylone+trellis.ifc', true);
-      setViewer(newViewer);
+      // await newViewer.IFC.loadIfcUrl('https://aryatowers.s3.eu-west-3.amazonaws.com/Pylone+trellis.ifc', true);
+      // setViewer(newViewer);
 
-      const modelID = await newViewer.IFC.getModelID();
+      // const modelID = await newViewer.IFC.getModelID();
 
-      const spatialStructure = await newViewer.IFC.getSpatialStructure(modelID)
-      setSpatialStructure(spatialStructure);
+      // const spatialStructure = await newViewer.IFC.getSpatialStructure(modelID)
+      // setSpatialStructure(spatialStructure);
 
       window.ondblclick = newViewer.addClippingPlane;
+
+      setViewer(newViewer);
       setState({
         ...state, loaded: true, loadingIfc: false
       });
@@ -110,7 +112,12 @@ const IfcRenderer = () => {
       ...state,
       loadingIfc: true
     });
+    // setViewer(null);
     await viewer.IFC.loadIfc(files[0], true);
+    // const modelID = await viewer.IFC.getModelID();
+    const spatialStructure = await viewer.IFC.getSpatialStructure(0);
+    setSpatialStructure(spatialStructure);
+    console.log('spatialStructure', spatialStructure);
     setState({
       ...state, loaded: true, loadingIfc: false
     });
@@ -130,31 +137,34 @@ const IfcRenderer = () => {
     const itemProperties = await viewer.IFC.loader.ifcManager.getItemProperties(found.modelID, found.id);
     const propertySets = await viewer.IFC.loader.ifcManager.getPropertySets(found.modelID, found.id);
 
-    const psets = await Promise.all(propertySets.map(async (pset) => {
-      const newPset = await Promise.all(pset.HasProperties.map(async (property) => {
-        const prop = await viewer.IFC.loader.ifcManager.getItemProperties(found.modelID, property.value);
-        const label = prop.Name.value;
-        const value = prop.NominalValue ? prop.NominalValue.value : null;
-        return {
-          label,
-          value
+    if (propertySets.length > 0) {
+      const psets = await Promise.all(propertySets.map(async (pset) => {
+        if (pset.HasProperties && pset.HasProperties.length > 0) {
+          const newPset = await Promise.all(pset.HasProperties.map(async (property) => {
+            const prop = await viewer.IFC.loader.ifcManager.getItemProperties(found.modelID, property.value);
+            const label = prop.Name.value;
+            const value = prop.NominalValue ? prop.NominalValue.value : null;
+            return {
+              label,
+              value
+            }
+          }));
+
+          return {
+            ...pset,
+            HasProperties: [...newPset]
+          }
         }
       }));
+      const elem = {
+        ...itemProperties,
+        modelID: found.modelID,
+        psets
+      };
 
-      return {
-        ...pset,
-        HasProperties: [...newPset]
+      if (elem) {
+        setElement(elem);
       }
-    }));
-
-    const elem = {
-      ...itemProperties,
-      modelID: found.modelID,
-      psets
-    };
-
-    if (elem) {
-      setElement(elem);
     }
   }
 
@@ -177,7 +187,7 @@ const IfcRenderer = () => {
   return (
     <>
       <Grid container>
-        {showSpatialStructure &&
+        {(spatialStructure && showSpatialStructure) &&
           <DraggableCard>
             <SpatialStructure
               viewer={viewer}
@@ -187,7 +197,7 @@ const IfcRenderer = () => {
           </DraggableCard>
 
         }
-        {showProperties &&
+        {(element && showProperties) &&
           <DraggableCard>
             <Properties
               viewer={viewer}

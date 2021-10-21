@@ -167,18 +167,19 @@ const SpatialStructure = ({
     <TreeItem
       key={nodes.expressID}
       nodeId={nodes.expressID}
-      label={
-        <FormControlLabel
-          control={<Checkbox
-            checked={isChecked(expressIDList, nodes)}
-            onChange={(e) => {
-              // handleTreeViewItemById(e, nodes);
-              handleAddId(nodes);
-            }}
-          />}
-          // name={nodes.expressID}
-          label={`${nodes.type}`}
-        />}
+      // label={
+      //   <FormControlLabel
+      //     control={<Checkbox
+      //       checked={isChecked(expressIDList, nodes)}
+      //       onChange={(e) => {
+      //         // handleTreeViewItemById(e, nodes);
+      //         handleAddId(nodes);
+      //       }}
+      //     />}
+      //     name={nodes.expressID}
+      //     label={`${nodes.type}`}
+      //   />}
+      label={`${nodes.type}`}
     >
       {Array.isArray(nodes.children) ? nodes.children.map((node) => renderTree(node)) : null}
     </TreeItem >
@@ -237,7 +238,7 @@ const SpatialStructure = ({
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
             <Tab label="Spatial Structure" {...a11yProps(0)} />
-            <Tab label="Elements by class" {...a11yProps(1)} />
+            {/* <Tab label="Elements by class" {...a11yProps(1)} /> */}
           </Tabs>
         </Box>
         <TabPanel value={value} index={0}>
@@ -245,11 +246,11 @@ const SpatialStructure = ({
           {(spatialStructure.children && spatialStructure.children.length > 0) &&
             <>
               <Grid container>
-                <Grid xs={12}>
+                {/* <Grid xs={12}>
                   <Button
                     onClick={handleShowElement}
                   >Show Elements</Button>
-                </Grid>
+                </Grid> */}
                 <Grid xs={12}>
                   <TreeView
                     className={classes.treeView}

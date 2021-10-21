@@ -18,7 +18,7 @@ import {
   ListItemText
 } from '@material-ui/core';
 import Icon from './BimViewer.svg';
-
+import Logo from './Logo.png';
 
 const Menu = {
   MenuNavBar: [
@@ -31,11 +31,6 @@ const Menu = {
     { text: "Documentation", link: "", href: "https://www.tridyme.com/fr/documentation/fr/developpers/tridyme-webapp-kit-serverless", icon: "chrome_reader_mode" }
   ]
 };
-
-const {
-  REACT_APP_COMPANY,
-  REACT_APP_LOGO
-} = process.env;
 
 const App = () => {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
@@ -65,8 +60,8 @@ const App = () => {
   return (
     <ThemeProvider theme={theme}>
       <Helmet>
-        <title>{`${REACT_APP_COMPANY} | Applications`}</title>
-        <link rel="icon" type="image/png" href={REACT_APP_LOGO} sizes="16x16" />
+        <title>{`TriDyme | Applications`}</title>
+        <link rel="icon" type="image/png" href={Logo} sizes="16x16" />
       </Helmet>
       <Router history={history}>
         <AppContainerElem
