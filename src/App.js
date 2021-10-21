@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import Helmet from 'react-helmet';
 import {
   Router,
   Switch,
@@ -10,6 +11,14 @@ import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import AppContainerElem from './Components/AppContainerElem';
 import IfcRenderer from './Views/IfcRenderer/';
+import {
+  ListItem,
+  ListItemAvatar,
+  Avatar,
+  ListItemText
+} from '@material-ui/core';
+import Icon from './BimViewer.svg';
+
 
 const Menu = {
   MenuNavBar: [
@@ -17,18 +26,20 @@ const Menu = {
   ],
   MenuSideBarSup: [
     { text: "BIM Viewer", link: "/", href: "", icon: "dashboard" },
-    /*  { text: "Camera", link: "/camera", href: "", icon: "camera" },
-     { text: "Hand", link: "/hand", href: "", icon: "camera" },
-     { text: "Object Detection", link: "/objectdetection", href: "", icon: "camera" } */
   ],
   MenuSideBarInf: [
     { text: "Documentation", link: "", href: "https://www.tridyme.com/fr/documentation/fr/developpers/tridyme-webapp-kit-serverless", icon: "chrome_reader_mode" }
   ]
 };
 
+const {
+  REACT_APP_COMPANY,
+  REACT_APP_LOGO
+} = process.env;
+
 const App = () => {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const theme = React.useMemo(
+  const theme = useMemo(
     () =>
       createMuiTheme({
         palette: {
@@ -53,9 +64,21 @@ const App = () => {
 
   return (
     <ThemeProvider theme={theme}>
+      <Helmet>
+        <title>{`${REACT_APP_COMPANY} | Applications`}</title>
+        <link rel="icon" type="image/png" href={REACT_APP_LOGO} sizes="16x16" />
+      </Helmet>
       <Router history={history}>
         <AppContainerElem
-          title="My App"
+          title={<ListItem>
+            <ListItemAvatar>
+              <Avatar
+                alt={`BIM Viewer`}
+                src={Icon}
+              />
+            </ListItemAvatar>
+            <ListItemText primary={`BIM Viewer`} />
+          </ListItem>}
           menu={Menu}
         >
           <Switch>
