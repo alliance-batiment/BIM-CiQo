@@ -21,8 +21,6 @@ import {
 } from 'three';
 
 
-
-
 const useStyles = makeStyles((theme) => ({
   root: {
     width: '100vw',

@@ -30,6 +30,11 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import ClearIcon from '@material-ui/icons/Clear';
+import {
+  IFCSLAB,
+  IFCMEMBER,
+  IFCSTRUCTURALCURVEMEMBER
+} from 'web-ifc';
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -88,9 +93,10 @@ const SpatialStructure = ({
   useEffect(() => {
     async function init() {
       const modelID = await viewer.IFC.getModelID();
-      const ifcSlab = await viewer.getAllItemsOfType(0, 1529196076, true);
-      const ifcMember = await viewer.getAllItemsOfType(0, 1073191201, true);
-      const ifcStructuralCurveMember = await viewer.getAllItemsOfType(0, 214636428, true);
+      const ifcSlab = await viewer.getAllItemsOfType(0, IFCSLAB, true);
+      const ifcMember = await viewer.getAllItemsOfType(0, IFCMEMBER, true);
+      const ifcStructuralCurveMember = await viewer.getAllItemsOfType(0, IFCSTRUCTURALCURVEMEMBER, true);
+
       const newIfcElementByType = [
         { class: 'IfcSlab', elements: [...ifcSlab] },
         { class: 'IfcMember', elements: [...ifcMember] },
