@@ -141,7 +141,7 @@ const Properties = ({
           </div>
         }
         title={`${element ? element.Name.value : 'Undefined'}`}
-        subheader="Properties"
+        subheader={`${element.type}`}
       />
       <CardContent
         className={classes.cardContent}
@@ -167,6 +167,10 @@ const Properties = ({
                       <TableRow key={1}>
                         <TableCell>{`Name`}</TableCell>
                         <TableCell>{`${element.Name.value}`}</TableCell>
+                      </TableRow>
+                      <TableRow key={2}>
+                        <TableCell>{`Type`}</TableCell>
+                        <TableCell>{`${element.type}`}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>

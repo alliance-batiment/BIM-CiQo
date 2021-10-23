@@ -68,6 +68,8 @@ const IfcRenderer = () => {
   const [element, setElement] = useState(null);
   const [showSpatialStructure, setShowSpatialStructure] = useState(false);
   const [showProperties, setShowProperties] = useState(false);
+  const [isLoading, setLoading] = useState(false)
+
   const [state, setState] = useState({
     bcfDialogOpen: false,
     loaded: false,
@@ -78,49 +80,35 @@ const IfcRenderer = () => {
 
   useEffect(() => {
     async function init() {
-      setState({
-        ...state,
-        loadingIfc: true
-      });
       const container = document.getElementById('viewer-container');
       const newViewer = new IfcViewerAPI({ container, backgroundColor: new Color(0xffffff) });
-      newViewer.IFC.applyWebIfcConfig({ COORDINATE_TO_ORIGIN: false, USE_FAST_BOOLS: true });
-      newViewer.addAxes();
-      newViewer.addGrid();
+      newViewer.IFC.applyWebIfcConfig({ COORDINATE_TO_ORIGIN: true, USE_FAST_BOOLS: false });
+      // newViewer.addAxes();
+      // newViewer.addGrid();
       newViewer.IFC.setWasmPath('../../');
-
-      // await newViewer.IFC.loadIfcUrl('https://aryatowers.s3.eu-west-3.amazonaws.com/Pylone+trellis.ifc', true);
-      // setViewer(newViewer);
-
-      // const modelID = await newViewer.IFC.getModelID();
-
-      // const spatialStructure = await newViewer.IFC.getSpatialStructure(modelID)
-      // setSpatialStructure(spatialStructure);
 
       window.ondblclick = newViewer.addClippingPlane;
 
       setViewer(newViewer);
-      setState({
-        ...state, loaded: true, loadingIfc: false
-      });
     }
     init();
   }, [])
 
   const onDrop = async (files) => {
-    setState({
-      ...state,
-      loadingIfc: true
-    });
-    // setViewer(null);
-    await viewer.IFC.loadIfc(files[0], true);
-    // const modelID = await viewer.IFC.getModelID();
-    const spatialStructure = await viewer.IFC.getSpatialStructure(0);
-    setSpatialStructure(spatialStructure);
-    console.log('spatialStructure', spatialStructure);
-    setState({
-      ...state, loaded: true, loadingIfc: false
-    });
+    if (files && viewer) {
+      setLoading(true);
+      // setViewer(null);
+      await viewer.IFC.loadIfc(files[0], true, ifcOnLoadError);
+      // const modelID = await viewer.IFC.getModelID();
+      const spatialStructure = await viewer.IFC.getSpatialStructure(0);
+      setSpatialStructure(spatialStructure);
+      console.log('spatialStructure', spatialStructure);
+      setLoading(false);
+    }
+  };
+
+  const ifcOnLoadError = async (err) => {
+    alert(err.toString());
   };
 
   const select = (modelID, expressID, pick = true) => {
@@ -134,9 +122,14 @@ const IfcRenderer = () => {
     if (found == null || found == undefined) return;
 
     select(found.modelID, found.id, false);
+    const props = await viewer.IFC.getProperties(found.modelID, found.id, false);
+    console.log(props);
+    const type = await viewer.IFC.loader.ifcManager.getIfcType(found.modelID, found.id);
+    console.log(type);
     const itemProperties = await viewer.IFC.loader.ifcManager.getItemProperties(found.modelID, found.id);
+    console.log(itemProperties);
     const propertySets = await viewer.IFC.loader.ifcManager.getPropertySets(found.modelID, found.id);
-
+    console.log(propertySets);
     if (propertySets.length > 0) {
       const psets = await Promise.all(propertySets.map(async (pset) => {
         if (pset.HasProperties && pset.HasProperties.length > 0) {
@@ -155,9 +148,26 @@ const IfcRenderer = () => {
             HasProperties: [...newPset]
           }
         }
+        if (pset.Quantities && pset.Quantities.length > 0) {
+          const newPset = await Promise.all(pset.Quantities.map(async (property) => {
+            const prop = await viewer.IFC.loader.ifcManager.getItemProperties(found.modelID, property.value);
+            const label = prop.Name.value;
+            const value = prop.NominalValue ? prop.NominalValue.value : null;
+            return {
+              label,
+              value
+            }
+          }));
+
+          return {
+            ...pset,
+            HasProperties: [...newPset]
+          }
+        }
       }));
       const elem = {
         ...itemProperties,
+        type: type ? type : 'NO TYPE',
         modelID: found.modelID,
         psets
       };
@@ -256,7 +266,7 @@ const IfcRenderer = () => {
           <Dropzone ref={dropzoneRef} onDrop={onDrop}>
             {({ getRootProps, getInputProps }) => (
               <div {...getRootProps({ className: 'dropzone' })}>
-                <input {...getInputProps()} />
+                <input {...getInputProps()} accept='.ifc' />
               </div>
             )}
           </Dropzone>
@@ -269,9 +279,9 @@ const IfcRenderer = () => {
           alignItems: "center",
           alignContent: "center"
         }}
-        open={state.loadingIfc}
+        open={isLoading}
       >
-        <CircularProgress />
+        <CircularProgress color='inherit' />
       </Backdrop>
 
     </>
