@@ -8,9 +8,6 @@
 
 - [Installations](#installations)
 - [Créer notre première application](#create-my-own-app)
-- [Ajouter des fonctionnalités](#add-features)
-- [Les composants](#components)
-- [Modification et ajout de composant](#modify-add-components)
 - [Déployer son code sur GitHub](#github)
 - [Mettre son application en ligne](#online-webapp)
 - [License](#license)
@@ -49,7 +46,6 @@ $ npm -v
 De même, pour vérifier que l'installation c'est bien déroulé, taper la commande `git version`:
 ```shell
 $ git version
-git version 2.21.0.windows.1
 ```
 
 ### <a name="vscode"></a>VSCode (recommandé)
@@ -88,52 +84,19 @@ Cette application permet de charger et de visualiser une maquette IFC.
 
 Afin de mettre son application en ligne, nous allons utiliser <a href="https://www.netlify.com/" target="_blank">**Netlify**</a> qui permet de dépoyer des applications de manière gratuite.
 
-Pour cela, il faut d'abord:
-- Créer un compte Heroku: <a href="https://signup.heroku.com/login" target="_blank">https://signup.heroku.com/login</a>
-- Puis installer Heroku: <a href="https://devcenter.heroku.com/articles/heroku-cli#download-and-install" target="_blank">https://devcenter.heroku.com/articles/heroku-cli#download-and-install</a>
+Pour cela, il faut au préalable créer un compte gratuitement sur <a href="https://www.netlify.com/" target="_blank">Netlify</a> et <a href="https://github.com/" target="_blank">Github</a>.
 
 
-Puis utiliser **Git** pour deployer l'application sur <a href="https://www.heroku.com/" target="_blank">**Heroku**</a>:
+## <a name="assistance"></a>Communauté & Assistance
 
-```shell
-$ git add .
-$ git commit -m "Added a Procfile."
-$ git push heroku master
-#   Heroku credentials
-$ heroku create
-$ git push heroku master
-#   Launching... done
-#      http://example.herokuapp.com deployed to Heroku
-```
+Afin de pouvoir échanger sur le sujet et répondre à vos questions, vous pouvez rejoindre notre serveur Discord:
+https://discord.gg/zgHGa2Tpe4
 
-Votre application devrait être disponible sur **http://example.herokuapp.com**.
-
-
-Afin de mettre son application en ligne, nous allons utiliser <a href="https://www.heroku.com/" target="_blank">**Heroku**</a> qui permet de dépoyer des applications de manière gratuite.
-
-Pour cela, il faut d'abord:
-- Créer un compte Heroku: <a href="https://signup.heroku.com/login" target="_blank">https://signup.heroku.com/login</a>
-- Puis installer Heroku: <a href="https://devcenter.heroku.com/articles/heroku-cli#download-and-install" target="_blank">https://devcenter.heroku.com/articles/heroku-cli#download-and-install</a>
-
-
-Puis utiliser **Git** pour deployer l'application sur <a href="https://www.heroku.com/" target="_blank">**Heroku**</a>:
-
-```shell
-$ git add .
-$ git commit -m "Added a Procfile."
-$ heroku login
-#   Heroku credentials
-$ heroku create
-$ git push heroku master
-#   Launching... done
-#      http://example.herokuapp.com deployed to Heroku
-```
-
-Votre application devrait être disponible sur **http://example.herokuapp.com**.
+Vous pouvez également nous contacter par email: <a href="contact@tridyme.com" target="_blank">contact@tridyme.com</a>.
 
 ## License
 
 [![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](http://badges.mit-license.org)
 
 - **[MIT license](http://opensource.org/licenses/mit-license.php)**
-- Copyright 2020 © <a href="http://tridyme.com" target="_blank">TriDyme</a>.
+- Copyright 2021 © <a href="http://tridyme.com" target="_blank">TriDyme</a>.
