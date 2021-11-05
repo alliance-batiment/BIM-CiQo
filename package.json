@@ -46,7 +46,7 @@
     "use-tensorflow": "^0.3.2",
     "web-ifc": "0.0.24",
     "web-ifc-three": "0.0.61",
-    "web-ifc-viewer": "^1.0.91"
+    "web-ifc-viewer": "^1.0.102"
   },
   "devDependencies": {
     "env-cmd": "^8.0.2",

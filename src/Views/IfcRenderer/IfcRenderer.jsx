@@ -84,6 +84,34 @@ const IfcRenderer = () => {
       // newViewer.addAxes();
       // newViewer.addGrid();
       newViewer.IFC.setWasmPath('../../');
+      let dimensionsActive = false;
+
+      const handleKeyDown = (event) => {
+        if (event.code === 'KeyP') {
+          console.log('KeyZ')
+          dimensionsActive = !dimensionsActive;
+          newViewer.dimensions.active = dimensionsActive;
+          newViewer.dimensions.previewActive = dimensionsActive;
+          newViewer.IFC.unPrepickIfcItems();
+          window.onmousemove = dimensionsActive ?
+            null :
+            newViewer.IFC.prePickIfcItem;
+        }
+        if (event.code === 'KeyL') {
+          newViewer.dimensions.create();
+        }
+        if (event.code === 'KeyG') {
+          console.log('KeyG')
+          newViewer.clipper.createPlane();
+        }
+        if (event.code === 'KeyT') {
+          newViewer.dimensions.deleteAll();
+          newViewer.clipper.deletePlane();
+          newViewer.IFC.unpickIfcItems();
+        }
+      };
+
+      window.onkeydown = handleKeyDown;
 
       window.ondblclick = newViewer.addClippingPlane;
 

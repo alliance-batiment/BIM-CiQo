@@ -87,6 +87,8 @@ Afin de mettre son application en ligne, nous allons utiliser <a href="https://w
 Pour cela, il faut au préalable créer un compte gratuitement sur <a href="https://www.netlify.com/" target="_blank">Netlify</a> et <a href="https://github.com/" target="_blank">Github</a>.
 
 
+
+
 ## <a name="assistance"></a>Communauté & Assistance
 
 Afin de pouvoir échanger sur le sujet et répondre à vos questions, vous pouvez rejoindre notre serveur Discord:
