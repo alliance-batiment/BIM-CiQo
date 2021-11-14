@@ -10,7 +10,7 @@ import history from './history';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import AppContainerElem from './Components/AppContainerElem';
-import IfcRenderer from './Views/IfcRenderer/';
+import IfcRenderer from './Views/IfcRenderer/IfcRenderer';
 import {
   ListItem,
   ListItemAvatar,

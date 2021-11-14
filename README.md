@@ -82,19 +82,20 @@ Cette application permet de charger et de visualiser une maquette IFC.
 
 ## <a name="online-webapp"></a>Mettre son application en ligne avec Netlify
 
-Afin de mettre son application en ligne, nous allons utiliser <a href="https://www.netlify.com/" target="_blank">**Netlify**</a> qui permet de dépoyer des applications de manière gratuite.
-
-Pour cela, il faut au préalable créer un compte gratuitement sur <a href="https://www.netlify.com/" target="_blank">Netlify</a> et <a href="https://github.com/" target="_blank">Github</a>.
-
+Afin de mettre son application en ligne, voir le tutoriel suivant:
+<a href="https://www.tridyme.com/fr/blog/deploiement-avec-netlify">Deployer son Application Web en ligne gratuitement</a>
 
 
 
 ## <a name="assistance"></a>Communauté & Assistance
 
-Afin de pouvoir échanger sur le sujet et répondre à vos questions, vous pouvez rejoindre notre serveur Discord:
-https://discord.gg/zgHGa2Tpe4
+Afin de pouvoir échanger sur le sujet et répondre à vos questions, vous pouvez rejoindre notre serveur <a href="https://discord.gg/zgHGa2Tpe4" target="_blank">Discord</a> et suivre nos développements sur notre <a href="https://github.com/tridyme?tab=repositories" target="_blank">Github</a>.
 
 Vous pouvez également nous contacter par email: <a href="contact@tridyme.com" target="_blank">contact@tridyme.com</a>.
+
+
+
+A bientôt sur <a href="http://app.tridyme.com">TriDyme</a>!!
 
 ## License
 

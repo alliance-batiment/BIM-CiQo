@@ -12,9 +12,9 @@ import FolderOpenOutlinedIcon from '@material-ui/icons/FolderOpenOutlined';
 import CropIcon from '@material-ui/icons/Crop';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import DescriptionIcon from '@material-ui/icons/Description';
-import SpatialStructure from './Components/SpatialStructure';
-import Properties from './Components/Properties';
-import DraggableCard from './Components/DraggableCard';
+import SpatialStructure from './Components/SpatialStructure/SpatialStructure';
+import Properties from './Components/Properties/Properties';
+import DraggableCard from './Components/DraggableCard/DraggableCard';
 
 import {
   Color
