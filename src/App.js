@@ -28,7 +28,8 @@ const Menu = {
     { text: "BIM Viewer", link: "/", href: "", icon: "dashboard" },
   ],
   MenuSideBarInf: [
-    { text: "Documentation", link: "", href: "https://www.tridyme.com/fr/documentation/fr/developpers/tridyme-webapp-kit-serverless", icon: "chrome_reader_mode" }
+    // { text: "Documentation", link: "", href: "https://www.tridyme.com/fr/documentation/fr/developpers/tridyme-webapp-kit-serverless", icon: "chrome_reader_mode" },
+    { text: "GitHub", link: "", href: "https://github.com/tridyme/sdk-structure-app", icon: "code" }
   ]
 };
 

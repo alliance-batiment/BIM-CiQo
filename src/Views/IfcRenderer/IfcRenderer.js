@@ -15,6 +15,7 @@ import DescriptionIcon from '@material-ui/icons/Description';
 import SpatialStructure from './Components/SpatialStructure/SpatialStructure';
 import Properties from './Components/Properties/Properties';
 import DraggableCard from './Components/DraggableCard/DraggableCard';
+import { IFCSPACE, IFCSTAIR, IFCCOLUMN, IFCWALLSTANDARDCASE, IFCWALL, IFCSLAB, IFCOPENINGELEMENT } from 'web-ifc';
 
 import {
   Color
@@ -81,7 +82,7 @@ const IfcRenderer = () => {
       const container = document.getElementById('viewer-container');
       const newViewer = new IfcViewerAPI({ container, backgroundColor: new Color(0xffffff) });
       newViewer.IFC.applyWebIfcConfig({ COORDINATE_TO_ORIGIN: true, USE_FAST_BOOLS: false });
-      // newViewer.addAxes();
+      // newViewer.addAxes();p
       // newViewer.addGrid();
       newViewer.IFC.setWasmPath('../../');
       let dimensionsActive = false;
@@ -125,6 +126,8 @@ const IfcRenderer = () => {
       setLoading(true);
       // setViewer(null);
       await viewer.IFC.loadIfc(files[0], true, ifcOnLoadError);
+
+
       // const modelID = await viewer.IFC.getModelID();
       const spatialStructure = await viewer.IFC.getSpatialStructure(0);
       setSpatialStructure(spatialStructure);

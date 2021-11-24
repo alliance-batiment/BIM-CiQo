@@ -80,11 +80,13 @@ Notez que notre application a dû s'ouvrir automatiquement dans notre navigateur
 Cette application permet de charger et de visualiser une maquette IFC.
 
 
-## <a name="online-webapp"></a>Mettre son application en ligne avec Netlify
+## <a name="online-webapp"></a>Mettre son application en ligne
 
 Afin de mettre son application en ligne, voir le tutoriel suivant:
-<a href="https://www.tridyme.com/fr/blog/deploiement-avec-netlify">Deployer son Application Web en ligne gratuitement</a>
+<a href="https://www.tridyme.com/fr/blog/deploiement-avec-netlify">Deployer son Application Web en ligne gratuitement avec Netlify</a>
 
+Si vous souhaitez la mettre en ligne de manière décentralisée avec le Web3.0:
+<a href="https://www.tridyme.com/fr/blog/application-web3-decentralise">Deployer son Application Web décentralisée gratuitement avec Fleek</a>
 
 
 ## <a name="assistance"></a>Communauté & Assistance
