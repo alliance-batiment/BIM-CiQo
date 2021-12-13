@@ -119,7 +119,7 @@ const Properties = ({
                 horizontal: 'center',
               }}
             >
-              <ListItem
+              {/* <ListItem
                 button
                 onClick={handleShowElement}
               >
@@ -127,7 +127,7 @@ const Properties = ({
                   <VisibilityIcon />
                 </ListItemIcon>
                 <ListItemText primary="Visibility" />
-              </ListItem>
+              </ListItem> */}
               <ListItem
                 button
                 onClick={handleShowProperties}

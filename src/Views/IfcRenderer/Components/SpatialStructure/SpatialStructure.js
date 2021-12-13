@@ -64,10 +64,18 @@ const useStyles = makeStyles((theme) => ({
       outline: '0px solid slategrey'
     }
   },
+  treeViewLabel: {
+    left: '3em',
+    position: 'absolute'
+  },
+  treeViewCheckbox: {
+    margin: 0,
+    padding: 0
+  },
   treeView: {
     height: 240,
     flexGrow: 1,
-    maxWidth: 400,
+    // maxWidth: 400,
   }
 }));
 
@@ -112,20 +120,41 @@ const SpatialStructure = ({
   }
 
 
-  const handleAddId = async (node) => {
+  const handleExpressId = async (node) => {
     const newExpressIDList = [...expressIDList];
-    newExpressIDList.push(node.expressID);
-    if (node.children && node.children.length > 0) {
-      node.children.forEach(child => {
-        handleAddId(child);
-      });
+    const index = expressIDList.findIndex(expressID => expressID === node.expressID);
+
+    const addExpressId = (node) => {
+      newExpressIDList.push(node.expressID);
+      if (node.children && node.children.length > 0) {
+        node.children.forEach(child => {
+          addExpressId(child);
+        });
+      }
     }
+
+    const removeExpressId = (node) => {
+      const index = newExpressIDList.findIndex(expressID => expressID === node.expressID);
+      newExpressIDList.splice(index, 1);
+      if (node.children && node.children.length > 0) {
+        node.children.forEach(child => {
+          removeExpressId(child);
+        });
+      }
+    }
+
+    if (index < 0) {
+      await addExpressId(node);
+    } else {
+      await removeExpressId(node);
+    }
+
+    await viewer.IFC.highlightIfcItemsByID(0, newExpressIDList, false);
     setExpressIDList(newExpressIDList);
   }
 
   const isChecked = (expressIDList, node) => {
-    const index = expressIDList.findIndex(index => index === node.expressID);
-    console.log('INDEX', index)
+    const index = expressIDList.findIndex(expressID => expressID === node.expressID);
     return index >= 0 ? true : false;
   }
 
@@ -173,21 +202,39 @@ const SpatialStructure = ({
     <TreeItem
       key={nodes.expressID}
       nodeId={nodes.expressID}
-      // label={
-      //   <FormControlLabel
-      //     control={<Checkbox
-      //       checked={isChecked(expressIDList, nodes)}
-      //       onChange={(e) => {
-      //         // handleTreeViewItemById(e, nodes);
-      //         handleAddId(nodes);
-      //       }}
-      //     />}
-      //     name={nodes.expressID}
-      //     label={`${nodes.type}`}
-      //   />}
-      label={`${nodes.type}`}
+      label={
+        <Grid container spacing={3}>
+          <Grid item xs={2}>
+            <Checkbox
+              className={classes.treeViewCheckbox}
+              checked={isChecked(expressIDList, nodes)}
+              onChange={(e) => {
+                // handleTreeViewItemById(e, nodes);
+                handleExpressId(nodes);
+              }}
+            />
+          </Grid>
+          <Grid item xs={10}>
+            <Typography mt={1.2} className={classes.treeViewLabel}>
+              {`${nodes.type} ${nodes.Name ? nodes.Name.value : ""}`}
+            </Typography>
+          </Grid>
+        </Grid>
+        // <FormControlLabel
+        //   control={<Checkbox
+        //     checked={isChecked(expressIDList, nodes)}
+        //     onChange={(e) => {
+        //       // handleTreeViewItemById(e, nodes);
+        //       handleAddId(nodes);
+        //     }}
+        //   />}
+        //   name={nodes.expressID}
+        //   label={`${nodes.type} ${nodes.Name ? nodes.Name.value : ""}`}
+        // />
+      }
+    // label={`${nodes.type} ${nodes.Name ? nodes.Name.value : ""}`}
     >
-      {Array.isArray(nodes.children) ? nodes.children.map((node) => renderTree(node)) : null}
+      { Array.isArray(nodes.children) ? nodes.children.map((node) => renderTree(node)) : null}
     </TreeItem >
   );
 

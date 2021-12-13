@@ -4,61 +4,29 @@
 
 > Ce projet vous permet de créer et de publier vos propres applications de ligne et de les proposer dans la marketplace de <a href="https://www.tridyme.com/fr/" target="_blank">TriDyme</a> gratuitement.
 
+> Il est basé sur cette excellente initiative open-source qu'est <a href="https://ifcjs.github.io/info/" target="_blank">IFC.js</a>.
+
+>Démo live: 👉 <a href="https://bimviewer.tridyme.com/" target="_blank">BIMViewer</a> 👈
+
 ## Sommaire (Optional)
 
-- [Installations](#installations)
+- [Mise en route](#installations)
 - [Créer notre première application](#create-my-own-app)
 - [Déployer son code sur GitHub](#github)
 - [Mettre son application en ligne](#online-webapp)
 - [License](#license)
 
-## <a name="installations"></a>Installations
+## <a name="installations"></a>Mise en route
 
-Les prérequis suivants doivent être installé:
-- Un environnement d'exécution JavaScript: [Node.js](#nodejs), téléchargeable <a href="https://nodejs.org/fr/download/" target="_blank">**ici**</a> 
-- Un logiciel de gestion de versions: [Git](#git), téléchargeable <a href="https://git-scm.com/downloads" target="_blank">**ici**</a> 
-- Un éditeur de code cross-platform: [VSCode](#vscode), téléchargeable <a href="https://code.visualstudio.com/Download" target="_blank">**ici**</a> 
+Pour plus d'informations concernant les prérequis en matière de languages de programmation et d'outils de développement nécessaire pour ce projet, vous pouvez consulter notre article:
+<a href="https://www.tridyme.com/fr/blog/dev-application-web/" target="_blank">Créer sa propre Application Web</a>.
 
-### <a name="nodejs"></a>Node.js
 
-Ce kit de développement est écrit en <a href="https://fr.reactjs.org/" target="_blank">**React.js**</a> qui lui même nécessite <a href="https://nodejs.org/fr/" target="_blank">**Node.js**</a>. **Node.js** est un environnement d'exécution JavaScript installable partout, qui permet d'écrire n'importe quel type de programme en JavaScript : outil en ligne de commande, serveur, application desktop, internet des objets (IoT).
-
-Pour installer Node.js, allez sur <a href="https://nodejs.org/fr/download/" target="_blank">**https://nodejs.org/fr/download/**</a> puis suivez les instructions.
-
-Afin de vérifier que Node.js a été bien installé, vous pouvez utiliser **Invite de Commandes** (cmd.exe sur Windows), et tapez la commande `node -v` afin de vérifier que vous n'avez pas de message d'erreur et que la version de Node est supérieur à la version 6.
-
-```shell
-$ node -v
-v10.3.0
-```
-
-**Node.js** est installé avec **npm** est le gestionnaire de modules de Node. Afin de vérifier que **npm** est bien installé et que la version de Node est supérieur à la version 5, tapez la commande `npm -v` :
-
-```shell
-$ npm -v
-6.9.0
-```
-
-### <a name="git"></a>Git
-
-<a href="https://git-scm.com/">**Git**</a> est un logiciel de gestion de versions, il permet de versionner, d'enregistrer et de rendre open-source du code. Pour l'installer: <a href="https://git-scm.com/downloads" target="_blank">**https://git-scm.com/downloads**</a>.
-
-De même, pour vérifier que l'installation c'est bien déroulé, taper la commande `git version`:
-```shell
-$ git version
-```
-
-### <a name="vscode"></a>VSCode (recommandé)
-
-Afin de pouvoir développer son application, le plus simple est d'utiliser <a href="https://code.visualstudio.com">**VSCode**</a> qui est un éditeur de code cross-platform, open-source et gratuit supportant une dizaine de langages.
-
-Pour l'installer: <a href="https://code.visualstudio.com/Download" target="_blank">**https://code.visualstudio.com/Download**</a>.
-
-## <a name="create-my-own-app"></a>Créer notre première application
+## <a name="create-my-own-app"></a>Créer notre popre application openBIM
 
 ### Cloner le kit de développement
 
-Afin de créer notre première application, commençons par cloner le <a href="https://github.com/tridyme/sdk-bim-viewer" target="_blank">sdk-bim-viewer</a> grâce à **git** dans le repertoire ou nous souhaitons :
+Afin de créer notre propre application openBIM, commençons par cloner le <a href="https://github.com/tridyme/sdk-bim-viewer" target="_blank">sdk-bim-viewer</a> grâce à **git** dans le repertoire ou nous souhaitons :
 ```shell
 $ git clone https://github.com/tridyme/sdk-bim-viewer.git
 ```
