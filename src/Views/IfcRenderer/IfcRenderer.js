@@ -13,6 +13,10 @@ import CropIcon from '@material-ui/icons/Crop';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import DescriptionIcon from '@material-ui/icons/Description';
 import StraightenIcon from '@material-ui/icons/Straighten';
+import AppsIcon from '@material-ui/icons/Apps';
+import GetAppIcon from '@material-ui/icons/GetApp';
+import GrainIcon from '@material-ui/icons/Grain';
+import Marketplace from './Components/Marketplace/Marketplace';
 import SpatialStructure from './Components/SpatialStructure/SpatialStructure';
 import Properties from './Components/Properties/Properties';
 import DraggableCard from './Components/DraggableCard/DraggableCard';
@@ -67,6 +71,7 @@ const IfcRenderer = () => {
   const [spatialStructure, setSpatialStructure] = useState(null);
   const [element, setElement] = useState(null);
   const [showMeasure, setShowMeasure] = useState(true);
+  const [showMarketplace, setShowMarketplace] = useState(false);
   const [showSpatialStructure, setShowSpatialStructure] = useState(false);
   const [showProperties, setShowProperties] = useState(false);
   const [isLoading, setLoading] = useState(false);
@@ -280,6 +285,10 @@ const IfcRenderer = () => {
     };
   }
 
+  const handleShowMarketplace = () => {
+    setShowMarketplace(!showMarketplace);
+  };
+
   const handleShowSpatialStructure = () => {
     setShowSpatialStructure(!showSpatialStructure);
   };
@@ -287,6 +296,10 @@ const IfcRenderer = () => {
   const handleShowProperties = () => {
     setShowProperties(!showProperties);
   };
+
+  const handleDownloadIfc = () => {
+    window.location.href = 'https://aryatowers.s3.eu-west-3.amazonaws.com/Pylone+trellis.ifc';
+  }
 
   return (
     <>
@@ -308,6 +321,14 @@ const IfcRenderer = () => {
               element={element}
               transformControls={transformControls}
               handleShowProperties={handleShowProperties}
+            />
+          </DraggableCard>
+        }
+        {(showMarketplace) &&
+          <DraggableCard>
+            <Marketplace
+              viewer={viewer}
+              handleShowMarketplace={handleShowMarketplace}
             />
           </DraggableCard>
         }
@@ -340,7 +361,15 @@ const IfcRenderer = () => {
             >
               <StraightenIcon />
             </Fab>
-
+          </Grid>
+          <Grid item xs={12}>
+            <Fab
+              size="small"
+              className={classes.fab}
+              onClick={handleShowMarketplace}
+            >
+              <AppsIcon />
+            </Fab>
           </Grid>
           <Grid item xs={12}>
             <Fab
@@ -361,6 +390,26 @@ const IfcRenderer = () => {
             </Fab>
           </Grid>
         </Grid >
+        <Grid item xs={2} className={classes.infoRightPannel}>
+          <Grid item xs={12}>
+            <Fab
+              size="small"
+              className={classes.fab}
+              onClick={handleDownloadIfc}
+            >
+              <GetAppIcon />
+            </Fab >
+          </Grid >
+          {/* <Grid item xs={12}>
+            <Fab
+              size="small"
+              className={classes.fab}
+              onClick={handleShowStructuralAnalysis}
+            >
+              <GrainIcon />
+            </Fab >
+          </Grid > */}
+        </Grid>
         <Grid item xs={10}>
           <div
             id='viewer-container'
