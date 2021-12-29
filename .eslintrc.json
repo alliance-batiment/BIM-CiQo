@@ -1,0 +1,52 @@
+{
+  "extends": ["airbnb", "plugin:cypress/recommended"],
+  "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "requireConfigFile": false
+  },
+  "rules": {
+    "no-shadow": "off",
+    "global-require": 0,
+    "react/jsx-wrap-multilines": 0,
+    "import/no-cycle": 0,
+    "no-throw-literal": 0,
+    "no-underscore-dangle": [
+      2,
+      {
+        "allow": ["_id", "__REDUX_DEVTOOLS_EXTENSION_COMPOSE__"]
+      }
+    ],
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": [
+          "**/*.test.js",
+          "./src/setupTests.js",
+          "./cypress/**/*.js",
+          "./e2e/**/*.js"
+        ],
+        "optionalDependencies": false,
+        "peerDependencies": false,
+        "packageDir": "./"
+      }
+    ],
+    "linebreak-style": 0,
+    "import/prefer-default-export": "off",
+    "arrow-body-style": "off",
+    "class-methods-use-this": "off",
+    "max-len": "off",
+    "comma-dangle": ["error", "never"],
+    "react/jsx-filename-extension": [
+      1,
+      {
+        "extensions": [".js", ".jsx"]
+      }
+    ],
+    "func-names": ["error", "never"]
+  },
+  "env": {
+    "jest": true,
+    "browser": true,
+    "node": true
+  }
+}
