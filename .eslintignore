@@ -1,0 +1,7 @@
+node_modules/
+src/three_scenes/
+public/
+src/registerServiceWorker.js
+coverage/
+build/
+.vscode
