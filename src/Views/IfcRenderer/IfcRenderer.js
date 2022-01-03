@@ -447,7 +447,7 @@ const IfcRenderer = () => {
               <FolderOpenOutlinedIcon />
             </Fab >
           </Grid >
-          <Grid item xs={12}>
+          {/* <Grid item xs={12}>
             <Fab
               size="small"
               className={classes.fab}
@@ -464,7 +464,7 @@ const IfcRenderer = () => {
             >
               BCF
             </Fab>
-          </Grid>
+          </Grid> */}
           <Grid item xs={12}>
             <Fab
               size="small"
