@@ -14,6 +14,8 @@ import clsx from 'clsx';
 import Check from '@material-ui/icons/Check';
 import Login from './Components/Login/Login';
 import PortalList from './Components/PortalList/PortalList';
+import ObjectList from './Components/ObjectList/ObjectList';
+import PropertyList from './Components/PropertyList/PropertyList';
 import axios from 'axios';
 
 const useStyles = makeStyles((theme) => ({
@@ -136,7 +138,11 @@ const QontoConnector = withStyles({
   },
 })(StepConnector);
 
-const DatBimApi = () => {
+const DatBimApi = ({
+  openProperties,
+  projectId,
+  objSelected
+}) => {
   const [activeStep, setActiveStep] = useState(0);
   const [selectedPortal, setSelectedPortal] = useState(null);
   const [selectedObject, setSelectedObject] = useState(null);
@@ -163,18 +169,88 @@ const DatBimApi = () => {
     return ['Connexion', 'Portals', 'Objects', 'Properties'];
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     const data = new FormData(e.target);
     localStorage.setItem('email', data.get('email'));
 
-    axios.post(`http://localhost:5000/api/datbim/connection`, { email: data.get('email'), password: data.get('password') })
-      .then((r) => {
-        sessionStorage.setItem('token', r.data.token);
-        handleNext()
-      }).catch(() => {
-        setActiveStep(0)
-      });
+    // axios.post(`${process.env.REACT_APP_API_DATBIM}/auth-token`,
+    //   {
+    //     entry_mode: "string",
+    //     ip: "string",
+    //     lang: "fr",
+    //     local_at: "string",
+    //     login: `${data.get('email')}`,
+    //     password: `${data.get('password')}`,
+    //     service: "string"
+    //   }
+    //   // , {
+    //   //   headers: {
+    //   //     "Content-Type": "application/json",
+    //   //     "Access-Control-Allow-Origin": "*",
+    //   //   }
+    //   // }
+    // )
+    // axios({
+    //   method: 'post',
+    //   url: `${process.env.REACT_APP_API_DATBIM}/auth-token`,
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     "Access-Control-Allow-Origin": "*",
+    //   },
+    //   data: {
+    //     entry_mode: "string",
+    //     ip: "string",
+    //     lang: "fr",
+    //     local_at: "string",
+    //     login: `${data.get('email')}`,
+    //     password: `${data.get('password')}`,
+    //     service: "string"
+    //   }
+    // }).then((r) => {
+    //   console.log('TOKEN', r.data)
+    //   sessionStorage.setItem('token', r.data.token);
+    //   handleNext()
+    // }).catch(() => {
+    //   setActiveStep(0)
+    // });
+    const res = await fetch(`${process.env.REACT_APP_API_DATBIM}/auth-token`, {
+      method: 'post',
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
+      body: JSON.stringify({
+        entry_mode: "string",
+        ip: "string",
+        lang: "fr",
+        local_at: "string",
+        login: `${data.get('email')}`,
+        password: `${data.get('password')}`,
+        service: "string"
+      })
+    })
+
+    console.log('data', res.json())
+
+
+    // , {
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     "Access-Control-Allow-Origin": "*",
+    //   }
+    // }
+
+
+
+
+    // axios.post(`${process.env.REACT_APP_API_URL}/api/datbim/connection`, { email: data.get('email'), password: data.get('password') })
+    //   .then((r) => {
+    //     sessionStorage.setItem('token', r.data.token);
+    //     handleNext()
+    //   }).catch(() => {
+    //     setActiveStep(0)
+    //   });
   }
 
   const handleNext = () => {
@@ -203,22 +279,22 @@ const DatBimApi = () => {
           setSelectedPortal={setSelectedPortal}
           handleNext={handleNext}
           setActiveStep={setActiveStep} />
-      // case 2:
-      //   return <ObjectList
-      //     classes={classes}
-      //     openProperties={openProperties}
-      //     handleNext={handleNext}
-      //     selectedPortal={selectedPortal}
-      //     typeProperties={window.objProperties.type}
-      //   />
-      // case 3:
-      //   return <PropertyList
-      //     classes={classes}
-      //     projectId={projectId}
-      //     setLoader={setLoader}
-      //     objSelected={objSelected}
-      //     selectedObject={selectedObject}
-      //   />
+      case 2:
+        return <ObjectList
+          classes={classes}
+          openProperties={openProperties}
+          handleNext={handleNext}
+          selectedPortal={selectedPortal}
+          typeProperties={window.objProperties.type}
+        />
+      case 3:
+        return <PropertyList
+          classes={classes}
+          projectId={projectId}
+          // setLoader={setLoader}
+          objSelected={objSelected}
+          selectedObject={selectedObject}
+        />
       default:
         return 'Unknown step';
     }

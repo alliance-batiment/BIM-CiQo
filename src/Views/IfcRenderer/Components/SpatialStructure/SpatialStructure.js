@@ -73,7 +73,7 @@ const useStyles = makeStyles((theme) => ({
     padding: 0
   },
   treeView: {
-    height: 240,
+    // height: 240,
     flexGrow: 1,
     // maxWidth: 400,
   }
@@ -89,7 +89,7 @@ function a11yProps(index) {
 
 const SpatialStructure = ({
   viewer,
-  spatialStructure,
+  spatialStructures,
   handleShowSpatialStructure
 }) => {
   const classes = useStyles();
@@ -149,7 +149,7 @@ const SpatialStructure = ({
       await removeExpressId(node);
     }
 
-    await viewer.IFC.highlightIfcItemsByID(0, newExpressIDList, false);
+    await viewer.IFC.selector.highlightIfcItemsByID(0, newExpressIDList, false);
     setExpressIDList(newExpressIDList);
   }
 
@@ -291,33 +291,31 @@ const SpatialStructure = ({
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
             <Tab label="Spatial Structure" {...a11yProps(0)} />
-            {/* <Tab label="Elements by class" {...a11yProps(1)} /> */}
+            <Tab label="Elements by class" {...a11yProps(1)} />
           </Tabs>
         </Box>
         <TabPanel value={value} index={0}>
 
-          {(spatialStructure.children && spatialStructure.children.length > 0) &&
-            <>
-              <Grid container>
-                {/* <Grid xs={12}>
-                  <Button
-                    onClick={handleShowElement}
-                  >Show Elements</Button>
-                </Grid> */}
-                <Grid xs={12}>
-                  <TreeView
-                    className={classes.treeView}
-                    defaultCollapseIcon={<ExpandMoreIcon />}
-                    defaultExpanded={['root']}
-                    defaultExpandIcon={<ChevronRightIcon />}
-                  >
-                    {renderTree(spatialStructure)}
-                  </TreeView>
-                </Grid>
-              </Grid>
+          <Grid container>
+            {(spatialStructures && spatialStructures.length) && spatialStructures.map(spatialStructure => (
+              <>
+                {(spatialStructure.children && spatialStructure.children.length > 0) &&
+                  <Grid xs={12}>
+                    <TreeView
+                      className={classes.treeView}
+                      defaultCollapseIcon={<ExpandMoreIcon />}
+                      defaultExpanded={['root']}
+                      defaultExpandIcon={<ChevronRightIcon />}
+                    >
+                      {renderTree(spatialStructure)}
+                    </TreeView>
+                  </Grid>
+                }
+              </>
+            ))}
 
-            </>
-          }
+          </Grid>
+
         </TabPanel>
         <TabPanel value={value} index={1}>
           <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
