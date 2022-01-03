@@ -18,10 +18,12 @@ import {
   Popover,
   ListItem,
   ListItemIcon,
-  ListItemText
+  ListItemText,
+  CircularProgress
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
+import AddIcon from '@material-ui/icons/Add';
 import ClearIcon from '@material-ui/icons/Clear';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 
@@ -59,22 +61,27 @@ const useStyles = makeStyles((theme) => ({
 const Properties = ({
   viewer,
   element,
-  handleShowProperties
+  handleShowProperties,
+  addElementsNewProperties
 }) => {
   const classes = useStyles();
   const [ifcElement, setIfcElement] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (element) {
+      console.log('elements', element)
       setIfcElement(element);
     }
   }, []);
 
   const handleShowElement = async () => {
     const modelID = element.modelID;
-    const ids = [element.expressID]
-    await viewer.IFC.loader.ifcManager.hideItems(modelID, ids);
+    const ids = [element.expressID];
+    console.log('viewer', viewer)
+    const mesh = await viewer.IFC.visibility.getMesh(modelID);
+    console.log('mesh', mesh)
   }
 
   const handleClick = (event) => {
@@ -130,6 +137,21 @@ const Properties = ({
               </ListItem> */}
               <ListItem
                 button
+                onClick={() => {
+                  addElementsNewProperties({
+                    viewer,
+                    modelID: element.modelID,
+                    expressIDs: [element.expressID]
+                  });
+                }}
+              >
+                <ListItemIcon>
+                  <AddIcon />
+                </ListItemIcon>
+                <ListItemText primary="Add properties" />
+              </ListItem>
+              <ListItem
+                button
                 onClick={handleShowProperties}
               >
                 <ListItemIcon>
@@ -143,68 +165,74 @@ const Properties = ({
         title={`${element ? element.Name.value : 'Undefined'}`}
         subheader={`${element.type}`}
       />
-      <CardContent
-        className={classes.cardContent}
-      >
-        {element &&
-          <>
-            <Accordion>
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel1a-content"
-                id="panel1a-header"
-              >
-                <Typography className={classes.heading}>Attributes</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <TableContainer>
-                  <Table className={classes.table} aria-label="simple table">
-                    <TableBody>
-                      <TableRow key={0}>
-                        <TableCell>{`GlobalId`}</TableCell>
-                        <TableCell>{`${element.GlobalId.value}`}</TableCell>
-                      </TableRow>
-                      <TableRow key={1}>
-                        <TableCell>{`Name`}</TableCell>
-                        <TableCell>{`${element.Name.value}`}</TableCell>
-                      </TableRow>
-                      <TableRow key={2}>
-                        <TableCell>{`Type`}</TableCell>
-                        <TableCell>{`${element.type}`}</TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </AccordionDetails>
-            </Accordion>
-            {element.psets.length > 0 && element.psets.map(pset => (
+      {isLoading ?
+        <CircularProgress color='inherit' />
+        :
+        <CardContent
+          className={classes.cardContent}
+        >
+          {element &&
+            <>
               <Accordion>
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon />}
                   aria-controls="panel1a-content"
                   id="panel1a-header"
                 >
-                  <Typography className={classes.heading}>{`${pset.Name.value}`}</Typography>
+                  <Typography className={classes.heading}>Attributes</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                   <TableContainer>
                     <Table className={classes.table} aria-label="simple table">
                       <TableBody>
-                        {pset.HasProperties && pset.HasProperties.length > 0 && pset.HasProperties.map((property, index) => (
-                          <TableRow key={index}>
-                            <TableCell>{`${property.label}`}</TableCell>
-                            <TableCell>{`${property.value}`}</TableCell>
-                          </TableRow>
-                        ))}
+                        <TableRow key={0}>
+                          <TableCell>{`GlobalId`}</TableCell>
+                          <TableCell>{`${element.GlobalId.value}`}</TableCell>
+                        </TableRow>
+                        <TableRow key={1}>
+                          <TableCell>{`Name`}</TableCell>
+                          <TableCell>{`${element.Name.value}`}</TableCell>
+                        </TableRow>
+                        <TableRow key={2}>
+                          <TableCell>{`Type`}</TableCell>
+                          <TableCell>{`${element.type}`}</TableCell>
+                        </TableRow>
                       </TableBody>
                     </Table>
                   </TableContainer>
                 </AccordionDetails>
               </Accordion>
-            ))}
-          </>
-        }
-      </CardContent>
+              {element.psets.length > 0 && element.psets.map((pset, i) => (
+                <Accordion
+                  key={i}
+                >
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1a-content"
+                    id="panel1a-header"
+                  >
+                    <Typography className={classes.heading}>{`${pset.Name.value}`}</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <TableContainer>
+                      <Table className={classes.table} aria-label="simple table">
+                        <TableBody>
+                          {pset.HasProperties && pset.HasProperties.length > 0 && pset.HasProperties.map((property, index) => (
+                            <TableRow key={index}>
+                              <TableCell>{`${property.label}`}</TableCell>
+                              <TableCell>{`${property.value}`}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </AccordionDetails>
+                </Accordion>
+              ))}
+            </>
+          }
+        </CardContent>
+      }
     </Card>
   );
 };

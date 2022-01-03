@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
+import * as WebIFC from 'web-ifc';
+// import * as WebIFCThree from 'web-ifc-three';
 import { IfcViewerAPI } from 'web-ifc-viewer';
 import Dropzone from 'react-dropzone';
 import {
@@ -16,16 +18,48 @@ import StraightenIcon from '@material-ui/icons/Straighten';
 import AppsIcon from '@material-ui/icons/Apps';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import GrainIcon from '@material-ui/icons/Grain';
+import StorageIcon from '@material-ui/icons/Storage';
+import Models from './Components/Models/Models';
+import BcfDialog from './Components/BcfDialog/BcfDialog';
 import Marketplace from './Components/Marketplace/Marketplace';
 import SpatialStructure from './Components/SpatialStructure/SpatialStructure';
 import Properties from './Components/Properties/Properties';
 import DraggableCard from './Components/DraggableCard/DraggableCard';
-import { IFCSPACE, IFCSTAIR, IFCCOLUMN, IFCWALLSTANDARDCASE, IFCWALL, IFCSLAB, IFCOPENINGELEMENT } from 'web-ifc';
-import { exportDXF } from './Utils/dxf';
 import {
-  Color
+  IFCPROJECT,
+  IFCSPACE,
+  IFCOPENINGELEMENT,
+  IFCWALLSTANDARDCASE,
+  IFCWALL,
+  IFCSTAIR,
+  IFCCOLUMN,
+  IFCSLAB,
+  IFCROOF,
+  IFCFOOTING,
+  IFCFURNISHINGELEMENT,
+  IFCRELDEFINESBYPROPERTIES,
+  IFCPROPERTYSET,
+  IFCPROPERTYSINGLEVALUE
+} from 'web-ifc';
+// import { exportDXF, exportPDF } from './Utils/dxf';
+import Drawing from 'dxf-writer';
+import { jsPDF } from 'jspdf';
+import {
+  BoxGeometry,
+  MeshLambertMaterial,
+  Mesh,
+  Color,
+  DoubleSide,
+  MathUtils,
+  EdgesGeometry,
+  LineBasicMaterial,
+  MeshBasicMaterial
 } from 'three';
+import { TransformControls } from "three/examples/jsm/controls/TransformControls";
+import { HorizontalBlurShader } from 'three/examples/jsm/shaders/HorizontalBlurShader.js';
+import { VerticalBlurShader } from 'three/examples/jsm/shaders/VerticalBlurShader.js';
 
+import { UseIfcRenderer } from './IfcRenderer.hooks';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -68,14 +102,18 @@ const IfcRenderer = () => {
   const [viewer, setViewer] = useState(null);
   const [modelID, setModelID] = useState(-1);
   const [transformControls, setTransformControls] = useState(null);
-  const [spatialStructure, setSpatialStructure] = useState(null);
+  const [spatialStructures, setSpatialStructures] = useState([]);
   const [element, setElement] = useState(null);
+  const [showBcfDialog, setShowBcfDialog] = useState(false);
+  const [showModels, setShowModels] = useState(false);
   const [showMeasure, setShowMeasure] = useState(true);
   const [showMarketplace, setShowMarketplace] = useState(false);
   const [showSpatialStructure, setShowSpatialStructure] = useState(false);
   const [showProperties, setShowProperties] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [percentageLoading, setPercentageLoading] = useState(0);
+  const [apiWebIfc, setApiWebIfc] = useState();
+  const [eid, setEid] = useState(1);
 
 
   const [state, setState] = useState({
@@ -86,6 +124,14 @@ const IfcRenderer = () => {
     leftView: 'spatialStructure',
   });
 
+  const {
+    initIndexDB,
+    getModels,
+    addTransformControls,
+    getElementProperties,
+    addElementsNewProperties
+  } = UseIfcRenderer();
+
   useEffect(() => {
     async function init() {
       const container = document.getElementById('viewer-container');
@@ -93,6 +139,11 @@ const IfcRenderer = () => {
       // newViewer.addAxes();
       // newViewer.addGrid();
       // newViewer.IFC.setWasmPath('../../');
+
+      const ifcApi = new WebIFC.IfcAPI();
+      setApiWebIfc(ifcApi);
+
+
       newViewer.IFC.setWasmPath('../../files/');
       // newViewer.IFC.applyWebIfcConfig({
       //   COORDINATE_TO_ORIGIN: true,
@@ -101,43 +152,73 @@ const IfcRenderer = () => {
       newViewer.IFC.loader.ifcManager.useWebWorkers(true, '../../files/IFCWorker.js');
 
 
-      let dimensionsActive = false;
 
-      const handleKeyDown = (event) => {
-        if (event.code === 'KeyP') {
-          console.log('KeyZ')
-          dimensionsActive = !dimensionsActive;
-          newViewer.dimensions.active = dimensionsActive;
-          newViewer.dimensions.previewActive = dimensionsActive;
-          newViewer.IFC.unPrepickIfcItems();
-          window.onmousemove = dimensionsActive ?
-            null :
-            newViewer.IFC.prePickIfcItem;
+      const db = await initIndexDB();
+      const allModels = await getModels(db);
+      // console.log('allModels', allModels)
+      // const model = await newViewer.IFC.loadIfcUrl(allModels[0].file, false);
+
+      let dimensionsActive = false;
+      // addTransformControls(newViewer);
+
+
+      let counter = 0;
+      newViewer.shadowDropper.darkness = 1.5;
+      const handleKeyDown = async (event) => {
+        if (event.code === 'KeyF') {
+          // viewer.plans.computeAllPlanViews(0);
+          console.log('KeyF')
+          console.log('VIEWER', newViewer)
+          newViewer.plans.computeAllPlanViews(0);
         }
-        if (event.code === 'KeyL') {
-          newViewer.dimensions.create();
-        }
-        if (event.code === 'KeyG') {
-          console.log('KeyG')
-          newViewer.clipper.createPlane();
+
+        if (event.code === 'KeyR') {
+          console.log('KeyRf')
+          const planNames = Object.keys(newViewer.plans.planLists[0]);
+          if (!planNames[counter]) return;
+          const current = planNames[counter];
+          newViewer.plans.goTo(0, current, true);
+          newViewer.edges.toggle('0');
         }
         if (event.code === 'KeyT') {
-          newViewer.dimensions.deleteAll();
-          newViewer.clipper.deletePlane();
-          newViewer.IFC.unpickIfcItems();
-        }
+          // PDF export
 
-        // if (event.code === 'KeyD') {
-        //   exportDXF();
-        //   // const scene = viewer.context.getScene();
-        //   // fillSection(scene);
-        // }
+          const currentPlans = newViewer.plans.planLists[0];
+          const planNames = Object.keys(currentPlans);
+          const firstPlan = planNames[0];
+          const currentPlan = newViewer.plans.planLists[0][firstPlan];
+
+          const documentName = 'test';
+          const doc = new jsPDF('p', 'mm', [1000, 1000]);
+          newViewer.pdf.newDocument(documentName, doc, 20);
+
+          newViewer.pdf.setLineWidth(documentName, 0.2);
+          newViewer.pdf.drawNamedLayer(documentName, currentPlan, 'thick', 200, 200);
+
+          newViewer.pdf.setLineWidth(documentName, 0.1);
+          newViewer.pdf.setColor(documentName, new Color(100, 100, 100));
+
+          const ids = await newViewer.IFC.getAllItemsOfType(0, IFCWALLSTANDARDCASE, false);
+          const subset = newViewer.IFC.loader.ifcManager.createSubset({ modelID: 0, ids, removePrevious: true });
+          const edgesGeometry = new EdgesGeometry(subset.geometry);
+          const vertices = edgesGeometry.attributes.position.array;
+          newViewer.pdf.draw(documentName, vertices, 200, 200);
+
+          newViewer.pdf.drawNamedLayer(documentName, currentPlan, 'thin', 200, 200);
+
+          newViewer.pdf.exportPDF(documentName, 'test.pdf');
+        }
+        if (event.code === 'KeyC') {
+          // viewer.context.ifcCamera.toggleProjection();
+          newViewer.shadowDropper.renderShadow(0);
+        }
       };
 
       window.onkeydown = handleKeyDown;
 
       window.ondblclick = newViewer.addClippingPlane;
 
+      newViewer.shadowDropper.darkness = 1.5;
       setViewer(newViewer);
     }
     init();
@@ -155,91 +236,58 @@ const IfcRenderer = () => {
       });
 
       viewer.IFC.loader.ifcManager.parser.setupOptionalCategories({
-        [IFCSPACE]: true,
+        [IFCSPACE]: false,
         [IFCOPENINGELEMENT]: false
       });
 
       const model = await viewer.IFC.loadIfc(files[0], true, ifcOnLoadError);
       model.material.forEach(mat => mat.side = 2);
+      console.log('modelID', model.modelID);
+      setModelID(model.modelID);
 
-      const modelID = await viewer.IFC.getModelID();
-      console.log('modelID ', modelID)
-      const spatialStructure = await viewer.IFC.getSpatialStructure(0, true);
-      setSpatialStructure(spatialStructure);
-      console.log('spatialStructure', spatialStructure);
+      await createFill(model.modelID);
+      const lineMaterial = new LineBasicMaterial({ color: 0x555555 });
+      const baseMaterial = new MeshBasicMaterial({ color: 0xffffff, side: 2 });
+      viewer.edges.create(`${model.modelID}`, model.modelID, lineMaterial, baseMaterial);
+
+      await viewer.shadowDropper.renderShadow(model.modelID);
+
+      const newSpatialStructure = await viewer.IFC.getSpatialStructure(model.modelID, true);
+      console.log('newSpatialStructure', newSpatialStructure);
+      const updateSpatialStructures = [...spatialStructures, newSpatialStructure];
+      setSpatialStructures(updateSpatialStructures);
+      console.log('updateSpatialStructure', updateSpatialStructures);
       setLoading(false);
     }
   };
+
+  let fills = [];
+  async function createFill(modelID) {
+    const wallsStandard = await viewer.IFC.loader.ifcManager.getAllItemsOfType(modelID, IFCWALLSTANDARDCASE, false);
+    const walls = await viewer.IFC.loader.ifcManager.getAllItemsOfType(modelID, IFCWALL, false);
+    const stairs = await viewer.IFC.loader.ifcManager.getAllItemsOfType(modelID, IFCSTAIR, false);
+    const columns = await viewer.IFC.loader.ifcManager.getAllItemsOfType(modelID, IFCCOLUMN, false);
+    const roofs = await viewer.IFC.loader.ifcManager.getAllItemsOfType(modelID, IFCROOF, false);
+    const slabs = await viewer.IFC.loader.ifcManager.getAllItemsOfType(modelID, IFCSLAB, false);
+    const ids = [...walls, ...wallsStandard, ...columns, ...stairs, ...slabs, ...roofs];
+    const material = new MeshBasicMaterial({ color: 0x555555 });
+    material.polygonOffset = true;
+    material.polygonOffsetFactor = 10;
+    material.polygonOffsetUnits = 1;
+    fills.push(viewer.filler.create(`${modelID}`, modelID, ids, material));
+  }
+
 
   const ifcOnLoadError = async (err) => {
     alert(err.toString());
   };
 
-  const select = (modelID, expressID, pick = true) => {
-    if (pick) viewer.IFC.pickIfcItemsByID(modelID, expressID);
-    setModelID(modelID);
-  }
-
   const handleClick = async () => {
-    const found = await viewer.IFC.pickIfcItem(true, 1);
-
-    if (found == null || found == undefined) return;
-
-    select(found.modelID, found.id, false);
-    const props = await viewer.IFC.getProperties(found.modelID, found.id, false);
-    console.log(props);
-    const type = await viewer.IFC.loader.ifcManager.getIfcType(found.modelID, found.id);
-    console.log(type);
-    const itemProperties = await viewer.IFC.loader.ifcManager.getItemProperties(found.modelID, found.id);
-    console.log(itemProperties);
-    const propertySets = await viewer.IFC.loader.ifcManager.getPropertySets(found.modelID, found.id);
-    console.log(propertySets);
-    if (propertySets.length > 0) {
-      const psets = await Promise.all(propertySets.map(async (pset) => {
-        if (pset.HasProperties && pset.HasProperties.length > 0) {
-          const newPset = await Promise.all(pset.HasProperties.map(async (property) => {
-            const prop = await viewer.IFC.loader.ifcManager.getItemProperties(found.modelID, property.value);
-            const label = prop.Name.value;
-            const value = prop.NominalValue ? prop.NominalValue.value : null;
-            return {
-              label,
-              value
-            }
-          }));
-
-          return {
-            ...pset,
-            HasProperties: [...newPset]
-          }
-        }
-        if (pset.Quantities && pset.Quantities.length > 0) {
-          const newPset = await Promise.all(pset.Quantities.map(async (property) => {
-            const prop = await viewer.IFC.loader.ifcManager.getItemProperties(found.modelID, property.value);
-            const label = prop.Name.value;
-            const value = prop.NominalValue ? prop.NominalValue.value : null;
-            return {
-              label,
-              value
-            }
-          }));
-
-          return {
-            ...pset,
-            HasProperties: [...newPset]
-          }
-        }
-      }));
-      const elem = {
-        ...itemProperties,
-        type: type ? type : 'NO TYPE',
-        modelID: found.modelID,
-        psets
-      };
-
-      if (elem) {
-        setElement(elem);
-      }
-    }
+    await getElementProperties({
+      viewer,
+      setModelID,
+      setElement
+    })
   }
 
   const handleClickOpen = () => {
@@ -250,6 +298,10 @@ const IfcRenderer = () => {
     viewer.clipper.active = !viewer.clipper.active;
   };
 
+
+  const handleShowModels = () => {
+    setShowModels(!showModels);
+  };
 
   const handleMeasure = () => {
     setShowMeasure(!showMeasure);
@@ -297,18 +349,71 @@ const IfcRenderer = () => {
     setShowProperties(!showProperties);
   };
 
-  const handleDownloadIfc = () => {
-    window.location.href = 'https://aryatowers.s3.eu-west-3.amazonaws.com/Pylone+trellis.ifc';
+  const handleDownloadIfc = async () => {
+    const modelId = modelID ? modelID : 0;
+
+    // EXPORT FICHIER IFC
+    const ifcData = await viewer.IFC.loader.ifcManager.state.api.ExportFileAsIFC(modelId);
+    let ifcDataString = new TextDecoder().decode(ifcData);
+    // console.log('IFC STRING', ifcDataString);
+    let newIfcDataString = ifcDataString.replace("FILE_NAME('no name', '', (''), (''), 'web-ifc-export');", "FILE_NAME('0001','2011-09-07T12:40:02',(''),(''),'Autodesk Revit MEP 2011 - 1.0','20100326_1700 (Solibri IFC Optimizer)','');");
+    // console.log('IFC STRING', newIfcDataString);
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(newIfcDataString));
+    element.setAttribute('download', "export.ifc");
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
   }
+
+
+  const handleShowBcfDialog = () => {
+    setShowBcfDialog(!showBcfDialog);
+    // setState({
+    //   ...state,
+    //   bcfDialogOpen: true
+    // });
+  };
+
+  const handleCloseBcfDialog = () => {
+    setShowBcfDialog(false);
+    // setState({
+    //   ...state,
+    //   bcfDialogOpen: false
+    // });
+  };
+
+  const handleOpenViewpoint = (viewpoint) => {
+    viewer.currentViewpoint = viewpoint;
+  };
 
   return (
     <>
       <Grid container>
-        {(spatialStructure && showSpatialStructure) &&
+        {(showModels) &&
+          <DraggableCard>
+            <Models />
+          </DraggableCard>
+
+        }
+        {showBcfDialog &&
+          <DraggableCard>
+            <BcfDialog
+              open={showBcfDialog}
+              onClose={handleCloseBcfDialog}
+              onOpenViewpoint={handleOpenViewpoint}
+            />
+          </DraggableCard>
+        }
+        {(spatialStructures && spatialStructures.length > 0 && showSpatialStructure) &&
           <DraggableCard>
             <SpatialStructure
               viewer={viewer}
-              spatialStructure={spatialStructure}
+              spatialStructures={spatialStructures}
               handleShowSpatialStructure={handleShowSpatialStructure}
             />
           </DraggableCard>
@@ -319,8 +424,8 @@ const IfcRenderer = () => {
             <Properties
               viewer={viewer}
               element={element}
-              transformControls={transformControls}
               handleShowProperties={handleShowProperties}
+              addElementsNewProperties={addElementsNewProperties}
             />
           </DraggableCard>
         }
@@ -341,8 +446,25 @@ const IfcRenderer = () => {
             >
               <FolderOpenOutlinedIcon />
             </Fab >
-
           </Grid >
+          <Grid item xs={12}>
+            <Fab
+              size="small"
+              className={classes.fab}
+              onClick={handleShowModels}
+            >
+              <StorageIcon />
+            </Fab >
+          </Grid >
+          <Grid item xs={12}>
+            <Fab
+              size="small"
+              className={classes.fab}
+              onClick={handleShowBcfDialog}
+            >
+              BCF
+            </Fab>
+          </Grid>
           <Grid item xs={12}>
             <Fab
               size="small"

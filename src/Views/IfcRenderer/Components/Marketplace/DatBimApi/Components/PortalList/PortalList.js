@@ -10,15 +10,15 @@ const PortalList = ({ classes, openObjects, setSelectedPortal, handleNext, setAc
   const [portals, setPortals] = useState([]);
 
   useEffect(() => {
-    // axios.get(`${process.env.REACT_APP_API_URL}/api/portals`, {
-    //   headers: {
-    //     'X-Auth-Token': sessionStorage.getItem('token')
-    //   }
-    // }).then(({ data }) => {
-    //   setPortals(data.portals)
-    // }).catch(() => {
-    //   setActiveStep(0)
-    // });
+    axios.get(`${process.env.REACT_APP_API_URL}/api/portals`, {
+      headers: {
+        'X-Auth-Token': sessionStorage.getItem('token')
+      }
+    }).then(({ data }) => {
+      setPortals(data.portals)
+    }).catch(() => {
+      setActiveStep(0)
+    });
   }, [])
 
   return (
