@@ -17,8 +17,6 @@ import {
   Avatar,
   ListItemText
 } from '@material-ui/core';
-import Icon from './BimViewer.svg';
-import Logo from './Logo.png';
 
 const Menu = {
   MenuNavBar: [
@@ -32,6 +30,12 @@ const Menu = {
     { text: "GitHub", link: "", href: "https://github.com/tridyme/sdk-structure-app", icon: "code" }
   ]
 };
+
+const {
+  REACT_APP_LOGO,
+  REACT_APP_COMPANY
+} = process.env;
+
 
 const App = () => {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
@@ -61,20 +65,34 @@ const App = () => {
   return (
     <ThemeProvider theme={theme}>
       <Helmet>
-        <title>{`TriDyme | Applications`}</title>
-        <link rel="icon" type="image/png" href={Logo} sizes="16x16" />
+        <title>{`${REACT_APP_COMPANY} | Applications`}</title>
+        <link rel="icon" type="image/png" href={`${REACT_APP_LOGO}`} sizes="16x16" />
       </Helmet>
       <Router history={history}>
         <AppContainerElem
-          title={<ListItem>
-            <ListItemAvatar>
-              <Avatar
-                alt={`BIM Viewer`}
-                src={Icon}
-              />
-            </ListItemAvatar>
-            <ListItemText primary={`BIM Viewer`} />
-          </ListItem>}
+          title={
+            <>
+              {REACT_APP_COMPANY === 'VBMC' ?
+                <>
+                  <img
+                    alt={`${REACT_APP_COMPANY}`}
+                    src={`${REACT_APP_LOGO}`}
+                    style={{ height: '2em', width: 'auto' }}
+                  />
+                </>
+                :
+                <ListItem>
+                  <ListItemAvatar>
+                    <Avatar
+                      alt={`${REACT_APP_COMPANY}`}
+                      src={`${REACT_APP_LOGO}`}
+                    />
+                  </ListItemAvatar>
+                  <ListItemText primary={`BIM Viewer`} />
+                </ListItem>
+              }
+            </>
+          }
           menu={Menu}
         >
           <Switch>
