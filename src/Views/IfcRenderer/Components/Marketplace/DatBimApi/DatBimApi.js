@@ -191,14 +191,36 @@ const DatBimApi = ({
     //   //   }
     //   // }
     // )
-    // axios({
+    axios({
+      method: 'post',
+      url: `${process.env.REACT_APP_API_DATBIM}/auth-token`,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
+      data: {
+        entry_mode: "string",
+        ip: "string",
+        lang: "fr",
+        local_at: "string",
+        login: 'guillaume.cassin@triazur.com',//`${data.get('email')}`,
+        password: 'Triazur2021',//`${data.get('password')}`,
+        service: "string"
+      }
+    }).then((r) => {
+      console.log('TOKEN', r.data)
+      sessionStorage.setItem('token', r.data.token);
+      handleNext()
+    }).catch(() => {
+      setActiveStep(0)
+    });
+    // const res = await fetch(`${process.env.REACT_APP_API_DATBIM}/auth-token`, {
     //   method: 'post',
-    //   url: `${process.env.REACT_APP_API_DATBIM}/auth-token`,
     //   headers: {
     //     "Content-Type": "application/json",
     //     "Access-Control-Allow-Origin": "*",
     //   },
-    //   data: {
+    //   body: JSON.stringify({
     //     entry_mode: "string",
     //     ip: "string",
     //     lang: "fr",
@@ -206,32 +228,10 @@ const DatBimApi = ({
     //     login: `${data.get('email')}`,
     //     password: `${data.get('password')}`,
     //     service: "string"
-    //   }
-    // }).then((r) => {
-    //   console.log('TOKEN', r.data)
-    //   sessionStorage.setItem('token', r.data.token);
-    //   handleNext()
-    // }).catch(() => {
-    //   setActiveStep(0)
-    // });
-    const res = await fetch(`${process.env.REACT_APP_API_DATBIM}/auth-token`, {
-      method: 'post',
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: JSON.stringify({
-        entry_mode: "string",
-        ip: "string",
-        lang: "fr",
-        local_at: "string",
-        login: `${data.get('email')}`,
-        password: `${data.get('password')}`,
-        service: "string"
-      })
-    })
+    //   })
+    // })
 
-    console.log('data', res.json())
+    // console.log('data', res.json())
 
 
     // , {
