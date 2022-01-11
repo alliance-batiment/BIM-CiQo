@@ -204,7 +204,7 @@ const DatBimApi = ({
         lang: "fr",
         local_at: "string",
         login: 'guillaume.cassin@triazur.com',//`${data.get('email')}`,
-        password: 'Triazur2021',//`${data.get('password')}`,
+        password: 'Triazur2022',//`${data.get('password')}`,
         service: "string"
       }
     }).then((r) => {
