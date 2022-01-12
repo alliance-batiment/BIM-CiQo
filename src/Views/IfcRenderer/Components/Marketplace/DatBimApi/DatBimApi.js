@@ -174,23 +174,6 @@ const DatBimApi = ({
     const data = new FormData(e.target);
     localStorage.setItem('email', data.get('email'));
 
-    // axios.post(`${process.env.REACT_APP_API_DATBIM}/auth-token`,
-    //   {
-    //     entry_mode: "string",
-    //     ip: "string",
-    //     lang: "fr",
-    //     local_at: "string",
-    //     login: `${data.get('email')}`,
-    //     password: `${data.get('password')}`,
-    //     service: "string"
-    //   }
-    //   // , {
-    //   //   headers: {
-    //   //     "Content-Type": "application/json",
-    //   //     "Access-Control-Allow-Origin": "*",
-    //   //   }
-    //   // }
-    // )
     axios({
       method: 'post',
       url: `${process.env.REACT_APP_API_DATBIM}/auth-token`,
@@ -214,43 +197,6 @@ const DatBimApi = ({
     }).catch(() => {
       setActiveStep(0)
     });
-    // const res = await fetch(`${process.env.REACT_APP_API_DATBIM}/auth-token`, {
-    //   method: 'post',
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     "Access-Control-Allow-Origin": "*",
-    //   },
-    //   body: JSON.stringify({
-    //     entry_mode: "string",
-    //     ip: "string",
-    //     lang: "fr",
-    //     local_at: "string",
-    //     login: `${data.get('email')}`,
-    //     password: `${data.get('password')}`,
-    //     service: "string"
-    //   })
-    // })
-
-    // console.log('data', res.json())
-
-
-    // , {
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     "Access-Control-Allow-Origin": "*",
-    //   }
-    // }
-
-
-
-
-    // axios.post(`${process.env.REACT_APP_API_URL}/api/datbim/connection`, { email: data.get('email'), password: data.get('password') })
-    //   .then((r) => {
-    //     sessionStorage.setItem('token', r.data.token);
-    //     handleNext()
-    //   }).catch(() => {
-    //     setActiveStep(0)
-    //   });
   }
 
   const handleNext = () => {
