@@ -54,6 +54,7 @@
     "build": "CI=false && react-scripts build",
     "build:vbmc": "CI=false && env-cmd ./.env.production.vbmc react-scripts build",
     "test": "react-scripts test",
+    "coverage": "npm test -- --coverage",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
