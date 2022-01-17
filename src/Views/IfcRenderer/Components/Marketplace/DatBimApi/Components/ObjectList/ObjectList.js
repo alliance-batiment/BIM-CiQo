@@ -19,14 +19,14 @@ const ObjectList = ({ classes, openProperties, handleNext, typeProperties, selec
 	useEffect(() => {
 		setObjectsLoader(true);
 		async function getObjectsOfSelectedObject() {
-			const classes = await axios.get(`${process.env.REACT_APP_API_URL}/api/classes/mapping/${typeProperties}`, {
+			const classes = await axios.get(`${process.env.REACT_APP_API_DATBIM}/api/classes/mapping/${typeProperties}`, {
 				headers: {
 					'X-Auth-Token': sessionStorage.getItem('token')
 				}
 			})
 
 			Promise.all(classes.data.properties.map(async (classProperty) => {
-				return await axios.get(`${process.env.REACT_APP_API_URL}/api/portals/${selectedPortal}/objects/${classProperty.class_reference_id}`, {
+				return await axios.get(`${process.env.REACT_APP_API_DATBIM}/api/portals/${selectedPortal}/objects/${classProperty.class_reference_id}`, {
 					headers: {
 						'X-Auth-Token': sessionStorage.getItem('token')
 					}
@@ -48,14 +48,14 @@ const ObjectList = ({ classes, openProperties, handleNext, typeProperties, selec
 	}, [])
 
 	async function getObjects(typeProperties, selectedPage) {
-		const classes = await axios.get(`${process.env.REACT_APP_API_URL}/api/classes/mapping/${typeProperties}`, {
+		const classes = await axios.get(`${process.env.REACT_APP_API_DATBIM}/api/classes/mapping/${typeProperties}`, {
 			headers: {
 				'X-Auth-Token': sessionStorage.getItem('token')
 			}
 		})
 
 		Promise.all(classes.data.properties.map(async (classProperty) => {
-			return await axios.get(`${process.env.REACT_APP_API_URL}/api/portals/${selectedPortal}/objects/${classProperty.class_reference_id}`, {
+			return await axios.get(`${process.env.REACT_APP_API_DATBIM}/api/portals/${selectedPortal}/objects/${classProperty.class_reference_id}`, {
 				headers: {
 					'X-Auth-Token': sessionStorage.getItem('token')
 				}
@@ -98,7 +98,7 @@ const ObjectList = ({ classes, openProperties, handleNext, typeProperties, selec
 		try {
 			const objectsList = await axios({
 				method: 'get',
-				url: `${process.env.REACT_APP_API_URL}/api/datbim/portals/${selectedPortal}/objects`,
+				url: `${process.env.REACT_APP_API_DATBIM}/api/datbim/portals/${selectedPortal}/objects`,
 				params: { search: `${searchInput}` },
 				headers: {
 					'X-Auth-Token': sessionStorage.getItem('token')
