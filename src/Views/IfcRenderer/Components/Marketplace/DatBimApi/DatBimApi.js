@@ -141,7 +141,8 @@ const QontoConnector = withStyles({
 const DatBimApi = ({
   openProperties,
   projectId,
-  objSelected
+  objSelected,
+  addElementsNewProperties
 }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [selectedPortal, setSelectedPortal] = useState(null);
@@ -186,8 +187,8 @@ const DatBimApi = ({
         ip: "string",
         lang: "fr",
         local_at: "string",
-        login: 'guillaume.cassin@triazur.com',//`${data.get('email')}`,
-        password: 'Triazur2022',//`${data.get('password')}`,
+        login: `${data.get('email')}`,
+        password: `${data.get('password')}`,
         service: "string"
       }
     }).then((r) => {
@@ -228,10 +229,11 @@ const DatBimApi = ({
       case 2:
         return <ObjectList
           classes={classes}
-          openProperties={openProperties}
+          setSelectedObject={setSelectedObject}
           handleNext={handleNext}
           selectedPortal={selectedPortal}
-          typeProperties={window.objProperties.type}
+          // typeProperties={window.objProperties.type}
+          typeProperties={'IfcWall'}
         />
       case 3:
         return <PropertyList
@@ -240,6 +242,7 @@ const DatBimApi = ({
           // setLoader={setLoader}
           objSelected={objSelected}
           selectedObject={selectedObject}
+          addElementsNewProperties={addElementsNewProperties}
         />
       default:
         return 'Unknown step';

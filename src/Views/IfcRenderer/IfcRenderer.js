@@ -164,57 +164,61 @@ const IfcRenderer = () => {
 
       let counter = 0;
       newViewer.shadowDropper.darkness = 1.5;
-      // const handleKeyDown = async (event) => {
-      //   if (event.code === 'KeyF') {
-      //     // viewer.plans.computeAllPlanViews(0);
-      //     console.log('KeyF')
-      //     console.log('VIEWER', newViewer)
-      //     newViewer.plans.computeAllPlanViews(0);
-      //   }
+      const handleKeyDown = async (event) => {
+        if (event.code === 'KeyF') {
+          // viewer.plans.computeAllPlanViews(0);
+          console.log('KeyF')
+          console.log('VIEWER', newViewer)
+          newViewer.plans.computeAllPlanViews(0);
+        }
 
-      //   if (event.code === 'KeyR') {
-      //     console.log('KeyRf')
-      //     const planNames = Object.keys(newViewer.plans.planLists[0]);
-      //     if (!planNames[counter]) return;
-      //     const current = planNames[counter];
-      //     newViewer.plans.goTo(0, current, true);
-      //     newViewer.edges.toggle('0');
-      //   }
-      //   if (event.code === 'KeyT') {
-      //     // PDF export
+        if (event.code === 'KeyR') {
+          console.log('KeyRf')
+          const planNames = Object.keys(newViewer.plans.planLists[0]);
+          if (!planNames[counter]) return;
+          const current = planNames[counter];
+          newViewer.plans.goTo(0, current, true);
+          newViewer.edges.toggle('0');
+        }
+        if (event.code === 'KeyT') {
+          // PDF export
 
-      //     const currentPlans = newViewer.plans.planLists[0];
-      //     const planNames = Object.keys(currentPlans);
-      //     const firstPlan = planNames[0];
-      //     const currentPlan = newViewer.plans.planLists[0][firstPlan];
+          const currentPlans = newViewer.plans.planLists[0];
+          const planNames = Object.keys(currentPlans);
+          const firstPlan = planNames[0];
+          const currentPlan = newViewer.plans.planLists[0][firstPlan];
 
-      //     const documentName = 'test';
-      //     const doc = new jsPDF('p', 'mm', [1000, 1000]);
-      //     newViewer.pdf.newDocument(documentName, doc, 20);
+          const documentName = 'test';
+          const doc = new jsPDF('p', 'mm', [1000, 1000]);
+          newViewer.pdf.newDocument(documentName, doc, 20);
 
-      //     newViewer.pdf.setLineWidth(documentName, 0.2);
-      //     newViewer.pdf.drawNamedLayer(documentName, currentPlan, 'thick', 200, 200);
+          newViewer.pdf.setLineWidth(documentName, 0.2);
+          newViewer.pdf.drawNamedLayer(documentName, currentPlan, 'thick', 200, 200);
 
-      //     newViewer.pdf.setLineWidth(documentName, 0.1);
-      //     newViewer.pdf.setColor(documentName, new Color(100, 100, 100));
+          newViewer.pdf.setLineWidth(documentName, 0.1);
+          newViewer.pdf.setColor(documentName, new Color(100, 100, 100));
 
-      //     const ids = await newViewer.IFC.getAllItemsOfType(0, IFCWALLSTANDARDCASE, false);
-      //     const subset = newViewer.IFC.loader.ifcManager.createSubset({ modelID: 0, ids, removePrevious: true });
-      //     const edgesGeometry = new EdgesGeometry(subset.geometry);
-      //     const vertices = edgesGeometry.attributes.position.array;
-      //     newViewer.pdf.draw(documentName, vertices, 200, 200);
+          const ids = await newViewer.IFC.getAllItemsOfType(0, IFCWALLSTANDARDCASE, false);
+          const subset = newViewer.IFC.loader.ifcManager.createSubset({ modelID: 0, ids, removePrevious: true });
+          const edgesGeometry = new EdgesGeometry(subset.geometry);
+          const vertices = edgesGeometry.attributes.position.array;
+          newViewer.pdf.draw(documentName, vertices, 200, 200);
 
-      //     newViewer.pdf.drawNamedLayer(documentName, currentPlan, 'thin', 200, 200);
+          newViewer.pdf.drawNamedLayer(documentName, currentPlan, 'thin', 200, 200);
 
-      //     newViewer.pdf.exportPDF(documentName, 'test.pdf');
-      //   }
-      //   if (event.code === 'KeyC') {
-      //     // viewer.context.ifcCamera.toggleProjection();
-      //     newViewer.shadowDropper.renderShadow(0);
-      //   }
-      // };
+          newViewer.pdf.exportPDF(documentName, 'test.pdf');
+        }
+        if (event.code === 'KeyC') {
+          // viewer.context.ifcCamera.toggleProjection();
+          newViewer.shadowDropper.renderShadow(0);
+        }
+        if (event.code === 'KeyE') {
+          newViewer.plans.exitPlanView(true);
+          newViewer.edges.toggle('0');
+        }
+      };
 
-      // window.onkeydown = handleKeyDown;
+      window.onkeydown = handleKeyDown;
 
       window.ondblclick = newViewer.addClippingPlane;
 

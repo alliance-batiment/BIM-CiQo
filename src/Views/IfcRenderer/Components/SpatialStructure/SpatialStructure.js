@@ -66,11 +66,16 @@ const useStyles = makeStyles((theme) => ({
   },
   treeViewLabel: {
     left: '3em',
-    position: 'absolute'
+    position: 'absolute',
+    textOverflow: "ellipsis",
+    overflow: "hidden",
+    wordWrap: "break-word",
+    warp: true,
+    width: '5em'
   },
   treeViewCheckbox: {
     margin: 0,
-    padding: 0
+    padding: 0,
   },
   treeView: {
     // height: 240,
@@ -215,9 +220,11 @@ const SpatialStructure = ({
             />
           </Grid>
           <Grid item xs={10}>
-            <Typography mt={1.2} className={classes.treeViewLabel}>
+            {/* <div style={{ overflow: "hidden", textOverflow: "ellipsis", width: '5em' }}> */}
+            <Typography nowrap mt={1.2} className={classes.treeViewLabel}>
               {`${nodes.type} ${nodes.Name ? nodes.Name.value : ""}`}
             </Typography>
+            {/* </div> */}
           </Grid>
         </Grid>
         // <FormControlLabel

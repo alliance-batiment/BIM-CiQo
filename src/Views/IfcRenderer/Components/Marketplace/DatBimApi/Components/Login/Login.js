@@ -22,7 +22,7 @@ const Login = ({ classes, handleSubmit }) => {
           <FormControl fullWidth className={classes.margin}>
             <TextField id="filled-basic" label="Email" name="email" variant="filled" value={email} onChange={handleChange} />
             <TextField type="password" id="outlined-basic" label="Password" name="password" variant="filled" />
-            <Button type="submit" className={classes.button}>Connection</Button>
+            <Button type="submit" className={classes.button}>Connexion</Button>
             <a href="https://www.datbim.com/template/espace-client" target="_blank">Créer un compte</a>
             <a href="https://www.datbim.com/inscription/oublie-mdp" target="_blank">Mot de passe oublié?</a>
           </FormControl>
