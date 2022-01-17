@@ -120,7 +120,10 @@ function UseIfcRenderer() {
   }) => {
     const found = await viewer.IFC.pickIfcItem(true, 1);
 
-    if (found == null || found == undefined) return;
+    if (found == null || found == undefined) {
+      await viewer.IFC.unpickIfcItems();
+      return
+    };
     console.log('found', found)
     setModelID(found.modelID);
     select(viewer, setModelID, found.modelID, found.id, false);
