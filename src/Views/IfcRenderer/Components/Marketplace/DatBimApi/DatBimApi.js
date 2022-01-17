@@ -141,7 +141,8 @@ const QontoConnector = withStyles({
 const DatBimApi = ({
   openProperties,
   projectId,
-  objSelected
+  objSelected,
+  addElementsNewProperties
 }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [selectedPortal, setSelectedPortal] = useState(null);
@@ -174,53 +175,14 @@ const DatBimApi = ({
     const data = new FormData(e.target);
     localStorage.setItem('email', data.get('email'));
 
-    // axios.post(`${process.env.REACT_APP_API_DATBIM}/auth-token`,
-    //   {
-    //     entry_mode: "string",
-    //     ip: "string",
-    //     lang: "fr",
-    //     local_at: "string",
-    //     login: `${data.get('email')}`,
-    //     password: `${data.get('password')}`,
-    //     service: "string"
-    //   }
-    //   // , {
-    //   //   headers: {
-    //   //     "Content-Type": "application/json",
-    //   //     "Access-Control-Allow-Origin": "*",
-    //   //   }
-    //   // }
-    // )
-    // axios({
-    //   method: 'post',
-    //   url: `${process.env.REACT_APP_API_DATBIM}/auth-token`,
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     "Access-Control-Allow-Origin": "*",
-    //   },
-    //   data: {
-    //     entry_mode: "string",
-    //     ip: "string",
-    //     lang: "fr",
-    //     local_at: "string",
-    //     login: `${data.get('email')}`,
-    //     password: `${data.get('password')}`,
-    //     service: "string"
-    //   }
-    // }).then((r) => {
-    //   console.log('TOKEN', r.data)
-    //   sessionStorage.setItem('token', r.data.token);
-    //   handleNext()
-    // }).catch(() => {
-    //   setActiveStep(0)
-    // });
-    const res = await fetch(`${process.env.REACT_APP_API_DATBIM}/auth-token`, {
+    axios({
       method: 'post',
+      url: `${process.env.REACT_APP_API_DATBIM}/auth-token`,
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
       },
-      body: JSON.stringify({
+      data: {
         entry_mode: "string",
         ip: "string",
         lang: "fr",
@@ -228,29 +190,14 @@ const DatBimApi = ({
         login: `${data.get('email')}`,
         password: `${data.get('password')}`,
         service: "string"
-      })
-    })
-
-    console.log('data', res.json())
-
-
-    // , {
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     "Access-Control-Allow-Origin": "*",
-    //   }
-    // }
-
-
-
-
-    // axios.post(`${process.env.REACT_APP_API_URL}/api/datbim/connection`, { email: data.get('email'), password: data.get('password') })
-    //   .then((r) => {
-    //     sessionStorage.setItem('token', r.data.token);
-    //     handleNext()
-    //   }).catch(() => {
-    //     setActiveStep(0)
-    //   });
+      }
+    }).then((r) => {
+      console.log('TOKEN', r.data)
+      sessionStorage.setItem('token', r.data.token);
+      handleNext()
+    }).catch(() => {
+      setActiveStep(0)
+    });
   }
 
   const handleNext = () => {
@@ -282,10 +229,11 @@ const DatBimApi = ({
       case 2:
         return <ObjectList
           classes={classes}
-          openProperties={openProperties}
+          setSelectedObject={setSelectedObject}
           handleNext={handleNext}
           selectedPortal={selectedPortal}
-          typeProperties={window.objProperties.type}
+          // typeProperties={window.objProperties.type}
+          typeProperties={'IfcWall'}
         />
       case 3:
         return <PropertyList
@@ -294,6 +242,7 @@ const DatBimApi = ({
           // setLoader={setLoader}
           objSelected={objSelected}
           selectedObject={selectedObject}
+          addElementsNewProperties={addElementsNewProperties}
         />
       default:
         return 'Unknown step';

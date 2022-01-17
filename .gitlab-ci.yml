@@ -1,0 +1,28 @@
+image: node:14.16.1
+
+stages:
+  - build
+  - test
+
+cache:
+  paths:
+    - node_modules/
+
+install_dependencies:
+  stage: build
+  script: npm install
+
+test:test:
+  stage: test
+  script:
+    - npm run test
+
+# test:lint:
+#   stage: test
+#   script:
+#     - npm run lint
+
+test:coverage:
+  stage: test
+  script:
+    - npm run coverage

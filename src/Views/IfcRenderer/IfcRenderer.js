@@ -212,6 +212,10 @@ const IfcRenderer = () => {
           // viewer.context.ifcCamera.toggleProjection();
           newViewer.shadowDropper.renderShadow(0);
         }
+        if (event.code === 'KeyE') {
+          newViewer.plans.exitPlanView(true);
+          newViewer.edges.toggle('0');
+        }
       };
 
       window.onkeydown = handleKeyDown;
@@ -430,7 +434,11 @@ const IfcRenderer = () => {
           </DraggableCard>
         }
         {(showMarketplace) &&
-          <DraggableCard>
+          <DraggableCard
+            disableDragging={true}
+            width={600}
+            height={600}
+          >
             <Marketplace
               viewer={viewer}
               handleShowMarketplace={handleShowMarketplace}

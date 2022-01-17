@@ -14,11 +14,14 @@ const style = {
 };
 
 const DraggableCard = ({
-  children
+  children,
+  disableDragging,
+  width,
+  height
 }) => {
   const [state, setState] = useState({
-    width: 400,
-    height: 400,
+    width: width ? width : 400,
+    height: height ? height : 400,
     x: 50,
     y: 10
   });
@@ -38,6 +41,7 @@ const DraggableCard = ({
           ...position
         });
       }}
+      disableDragging={disableDragging}
     >
       {children}
     </Rnd>

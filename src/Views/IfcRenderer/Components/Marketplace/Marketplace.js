@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   Typography,
+  Grid,
   makeStyles,
   Accordion,
   AccordionSummary,
@@ -12,6 +13,7 @@ import {
   TableRow,
   Card,
   CardHeader,
+  CardActionArea,
   CardContent,
   Avatar,
   IconButton,
@@ -57,11 +59,38 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
+const applications = [
+  {
+    name: 'datBIM',
+    type: 'data',
+    description: 'description'
+  },
+  {
+    name: 'dropbox',
+    type: 'storage',
+    description: 'description'
+  },
+  {
+    name: 'TriStructure',
+    type: 'structural analysis',
+    description: 'description'
+  }, {
+    name: 'Google Drive',
+    type: 'storage',
+    description: 'description'
+  }, {
+    name: 'AxeoBIM',
+    type: 'storage',
+    description: 'description'
+  }
+]
+
 const Marketplace = ({
   viewer,
   handleShowMarketplace
 }) => {
   const classes = useStyles();
+  const [selectedApp, setSelectedApp] = useState('home');
   const [anchorEl, setAnchorEl] = useState(null);
 
   useEffect(() => {
@@ -145,7 +174,39 @@ const Marketplace = ({
       <CardContent
         className={classes.cardContent}
       >
-        <DatBimApi />
+        {selectedApp === 'home' &&
+          <Grid container spacing={3}>
+            {applications.map(application => (
+              <Grid item xs={4}>
+                <Card>
+                  <CardActionArea
+                    onClick={() => {
+                      if (application.name === 'dropbox') {
+                        viewer.openDropboxWindow();
+                      } else {
+                        setSelectedApp(application.name);
+                      }
+                    }}
+                  >
+                    <CardHeader
+                      title={application.name}
+                      subheader={application.type}
+                    />
+                    <CardContent>
+                      <Typography variant="body2" color="textSecondary" component="p">
+                        {application.description}
+                      </Typography>
+                    </CardContent>
+                  </CardActionArea>
+                </Card>
+              </Grid>
+
+            ))}
+          </Grid>
+        }
+        {selectedApp === 'datBIM' &&
+          <DatBimApi />
+        }
       </CardContent>
     </Card>
   );
