@@ -43,7 +43,7 @@
     "three-mesh-bvh": "^0.5.2",
     "web-ifc": "^0.0.30",
     "web-ifc-three": "^0.0.97",
-    "web-ifc-viewer": "^1.0.119"
+    "web-ifc-viewer": "^1.0.128"
   },
   "devDependencies": {
     "@testing-library/dom": "^8.11.1",

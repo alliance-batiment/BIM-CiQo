@@ -20,13 +20,22 @@ import {
   Popover,
   ListItem,
   ListItemIcon,
-  ListItemText
+  ListItemText,
+  Badge,
+  Fab
 } from '@material-ui/core';
+import AppsIcon from '@material-ui/icons/Apps';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import ClearIcon from '@material-ui/icons/Clear';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import DatBimApi from './DatBimApi/DatBimApi';
+import OpenDthxLogo from './img/OpenDthxLogo.png';
+import DropBoxLogo from './img/DropBoxLogo.png';
+import GoogleDriveLogo from './img/GoogleDriveLogo.png';
+import BsDDLogo from './img/bsDDLogo.png';
+import AxeoBimLogo from './img/AxeoBimLogo.jpeg';
+import TriStructureLogo from './img/TriStructureLogo.png';
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -56,38 +65,78 @@ const useStyles = makeStyles((theme) => ({
       outline: '0px solid slategrey'
     }
   },
+  application: {
+    height: '17em'
+  },
+  avatar: {
+    backgroundColor: 'transparent',
+    width: theme.spacing(7),
+    height: theme.spacing(7),
+    padding: '5px',
+    borderRadius: '0px'
+  },
+  root: {
+    maxWidth: 345,
+    margin: '10px',
+    cursor: 'pointer',
+  },
+  media: {
+    height: 0,
+    paddingTop: '56.25%', // 16:9
+  },
+  fab: {
+    backgroundColor: 'white'
+  }
 }));
 
 
 const applications = [
   {
     name: 'datBIM',
+    img: OpenDthxLogo,
     type: 'data',
-    description: 'description'
+    description: "Base de données permettant l'enrichissement de la maquette"
   },
   {
-    name: 'dropbox',
+    name: 'Dropbox',
+    img: DropBoxLogo,
     type: 'storage',
-    description: 'description'
+    description: 'Espace permettant le partage et le stockage de fichier'
   },
   {
     name: 'TriStructure',
+    img: TriStructureLogo,
     type: 'structural analysis',
-    description: 'description'
+    tags: ['Coming Soon'],
+    description: "Application permettant la génération d'un modèle analytique pour du calcul de structure"
   }, {
     name: 'Google Drive',
+    img: GoogleDriveLogo,
     type: 'storage',
-    description: 'description'
+    tags: ['Coming Soon'],
+    description: 'Espace permettant le partage et le stockage de fichier'
   }, {
     name: 'AxeoBIM',
+    img: AxeoBimLogo,
     type: 'storage',
-    description: 'description'
+    tags: ['Coming Soon'],
+    description: 'Espace permettant le partage et le stockage de fichier'
+  }, {
+    name: 'bsDD',
+    img: BsDDLogo,
+    type: 'data',
+    tags: ['Coming Soon'],
+    description: 'Espace permettant le partage et le stockage de fichier'
   }
 ]
 
 const Marketplace = ({
   viewer,
-  handleShowMarketplace
+  modelID,
+  handleShowMarketplace,
+  eids,
+  setEids,
+  addElementsNewProperties
 }) => {
   const classes = useStyles();
   const [selectedApp, setSelectedApp] = useState('home');
@@ -121,7 +170,13 @@ const Marketplace = ({
       <CardHeader
         avatar={
           <Avatar aria-label="recipe" className={classes.avatar}>
-            M
+            <Fab
+              size="small"
+              className={classes.fab}
+              onClick={handleShowMarketplace}
+            >
+              <AppsIcon />
+            </Fab>
           </Avatar>
         }
         action={
@@ -178,10 +233,12 @@ const Marketplace = ({
           <Grid container spacing={3}>
             {applications.map(application => (
               <Grid item xs={4}>
-                <Card>
+                <Card
+                  className={classes.application}
+                >
                   <CardActionArea
                     onClick={() => {
-                      if (application.name === 'dropbox') {
+                      if (application.name === 'Dropbox') {
                         viewer.openDropboxWindow();
                       } else {
                         setSelectedApp(application.name);
@@ -189,8 +246,17 @@ const Marketplace = ({
                     }}
                   >
                     <CardHeader
+                      avatar={
+                        <Avatar
+                          aria-label="recipe"
+                          className={classes.avatar}
+                          src={application.img}
+                          alt={application.name}
+                          title={application.name}
+                        />
+                      }
                       title={application.name}
-                      subheader={application.type}
+                      subheader={<Badge color="success" pill>{application.type}</Badge>}
                     />
                     <CardContent>
                       <Typography variant="body2" color="textSecondary" component="p">
@@ -205,7 +271,13 @@ const Marketplace = ({
           </Grid>
         }
         {selectedApp === 'datBIM' &&
-          <DatBimApi />
+          <DatBimApi
+            viewer={viewer}
+            modelID={modelID}
+            eids={eids}
+            setEids={setEids}
+            addElementsNewProperties={addElementsNewProperties}
+          />
         }
       </CardContent>
     </Card>

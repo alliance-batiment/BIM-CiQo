@@ -20,8 +20,8 @@ const Login = ({ classes, handleSubmit }) => {
       <Grid item xs={12}>
         <form className={classes.root} noValidate autoComplete="off" onSubmit={handleSubmit}>
           <FormControl fullWidth className={classes.margin}>
-            <TextField id="filled-basic" label="Email" name="email" variant="filled" value={email} onChange={handleChange} />
-            <TextField type="password" id="outlined-basic" label="Password" name="password" variant="filled" />
+            <TextField id="filled-basic" label="Email" name="Email" variant="filled" value={email} onChange={handleChange} />
+            <TextField type="password" id="outlined-basic" label="Mot de passe" name="password" variant="filled" />
             <Button type="submit" className={classes.button}>Connexion</Button>
             <a href="https://www.datbim.com/template/espace-client" target="_blank">Créer un compte</a>
             <a href="https://www.datbim.com/inscription/oublie-mdp" target="_blank">Mot de passe oublié?</a>

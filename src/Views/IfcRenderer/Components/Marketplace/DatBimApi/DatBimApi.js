@@ -142,6 +142,10 @@ const DatBimApi = ({
   openProperties,
   projectId,
   objSelected,
+  viewer,
+  modelID,
+  eids,
+  setEids,
   addElementsNewProperties
 }) => {
   const [activeStep, setActiveStep] = useState(0);
@@ -167,7 +171,7 @@ const DatBimApi = ({
   }
 
   function getSteps() {
-    return ['Connexion', 'Portals', 'Objects', 'Properties'];
+    return ['Connexion', 'Portails', 'Objets', 'Propriétés'];
   }
 
   async function handleSubmit(e) {
@@ -187,8 +191,8 @@ const DatBimApi = ({
         ip: "string",
         lang: "fr",
         local_at: "string",
-        login: `${data.get('email')}`,
-        password: `${data.get('password')}`,
+        login: 'guillaume.cassin@triazur.com', //`${data.get('email')}`,
+        password: 'Triazur2022', //`${data.get('password')}`,
         service: "string"
       }
     }).then((r) => {
@@ -242,6 +246,10 @@ const DatBimApi = ({
           // setLoader={setLoader}
           objSelected={objSelected}
           selectedObject={selectedObject}
+          viewer={viewer}
+          modelID={modelID}
+          eids={eids}
+          setEids={setEids}
           addElementsNewProperties={addElementsNewProperties}
         />
       default:
