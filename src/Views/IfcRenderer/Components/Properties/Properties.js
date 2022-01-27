@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Typography,
   makeStyles,
@@ -19,13 +19,13 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  CircularProgress
-} from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
-import AddIcon from '@material-ui/icons/Add';
-import ClearIcon from '@material-ui/icons/Clear';
-import VisibilityIcon from '@material-ui/icons/Visibility';
+  CircularProgress,
+} from "@material-ui/core";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import MoreVertIcon from "@material-ui/icons/MoreVert";
+import AddIcon from "@material-ui/icons/Add";
+import ClearIcon from "@material-ui/icons/Clear";
+import VisibilityIcon from "@material-ui/icons/Visibility";
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -33,36 +33,35 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: theme.typography.fontWeightRegular,
   },
   table: {
-    width: '100%',
+    width: "100%",
   },
   cardInfo: {
     zIndex: 100,
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   cardContent: {
-    height: '90%',
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    '&::-webkit-scrollbar': {
-      width: '0.4em'
+    height: "90%",
+    overflowY: "auto",
+    overflowX: "hidden",
+    "&::-webkit-scrollbar": {
+      width: "0.4em",
     },
-    '&::-webkit-scrollbar-track': {
-      '-webkit-box-shadow': 'inset 0 0 6px rgba(0,0,0,0.00)'
+    "&::-webkit-scrollbar-track": {
+      "-webkit-box-shadow": "inset 0 0 6px rgba(0,0,0,0.00)",
     },
-    '&::-webkit-scrollbar-thumb': {
-      backgroundColor: 'rgba(0,0,0,.1)',
-      outline: '0px solid slategrey'
-    }
+    "&::-webkit-scrollbar-thumb": {
+      backgroundColor: "rgba(0,0,0,.1)",
+      outline: "0px solid slategrey",
+    },
   },
 }));
-
 
 const Properties = ({
   viewer,
   element,
   handleShowProperties,
-  addElementsNewProperties
+  addElementsNewProperties,
 }) => {
   const classes = useStyles();
   const [ifcElement, setIfcElement] = useState(null);
@@ -71,7 +70,7 @@ const Properties = ({
 
   useEffect(() => {
     if (element) {
-      console.log('elements', element)
+      console.log("elements", element);
       setIfcElement(element);
     }
   }, []);
@@ -79,10 +78,10 @@ const Properties = ({
   const handleShowElement = async () => {
     const modelID = element.modelID;
     const ids = [element.expressID];
-    console.log('viewer', viewer)
+    console.log("viewer", viewer);
     const mesh = await viewer.IFC.visibility.getMesh(modelID);
-    console.log('mesh', mesh)
-  }
+    console.log("mesh", mesh);
+  };
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -93,7 +92,7 @@ const Properties = ({
   };
 
   const open = Boolean(anchorEl);
-  const id = open ? 'simple-popover' : undefined;
+  const id = open ? "simple-popover" : undefined;
 
   return (
     <Card className={classes.cardInfo}>
@@ -118,12 +117,12 @@ const Properties = ({
               anchorEl={anchorEl}
               onClose={handleClose}
               anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'center',
+                vertical: "bottom",
+                horizontal: "center",
               }}
               transformOrigin={{
-                vertical: 'top',
-                horizontal: 'center',
+                vertical: "top",
+                horizontal: "center",
               }}
             >
               {/* <ListItem
@@ -141,37 +140,32 @@ const Properties = ({
                   addElementsNewProperties({
                     viewer,
                     modelID: element.modelID,
-                    expressIDs: [element.expressID]
+                    expressIDs: [element.expressID],
                   });
                 }}
               >
                 <ListItemIcon>
                   <AddIcon />
                 </ListItemIcon>
-                <ListItemText primary="Add properties" />
+                <ListItemText primary="Ajouter propriété" />
               </ListItem>
-              <ListItem
-                button
-                onClick={handleShowProperties}
-              >
+              <ListItem button onClick={handleShowProperties}>
                 <ListItemIcon>
                   <ClearIcon />
                 </ListItemIcon>
-                <ListItemText primary="Quit" />
+                <ListItemText primary="Fermer" />
               </ListItem>
             </Popover>
           </div>
         }
-        title={`${element ? element.Name.value : 'Undefined'}`}
+        title={`${element ? element.Name.value : "Undefined"}`}
         subheader={`${element.type}`}
       />
-      {isLoading ?
-        <CircularProgress color='inherit' />
-        :
-        <CardContent
-          className={classes.cardContent}
-        >
-          {element &&
+      {isLoading ? (
+        <CircularProgress color="inherit" />
+      ) : (
+        <CardContent className={classes.cardContent}>
+          {element && (
             <>
               <Accordion>
                 <AccordionSummary
@@ -179,7 +173,9 @@ const Properties = ({
                   aria-controls="panel1a-content"
                   id="panel1a-header"
                 >
-                  <Typography className={classes.heading}>Attributes</Typography>
+                  <Typography className={classes.heading}>
+                    Attributes
+                  </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                   <TableContainer>
@@ -202,37 +198,43 @@ const Properties = ({
                   </TableContainer>
                 </AccordionDetails>
               </Accordion>
-              {element.psets.length > 0 && element.psets.map((pset, i) => (
-                <Accordion
-                  key={i}
-                >
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls="panel1a-content"
-                    id="panel1a-header"
-                  >
-                    <Typography className={classes.heading}>{`${pset.Name.value}`}</Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <TableContainer>
-                      <Table className={classes.table} aria-label="simple table">
-                        <TableBody>
-                          {pset.HasProperties && pset.HasProperties.length > 0 && pset.HasProperties.map((property, index) => (
-                            <TableRow key={index}>
-                              <TableCell>{`${property.label}`}</TableCell>
-                              <TableCell>{`${property.value}`}</TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  </AccordionDetails>
-                </Accordion>
-              ))}
+              {element.psets.length > 0 &&
+                element.psets.map((pset, i) => (
+                  <Accordion key={i}>
+                    <AccordionSummary
+                      expandIcon={<ExpandMoreIcon />}
+                      aria-controls="panel1a-content"
+                      id="panel1a-header"
+                    >
+                      <Typography
+                        className={classes.heading}
+                      >{`${pset.Name.value}`}</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <TableContainer>
+                        <Table
+                          className={classes.table}
+                          aria-label="simple table"
+                        >
+                          <TableBody>
+                            {pset.HasProperties &&
+                              pset.HasProperties.length > 0 &&
+                              pset.HasProperties.map((property, index) => (
+                                <TableRow key={index}>
+                                  <TableCell>{`${property.label}`}</TableCell>
+                                  <TableCell>{`${property.value}`}</TableCell>
+                                </TableRow>
+                              ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </AccordionDetails>
+                  </Accordion>
+                ))}
             </>
-          }
+          )}
         </CardContent>
-      }
+      )}
     </Card>
   );
 };

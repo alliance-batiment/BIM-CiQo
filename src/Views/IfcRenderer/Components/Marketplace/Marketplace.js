@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Typography,
   Grid,
@@ -43,27 +43,27 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: theme.typography.fontWeightRegular,
   },
   table: {
-    width: '100%',
+    width: "100%",
   },
   cardInfo: {
     zIndex: 100,
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   cardContent: {
-    height: '90%',
-    overflowY: 'auto',
-    overflowX: 'hidden',
-    '&::-webkit-scrollbar': {
-      width: '0.4em'
+    height: "90%",
+    overflowY: "auto",
+    overflowX: "hidden",
+    "&::-webkit-scrollbar": {
+      width: "0.4em",
     },
-    '&::-webkit-scrollbar-track': {
-      '-webkit-box-shadow': 'inset 0 0 6px rgba(0,0,0,0.00)'
+    "&::-webkit-scrollbar-track": {
+      "-webkit-box-shadow": "inset 0 0 6px rgba(0,0,0,0.00)",
     },
-    '&::-webkit-scrollbar-thumb': {
-      backgroundColor: 'rgba(0,0,0,.1)',
-      outline: '0px solid slategrey'
-    }
+    "&::-webkit-scrollbar-thumb": {
+      backgroundColor: "rgba(0,0,0,.1)",
+      outline: "0px solid slategrey",
+    },
   },
   application: {
     height: '17em'
@@ -88,7 +88,6 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: 'white'
   }
 }));
-
 
 const applications = [
   {
@@ -139,12 +138,10 @@ const Marketplace = ({
   addElementsNewProperties
 }) => {
   const classes = useStyles();
-  const [selectedApp, setSelectedApp] = useState('home');
+  const [selectedApp, setSelectedApp] = useState("home");
   const [anchorEl, setAnchorEl] = useState(null);
 
-  useEffect(() => {
-
-  }, []);
+  useEffect(() => { }, []);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -154,16 +151,8 @@ const Marketplace = ({
     setAnchorEl(null);
   };
 
-
-
-
-
-
-
-
-
   const open = Boolean(anchorEl);
-  const id = open ? 'simple-popover' : undefined;
+  const id = open ? "simple-popover" : undefined;
 
   return (
     <Card className={classes.cardInfo}>
@@ -194,12 +183,12 @@ const Marketplace = ({
               anchorEl={anchorEl}
               onClose={handleClose}
               anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'center',
+                vertical: "bottom",
+                horizontal: "center",
               }}
               transformOrigin={{
-                vertical: 'top',
-                horizontal: 'center',
+                vertical: "top",
+                horizontal: "center",
               }}
             >
               {/* <ListItem
@@ -211,27 +200,22 @@ const Marketplace = ({
                 </ListItemIcon>
                 <ListItemText primary="Visibility" />
               </ListItem> */}
-              <ListItem
-                button
-                onClick={handleShowMarketplace}
-              >
+              <ListItem button onClick={handleShowMarketplace}>
                 <ListItemIcon>
                   <ClearIcon />
                 </ListItemIcon>
-                <ListItemText primary="Quit" />
+                <ListItemText primary="Fermer" />
               </ListItem>
             </Popover>
           </div>
         }
-        title={`Marketplace`}
-        subheader={`List of integrated BIM Applications`}
+        title={`Place de marché`}
+        subheader={`Liste des applications BIM`}
       />
-      <CardContent
-        className={classes.cardContent}
-      >
-        {selectedApp === 'home' &&
+      <CardContent className={classes.cardContent}>
+        {selectedApp === "home" && (
           <Grid container spacing={3}>
-            {applications.map(application => (
+            {applications.map((application) => (
               <Grid item xs={4}>
                 <Card
                   className={classes.application}
@@ -259,17 +243,20 @@ const Marketplace = ({
                       subheader={<Badge color="success" pill>{application.type}</Badge>}
                     />
                     <CardContent>
-                      <Typography variant="body2" color="textSecondary" component="p">
+                      <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        component="p"
+                      >
                         {application.description}
                       </Typography>
                     </CardContent>
                   </CardActionArea>
                 </Card>
               </Grid>
-
             ))}
           </Grid>
-        }
+        )}
         {selectedApp === 'datBIM' &&
           <DatBimApi
             viewer={viewer}
