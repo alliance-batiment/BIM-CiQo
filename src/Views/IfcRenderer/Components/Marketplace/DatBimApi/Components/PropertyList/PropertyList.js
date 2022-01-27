@@ -60,7 +60,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-const PropertyList = ({ projectId, setLoader, objSelected, selectedObject }) => {
+const PropertyList = ({
+  projectId,
+  setLoader,
+  objSelected,
+  selectedObject,
+  addElementsNewProperties
+}) => {
   const [searchInput, setSearchInput] = useState('');
   const [propertyListDefault, setPropertyListDefault] = useState([]);
   const [properties, setProperties] = useState([]);
@@ -120,12 +126,13 @@ const PropertyList = ({ projectId, setLoader, objSelected, selectedObject }) => 
   useEffect(() => {
     async function getPropertiesValues() {
       try {
-        const { data: dataProp } = await axios.get(`${process.env.REACT_APP_API_URL}/api/datbim/objects/${selectedObject}/poperties-values`, {
+        const { data: dataProp } = await axios.get(`${process.env.REACT_APP_API_DATBIM}/objects/${selectedObject}/properties-values`, {
           headers: {
             'X-Auth-Token': sessionStorage.getItem('token')
           }
         });
-        const temporaryFixProperties = dataProp.properties.map((property) => {
+        console.log('data', dataProp);
+        const temporaryFixProperties = dataProp.data.map((property) => {
           if (property.data_type_name === "Entier" && property.text_value === 'A saisir') {
             return {
               ...property,
@@ -149,6 +156,11 @@ const PropertyList = ({ projectId, setLoader, objSelected, selectedObject }) => 
     let newPropertiesArr = [...properties];
     newPropertiesArr[index].text_value = inputValue || value;
     setProperties(newPropertiesArr);
+  }
+
+
+  const addElementsDatBimProperties = () => {
+    addElementsNewProperties();
   }
 
   return (

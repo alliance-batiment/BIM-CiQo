@@ -4,13 +4,14 @@ import {
 	Grid,
 	Card,
 	CardContent,
-	Button
+	Button,
+	CircularProgress
 } from '@material-ui/core';
 import Pagination from '@material-ui/lab/Pagination';
 import Loader from '../../../../../../../Components/Loader';
 import SearchBar from '../../../../../../../Components/SearchBar/SearchBar.jsx'
 
-const ObjectList = ({ classes, openProperties, handleNext, typeProperties, selectedPortal }) => {
+const ObjectList = ({ classes, setSelectedObject, handleNext, typeProperties, selectedPortal }) => {
 	const [searchInput, setSearchInput] = useState('');
 	const [objects, setObjects] = useState([]);
 	const [objectListDefault, setObjectListDefault] = useState([]);
@@ -19,43 +20,56 @@ const ObjectList = ({ classes, openProperties, handleNext, typeProperties, selec
 	useEffect(() => {
 		setObjectsLoader(true);
 		async function getObjectsOfSelectedObject() {
-			const classes = await axios.get(`${process.env.REACT_APP_API_DATBIM}/api/classes/mapping/${typeProperties}`, {
+			const classes = await axios.get(`${process.env.REACT_APP_API_DATBIM}/classes/mapping/${typeProperties}`, {
 				headers: {
+					"content-type": "application/json",
 					'X-Auth-Token': sessionStorage.getItem('token')
 				}
-			})
+			});
 
-			Promise.all(classes.data.properties.map(async (classProperty) => {
-				return await axios.get(`${process.env.REACT_APP_API_DATBIM}/api/portals/${selectedPortal}/objects/${classProperty.class_reference_id}`, {
-					headers: {
-						'X-Auth-Token': sessionStorage.getItem('token')
-					}
-				});
-			})).then(function (values) {
+			try {
+				const values = await Promise.allSettled(classes.data.data.map(async (classProperty) => {
+					return await axios.get(`${process.env.REACT_APP_API_DATBIM}/portals/${selectedPortal}/objects/${classProperty.class_reference_id}`, {
+						headers: {
+							'X-Auth-Token': sessionStorage.getItem('token')
+						}
+					});;
+				}));
+
+				// const objects = values.reduce((acc, value) => {
+				// 	if (value.data.properties) {
+				// 		return acc.concat(value.data.properties);
+				// 	}
+
+				// 	return acc;
+				// }, [])
 				const objects = values.reduce((acc, value) => {
-					if (value.data.properties) {
-						return acc.concat(value.data.properties);
+					if (value.status === 'fulfilled') {
+						value.value.data.data.map(value => acc.push(value));
 					}
-
 					return acc;
-				}, [])
+				}, []);
+				console.log('values', objects);
 				setObjectListDefault(objects);
 				setObjects(objects);
 				setObjectsLoader(false);
-			});
+			} catch (error) {
+				console.log('error get objects', error)
+			}
+
 		}
 		getObjectsOfSelectedObject();
 	}, [])
 
 	async function getObjects(typeProperties, selectedPage) {
-		const classes = await axios.get(`${process.env.REACT_APP_API_DATBIM}/api/classes/mapping/${typeProperties}`, {
+		const classes = await axios.get(`${process.env.REACT_APP_API_DATBIM}/classes/mapping/${typeProperties}`, {
 			headers: {
 				'X-Auth-Token': sessionStorage.getItem('token')
 			}
 		})
 
 		Promise.all(classes.data.properties.map(async (classProperty) => {
-			return await axios.get(`${process.env.REACT_APP_API_DATBIM}/api/portals/${selectedPortal}/objects/${classProperty.class_reference_id}`, {
+			return await axios.get(`${process.env.REACT_APP_API_DATBIM}/portals/${selectedPortal}/objects/${classProperty.class_reference_id}`, {
 				headers: {
 					'X-Auth-Token': sessionStorage.getItem('token')
 				}
@@ -98,7 +112,7 @@ const ObjectList = ({ classes, openProperties, handleNext, typeProperties, selec
 		try {
 			const objectsList = await axios({
 				method: 'get',
-				url: `${process.env.REACT_APP_API_DATBIM}/api/datbim/portals/${selectedPortal}/objects`,
+				url: `${process.env.REACT_APP_API_DATBIM}/datbim/portals/${selectedPortal}/objects`,
 				params: { search: `${searchInput}` },
 				headers: {
 					'X-Auth-Token': sessionStorage.getItem('token')
@@ -143,12 +157,14 @@ const ObjectList = ({ classes, openProperties, handleNext, typeProperties, selec
 			</Grid>
 			<Grid item xs={12}>
 				{objectsLoader ?
-					<Loader className="spinner-datbim" />
+					<Grid container justify="center">
+						<CircularProgress color="inherit" />
+					</Grid>
 					:
 					<>
 						{objects?.map((object, index) => <Card key={index} className={`${classes.root} ${classes.datBimCard}`}>
 							<CardContent onClick={() => {
-								openProperties(object.object_id);
+								setSelectedObject(object.object_id);
 								handleNext();
 							}}>
 								<p className={classes.datBimCardTitle}>{object.parent_name}</p>
