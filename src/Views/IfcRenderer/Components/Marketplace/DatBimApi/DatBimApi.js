@@ -14,6 +14,7 @@ import clsx from "clsx";
 import Check from "@material-ui/icons/Check";
 import Login from "./Components/Login/Login";
 import PortalList from "./Components/PortalList/PortalList";
+import ObjectsSetsList from "./Components/ObjectsSetsList/ObjectsSetsList";
 import ObjectList from "./Components/ObjectList/ObjectList";
 import PropertyList from "./Components/PropertyList/PropertyList";
 import axios from "axios";
@@ -150,7 +151,10 @@ const DatBimApi = ({
 }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [selectedPortal, setSelectedPortal] = useState(null);
+  const [selectedObjectSet, setSelectedObjectSet] = useState(null);
+  const [selectedObjectSetName, setSelectedObjectSetName] = useState(null);
   const [selectedObject, setSelectedObject] = useState(null);
+
   const steps = getSteps();
   const classes = useStyles();
 
@@ -174,7 +178,7 @@ const DatBimApi = ({
   }
 
   function getSteps() {
-    return ['Connexion', 'Portails', 'Objets', 'Propriétés'];
+    return ["Connexion", "Portals", "Objects Sets", "Objects"];
   }
 
   async function handleSubmit(e) {
@@ -194,17 +198,19 @@ const DatBimApi = ({
         ip: "string",
         lang: "fr",
         local_at: "string",
-        login: 'guillaume.cassin@triazur.com', //`${data.get('email')}`,
-        password: 'Triazur2022', //`${data.get('password')}`,
-        service: "string"
-      }
-    }).then((r) => {
-      console.log('TOKEN', r.data)
-      sessionStorage.setItem('token', r.data.token);
-      handleNext()
-    }).catch(() => {
-      setActiveStep(0)
-    });
+        login: "guillaume.cassin@triazur.com", //`${data.get("email")}`,
+        password: "Triazur2022",//`${data.get("password")}`,
+        service: "string",
+      },
+    })
+      .then((r) => {
+        console.log("TOKEN", r.data);
+        sessionStorage.setItem("token", r.data.token);
+        handleNext();
+      })
+      .catch(() => {
+        setActiveStep(0);
+      });
   }
 
   const handleNext = () => {
@@ -235,28 +241,56 @@ const DatBimApi = ({
         );
       case 2:
         return (
+          <ObjectsSetsList
+            classes={classes}
+            selectedPortal={selectedPortal}
+            setSelectedObjectSet={setSelectedObjectSet}
+            setSelectedObjectSetName={setSelectedObjectSetName}
+            handleNext={handleNext}
+          />
+        );
+      case 3:
+        // return <PropertyList
+        //   classes={classes}
+        //   projectId={projectId}
+        //   // setLoader={setLoader}
+        //   objSelected={objSelected}
+        //   selectedObject={selectedObject}
+        //   viewer={viewer}
+        //   modelID={modelID}
+        //   eids={eids}
+        //   setEids={setEids}
+        //   addElementsNewProperties={addElementsNewProperties}
+        // />
+        return (
           <ObjectList
             classes={classes}
+            selectedObject={selectedObject}
+            selectedObjectSet={selectedObjectSet}
+            selectedObjectSetName={selectedObjectSetName}
             setSelectedObject={setSelectedObject}
             handleNext={handleNext}
             selectedPortal={selectedPortal}
             // typeProperties={window.objProperties.type}
             typeProperties={"IfcWall"}
+            viewer={viewer}
+            modelID={modelID}
+            eids={eids}
+            setEids={setEids}
+            addElementsNewProperties={addElementsNewProperties}
           />
         );
-      case 3:
-        return <PropertyList
-          classes={classes}
-          projectId={projectId}
-          // setLoader={setLoader}
-          objSelected={objSelected}
-          selectedObject={selectedObject}
-          viewer={viewer}
-          modelID={modelID}
-          eids={eids}
-          setEids={setEids}
-          addElementsNewProperties={addElementsNewProperties}
-        />
+      // case 4:
+      //   return (
+      //     <PropertyList
+      //       classes={classes}
+      //       projectId={projectId}
+      //       // setLoader={setLoader}
+      //       objSelected={objSelected}
+      //       selectedObject={selectedObject}
+      //       addElementsNewProperties={addElementsNewProperties}
+      //     />
+      //   );
       default:
         return "Unknown step";
     }
