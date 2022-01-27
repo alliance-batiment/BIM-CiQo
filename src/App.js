@@ -15,7 +15,8 @@ import {
   ListItem,
   ListItemAvatar,
   Avatar,
-  ListItemText
+  ListItemText,
+  Typography
 } from '@material-ui/core';
 
 const Menu = {
@@ -88,7 +89,18 @@ const App = () => {
                       src={`${REACT_APP_LOGO}`}
                     />
                   </ListItemAvatar>
-                  <ListItemText primary={`BIM Viewer`} />
+                  <ListItemText
+                  // style={{ fontSize: '2em' }}
+                  // primary={`TriBIM`}
+                  >
+                    <Typography
+                      style={{
+                        fontSize: '1.2em'
+                      }}
+                    >
+                      {`TriBIM`}
+                    </Typography>
+                  </ListItemText>
                 </ListItem>
               }
             </>

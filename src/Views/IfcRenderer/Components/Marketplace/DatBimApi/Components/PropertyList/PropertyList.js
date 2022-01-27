@@ -65,6 +65,10 @@ const PropertyList = ({
   setLoader,
   objSelected,
   selectedObject,
+  viewer,
+  modelID,
+  eids,
+  setEids,
   addElementsNewProperties
 }) => {
   const [searchInput, setSearchInput] = useState('');
@@ -159,8 +163,13 @@ const PropertyList = ({
   }
 
 
-  const addElementsDatBimProperties = () => {
-    addElementsNewProperties();
+  const addElementsDatBimProperties = (properties, objSelected) => {
+    addElementsNewProperties({
+      viewer,
+      modelID,
+      expressIDs: [5448],
+      properties
+    });
   }
 
   return (
@@ -198,7 +207,10 @@ const PropertyList = ({
             </TableBody>
           </Table>
           <Grid row align="right">
-            <Button variant="contained" onClick={() => addProperties(properties, objSelected)} color="primary" className={classes.button}>
+            {/* <Button variant="contained" onClick={() => addProperties(properties, objSelected)} color="primary" className={classes.button}>
+              Ajouter
+            </Button> */}
+            <Button variant="contained" onClick={() => addElementsDatBimProperties(properties, objSelected)} color="primary" className={classes.button}>
               Ajouter
             </Button>
           </Grid>

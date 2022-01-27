@@ -30,7 +30,10 @@ import {
 } from 'three';
 import { TransformControls } from "three/examples/jsm/controls/TransformControls";
 
-function UseIfcRenderer() {
+function UseIfcRenderer({
+  eids,
+  setEids
+}) {
   const [models, setModels] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -124,8 +127,10 @@ function UseIfcRenderer() {
       await viewer.IFC.unpickIfcItems();
       return
     };
-    console.log('found', found)
+
     setModelID(found.modelID);
+    setEids([found.id]);
+
     select(viewer, setModelID, found.modelID, found.id, false);
     const elementProperties = await viewer.IFC.getProperties(found.modelID, found.id, true, true);
     console.log(elementProperties);
@@ -193,26 +198,28 @@ function UseIfcRenderer() {
     return { type: 5, value: v }
   }
 
-  const addElementsNewProperties = async ({
+  const addDataToIfc = async ({
     viewer,
-    modelID,
-    expressIDs
+    modelId,
+    expressIDs,
+    properties
   }) => {
-    const modelId = modelID ? modelID : 0;
-    console.log('ADD PROPERTY')
-    if (expressIDs && expressIDs.length > 0) {
-      const allLines = await viewer.IFC.loader.ifcManager.state.api.GetAllLines(modelId);
-      console.log('allLines', allLines)
-      let maxExpressId = 0;
-      await Object.keys(allLines._data).forEach(index => {
-        maxExpressId = Math.max(maxExpressId, allLines._data[index])
-      });
+    const allLines = await viewer.IFC.loader.ifcManager.state.api.GetAllLines(modelId);
+    let maxExpressId = 0;
+    await Object.keys(allLines._data).forEach(index => {
+      maxExpressId = Math.max(maxExpressId, allLines._data[index])
+    });
+
+    let propertiesEids = [];
+    properties.map(async (property, index) => {
+      const propertyEid = maxExpressId + index + 1;
+      propertiesEids.push(ref(propertyEid))
       let ifcPropertySingleValue = new WebIFC.IfcPropertySingleValue(
-        maxExpressId + 1,
+        propertyEid,
         IFCPROPERTYSINGLEVALUE,
-        str('New_Label'),
+        str(`${property.property_name}`),
         empty(),
-        str('New_Value'),
+        str(`${property.text_value}`),
         empty(),
       );
 
@@ -223,53 +230,80 @@ function UseIfcRenderer() {
       };
 
       await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySingleValue);
+    })
 
-      console.log('rawLineIfcPropertySingleValue', rawLineIfcPropertySingleValue)
-      let ifcPropertySet = new WebIFC.IfcPropertySet(
-        maxExpressId + 2,
-        IFCPROPERTYSET,
-        str(Math.random().toString(16).substr(2, 8)),
-        ref(33),
-        str('Pset_OPENDTHX'),
-        empty(),
-        [ref(maxExpressId + 1)]
-      );
-      console.log('ifcPropertySet', ifcPropertySet)
-      let rawLineIfcPropertySet = {
-        ID: ifcPropertySet.expressID,
-        type: ifcPropertySet.type,
-        arguments: ifcPropertySet.ToTape()
-      };
+    console.log('propertiesEids', propertiesEids)
+    const psetEid = propertiesEids[propertiesEids.length - 1].value + 1;
+    let ifcPropertySet = new WebIFC.IfcPropertySet(
+      psetEid,
+      IFCPROPERTYSET,
+      str(Math.random().toString(16).substr(2, 8)),
+      ref(33),
+      str('Pset_OPENDTHX'),
+      empty(),
+      propertiesEids
+    );
+    console.log('ifcPropertySet', ifcPropertySet)
+    let rawLineIfcPropertySet = {
+      ID: ifcPropertySet.expressID,
+      type: ifcPropertySet.type,
+      arguments: ifcPropertySet.ToTape()
+    };
 
-      await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySet);
-      console.log('rawLineIfcPropertySet', rawLineIfcPropertySet)
-      const elementsList = expressIDs.map(expressID => {
-        return ref(expressID);
-      })
+    await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySet);
+    console.log('rawLineIfcPropertySet', rawLineIfcPropertySet)
+    const elementsList = expressIDs.map(expressID => {
+      return ref(expressID);
+    })
 
-      let ifcRelDefinesByProperties = new WebIFC.IfcRelDefinesByProperties(
-        maxExpressId + 3,
-        IFCRELDEFINESBYPROPERTIES,
-        str(Math.random().toString(16).substr(2, 8)),
-        ref(33),
-        empty(),
-        empty(),
-        elementsList,
-        ref(maxExpressId + 2)
-      );
-      // setEid(ID++);
-      console.log('ifcRelDefinesByProperties', ifcRelDefinesByProperties)
-      let rawLineIfcRelDefinesByProperties = {
-        ID: ifcRelDefinesByProperties.expressID,
-        type: ifcRelDefinesByProperties.type,
-        arguments: ifcRelDefinesByProperties.ToTape()
-      };
-      await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcRelDefinesByProperties);
+    let ifcRelDefinesByProperties = new WebIFC.IfcRelDefinesByProperties(
+      psetEid + 1,
+      IFCRELDEFINESBYPROPERTIES,
+      str(Math.random().toString(16).substr(2, 8)),
+      ref(33),
+      empty(),
+      empty(),
+      elementsList,
+      ref(psetEid)
+    );
+    // setEid(ID++);
+    console.log('ifcRelDefinesByProperties', ifcRelDefinesByProperties)
+    let rawLineIfcRelDefinesByProperties = {
+      ID: ifcRelDefinesByProperties.expressID,
+      type: ifcRelDefinesByProperties.type,
+      arguments: ifcRelDefinesByProperties.ToTape()
+    };
+    await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcRelDefinesByProperties);
 
-      console.log('rawLineIfcRelDefinesByProperties', rawLineIfcRelDefinesByProperties)
+    console.log('rawLineIfcRelDefinesByProperties', rawLineIfcRelDefinesByProperties)
+  }
+
+
+  const addElementsNewProperties = async ({
+    viewer,
+    modelID,
+    expressIDs,
+    properties
+  }) => {
+    const modelId = modelID ? modelID : 0;
+    console.log('ADD PROPERTY')
+    if (expressIDs && expressIDs.length > 0) {
+      if (properties.length > 0) {
+        addDataToIfc({
+          viewer,
+          modelId,
+          expressIDs,
+          properties
+        })
+      } else {
+        addDataToIfc({
+          viewer,
+          modelId,
+          expressIDs,
+          properties: [{ property_name: "Epaisseur ou profondeur", text_value: "240.00" }]
+        })
+      }
     }
-
-
   }
 
   return {

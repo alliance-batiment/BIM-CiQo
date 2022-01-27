@@ -71,7 +71,7 @@ const useStyles = makeStyles((theme) => ({
     overflow: "hidden",
     wordWrap: "break-word",
     warp: true,
-    width: '5em'
+    // width: '5em'
   },
   treeViewCheckbox: {
     margin: 0,

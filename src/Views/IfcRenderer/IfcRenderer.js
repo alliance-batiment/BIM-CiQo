@@ -12,6 +12,7 @@ import {
 } from '@material-ui/core';
 import FolderOpenOutlinedIcon from '@material-ui/icons/FolderOpenOutlined';
 import CropIcon from '@material-ui/icons/Crop';
+import PhotoCameraIcon from '@material-ui/icons/PhotoCamera';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import DescriptionIcon from '@material-ui/icons/Description';
 import StraightenIcon from '@material-ui/icons/Straighten';
@@ -35,6 +36,9 @@ import {
   IFCCOLUMN,
   IFCSLAB,
   IFCROOF,
+  IFCSTRUCTURALCURVEMEMBER,
+  IFCSTRUCTURALANALYSISMODEL,
+  IFCSTRUCTURALSURFACEMEMBER,
   IFCFOOTING,
   IFCFURNISHINGELEMENT,
   IFCRELDEFINESBYPROPERTIES,
@@ -53,7 +57,8 @@ import {
   MathUtils,
   EdgesGeometry,
   LineBasicMaterial,
-  MeshBasicMaterial
+  MeshBasicMaterial,
+  Vector2
 } from 'three';
 import { TransformControls } from "three/examples/jsm/controls/TransformControls";
 import { HorizontalBlurShader } from 'three/examples/jsm/shaders/HorizontalBlurShader.js';
@@ -114,7 +119,7 @@ const IfcRenderer = () => {
   const [percentageLoading, setPercentageLoading] = useState(0);
   const [apiWebIfc, setApiWebIfc] = useState();
   const [eid, setEid] = useState(1);
-
+  const [eids, setEids] = useState([]);
 
   const [state, setState] = useState({
     bcfDialogOpen: false,
@@ -130,7 +135,10 @@ const IfcRenderer = () => {
     addTransformControls,
     getElementProperties,
     addElementsNewProperties
-  } = UseIfcRenderer();
+  } = UseIfcRenderer({
+    eids,
+    setEids
+  });
 
   useEffect(() => {
     async function init() {
@@ -171,9 +179,7 @@ const IfcRenderer = () => {
           console.log('VIEWER', newViewer)
           newViewer.plans.computeAllPlanViews(0);
         }
-
-        if (event.code === 'KeyR') {
-          console.log('KeyRf')
+        if (event.code === 'KeyS') {
           const planNames = Object.keys(newViewer.plans.planLists[0]);
           if (!planNames[counter]) return;
           const current = planNames[counter];
@@ -208,6 +214,31 @@ const IfcRenderer = () => {
 
           newViewer.pdf.exportPDF(documentName, 'test.pdf');
         }
+        if (event.code === 'KeyB') {
+          const currentPlans = newViewer.plans.planLists[0];
+          const planNames = Object.keys(currentPlans);
+          const firstPlan = planNames[0];
+          const currentPlan = newViewer.plans.planLists[0][firstPlan];
+          const drawingName = "example";
+
+          viewer.dxf.initializeJSDXF(Drawing);
+
+          viewer.dxf.newDrawing(drawingName);
+          // const polygons = viewer.edgesVectorizer.polygons;
+          // viewer.dxf.drawEdges(drawingName, polygons, 'projection', Drawing.ACI.BLUE );
+
+          viewer.dxf.drawNamedLayer(drawingName, currentPlan, 'thick', 'section_thick', Drawing.ACI.RED);
+          viewer.dxf.drawNamedLayer(drawingName, currentPlan, 'thin', 'section_thin', Drawing.ACI.GREEN);
+
+          // const ids = await viewer.IFC.getAllItemsOfType(0, IFCWALLSTANDARDCASE, false);
+          // const subset = viewer.IFC.loader.ifcManager.createSubset({ modelID: 0, ids, removePrevious: true });
+          // const edgesGeometry = new EdgesGeometry(subset.geometry);
+          // const vertices = edgesGeometry.attributes.position.array;
+          // viewer.dxf.draw(drawingName, vertices, 'other', Drawing.ACI.BLUE);
+
+          viewer.dxf.exportDXF(drawingName);
+
+        }
         if (event.code === 'KeyC') {
           // viewer.context.ifcCamera.toggleProjection();
           newViewer.shadowDropper.renderShadow(0);
@@ -241,7 +272,10 @@ const IfcRenderer = () => {
 
       viewer.IFC.loader.ifcManager.parser.setupOptionalCategories({
         [IFCSPACE]: false,
-        [IFCOPENINGELEMENT]: false
+        [IFCOPENINGELEMENT]: false,
+        [IFCSTRUCTURALANALYSISMODEL]: true,
+        [IFCSTRUCTURALSURFACEMEMBER]: true,
+        [IFCSTRUCTURALCURVEMEMBER]: true,
       });
 
       const model = await viewer.IFC.loadIfc(files[0], true, ifcOnLoadError);
@@ -306,6 +340,16 @@ const IfcRenderer = () => {
   const handleShowModels = () => {
     setShowModels(!showModels);
   };
+
+  const handleCapture = () => {
+    const link = document.createElement('a');
+    link.href = viewer.context.renderer.newScreenshot(false, undefined, new Vector2(4000, 4000));
+    const date = new Date();
+    link.download = `capture-${date}.jpeg`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
 
   const handleMeasure = () => {
     setShowMeasure(!showMeasure);
@@ -419,6 +463,8 @@ const IfcRenderer = () => {
               viewer={viewer}
               spatialStructures={spatialStructures}
               handleShowSpatialStructure={handleShowSpatialStructure}
+              eids={eids}
+              setEids={setEids}
             />
           </DraggableCard>
 
@@ -441,7 +487,11 @@ const IfcRenderer = () => {
           >
             <Marketplace
               viewer={viewer}
+              modelID={modelID}
               handleShowMarketplace={handleShowMarketplace}
+              eids={eids}
+              setEids={setEids}
+              addElementsNewProperties={addElementsNewProperties}
             />
           </DraggableCard>
         }
@@ -490,6 +540,15 @@ const IfcRenderer = () => {
               onClick={handleMeasure}
             >
               <StraightenIcon />
+            </Fab>
+          </Grid>
+          <Grid item xs={12}>
+            <Fab
+              size="small"
+              className={classes.fab}
+              onClick={handleCapture}
+            >
+              <PhotoCameraIcon />
             </Fab>
           </Grid>
           <Grid item xs={12}>
