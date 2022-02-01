@@ -69,7 +69,8 @@ const PropertyList = ({
   modelID,
   eids,
   setEids,
-  addElementsNewProperties
+  addElementsNewProperties,
+  handleShowMarketplace
 }) => {
   const [searchInput, setSearchInput] = useState("");
   const [propertyListDefault, setPropertyListDefault] = useState([]);
@@ -187,9 +188,10 @@ const PropertyList = ({
     addElementsNewProperties({
       viewer,
       modelID,
-      expressIDs: [5448],
+      expressIDs: eids,
       properties
     });
+    handleShowMarketplace('home');
   }
 
   return (

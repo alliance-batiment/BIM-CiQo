@@ -42,6 +42,7 @@ const ObjectList = ({
   handleNext,
   typeProperties,
   selectedPortal,
+  handleShowMarketplace
 }) => {
   const [searchInput, setSearchInput] = useState("");
   const [objects, setObjects] = useState([]);
@@ -280,7 +281,7 @@ const ObjectList = ({
   return (
     <>
       <Grid container spacing={3}>
-        <Grid item xs={8}>
+        {/* <Grid item xs={8}>
           <SearchBar
             input={searchInput}
             onChange={searchObject}
@@ -292,7 +293,7 @@ const ObjectList = ({
           <Button className={classes.button} onClick={getObjectByKeyWord}>
             Recherche par mot clé
           </Button>
-        </Grid>
+        </Grid> */}
         <Grid item xs={12} style={{ display: "flex" }}>
           <Grid item xs={4}>
             {objectsLoader ? (
@@ -359,6 +360,7 @@ const ObjectList = ({
               eids={eids}
               setEids={setEids}
               addElementsNewProperties={addElementsNewProperties}
+              handleShowMarketplace={handleShowMarketplace}
             />
           </Grid>
         </Grid>
