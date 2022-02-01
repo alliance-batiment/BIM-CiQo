@@ -21,6 +21,7 @@ import {
   ListItemButton,
   Grid,
   Button,
+  Fab
 } from "@mui/material";
 import TreeView from "@material-ui/lab/TreeView";
 import TreeItem from "@material-ui/lab/TreeItem";
@@ -28,7 +29,10 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import ClearIcon from "@material-ui/icons/Clear";
+import AccountTreeIcon from "@material-ui/icons/AccountTree";
 import { IFCSLAB, IFCMEMBER, IFCSTRUCTURALCURVEMEMBER } from "web-ifc";
+import SearchData from '../SearchData';
+import ProjectTree from "../ProjectTree";
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -76,6 +80,16 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     // maxWidth: 400,
   },
+  avatar: {
+    backgroundColor: 'transparent',
+    // width: theme.spacing(7),
+    // height: theme.spacing(7),
+    // padding: '5px',
+    // borderRadius: '0px'
+  },
+  fab: {
+    backgroundColor: 'white'
+  }
 }));
 
 function a11yProps(index) {
@@ -89,6 +103,10 @@ const SpatialStructure = ({
   viewer,
   spatialStructures,
   handleShowSpatialStructure,
+  handleShowMarketplace,
+  handleShowProperties,
+  eids,
+  setEids
 }) => {
   const classes = useStyles();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -99,102 +117,11 @@ const SpatialStructure = ({
   useEffect(() => {
     async function init() {
       const modelID = await viewer.IFC.getModelID();
-      const ifcSlab = await viewer.getAllItemsOfType(0, IFCSLAB, true);
-      const ifcMember = await viewer.getAllItemsOfType(0, IFCMEMBER, true);
-      const ifcStructuralCurveMember = await viewer.getAllItemsOfType(
-        0,
-        IFCSTRUCTURALCURVEMEMBER,
-        true
-      );
-
-      const newIfcElementByType = [
-        { class: "IfcSlab", elements: [...ifcSlab] },
-        { class: "IfcMember", elements: [...ifcMember] },
-        {
-          class: "IfcStructuralCurveMember",
-          elements: [...ifcStructuralCurveMember],
-        },
-      ];
-      setIfcElementByType(newIfcElementByType);
+      setExpressIDList(eids);
+      console.log('EIDS', eids)
     }
     init();
-  }, []);
-
-  const handleShowElement = async () => {
-    await viewer.IFC.pickIfcItemsByID(0, expressIDList, false, 0);
-  };
-
-  const handleExpressId = async (node) => {
-    const newExpressIDList = [...expressIDList];
-    const index = expressIDList.findIndex(
-      (expressID) => expressID === node.expressID
-    );
-
-    const addExpressId = (node) => {
-      newExpressIDList.push(node.expressID);
-      if (node.children && node.children.length > 0) {
-        node.children.forEach((child) => {
-          addExpressId(child);
-        });
-      }
-    };
-
-    const removeExpressId = (node) => {
-      const index = newExpressIDList.findIndex(
-        (expressID) => expressID === node.expressID
-      );
-      newExpressIDList.splice(index, 1);
-      if (node.children && node.children.length > 0) {
-        node.children.forEach((child) => {
-          removeExpressId(child);
-        });
-      }
-    };
-
-    if (index < 0) {
-      await addExpressId(node);
-    } else {
-      await removeExpressId(node);
-    }
-
-    await viewer.IFC.selector.highlightIfcItemsByID(0, newExpressIDList, false);
-    setExpressIDList(newExpressIDList);
-  };
-
-  const isChecked = (expressIDList, node) => {
-    const index = expressIDList.findIndex(
-      (expressID) => expressID === node.expressID
-    );
-    return index >= 0 ? true : false;
-  };
-
-  const handleTreeViewItemById = async (event, node) => {
-    if (node && node.children.length === 0) {
-      await viewer.IFC.unpickIfcItems();
-      if (event.target.checked) {
-        console.log("CHECKED");
-        const ids = [...expressIDList, node.expressID];
-        await viewer.IFC.pickIfcItemsByID(0, ids, false, 0);
-        setExpressIDList(ids);
-      } else {
-        console.log("UNCHECKED");
-        const index = expressIDList.findIndex(
-          (index) => index === node.expressID
-        );
-        const ids = expressIDList.splice(index, 1);
-        await viewer.IFC.pickIfcItemsByID(0, ids, false, 0);
-        setExpressIDList(ids);
-      }
-    }
-  };
-
-  const handleElementsVisibility = async (index) => {
-    const ids = ifcElementByType[index].elements.map(
-      (element) => element.expressID
-    );
-    await viewer.IFC.hideAllItems(0);
-    await viewer.IFC.showItems(0, ids);
-  };
+  }, [eids]);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -211,56 +138,19 @@ const SpatialStructure = ({
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
 
-  const renderTree = (nodes, index) => (
-    <TreeItem
-      key={nodes.expressID}
-      nodeId={nodes.expressID}
-      label={
-        <Grid container spacing={3}>
-          <Grid item xs={2}>
-            <Checkbox
-              className={classes.treeViewCheckbox}
-              checked={isChecked(expressIDList, nodes)}
-              onChange={(e) => {
-                // handleTreeViewItemById(e, nodes);
-                handleExpressId(nodes);
-              }}
-            />
-          </Grid>
-          <Grid item xs={10}>
-            {/* <div style={{ overflow: "hidden", textOverflow: "ellipsis", width: '5em' }}> */}
-            <Typography nowrap mt={1.2} className={classes.treeViewLabel}>
-              {`${nodes.type} ${nodes.Name ? nodes.Name.value : ""}`}
-            </Typography>
-            {/* </div> */}
-          </Grid>
-        </Grid>
-        // <FormControlLabel
-        //   control={<Checkbox
-        //     checked={isChecked(expressIDList, nodes)}
-        //     onChange={(e) => {
-        //       // handleTreeViewItemById(e, nodes);
-        //       handleAddId(nodes);
-        //     }}
-        //   />}
-        //   name={nodes.expressID}
-        //   label={`${nodes.type} ${nodes.Name ? nodes.Name.value : ""}`}
-        // />
-      }
-    // label={`${nodes.type} ${nodes.Name ? nodes.Name.value : ""}`}
-    >
-      {Array.isArray(nodes.children)
-        ? nodes.children.map((node) => renderTree(node))
-        : null}
-    </TreeItem>
-  );
+
 
   return (
     <Card className={classes.cardInfo}>
       <CardHeader
         avatar={
           <Avatar aria-label="recipe" className={classes.avatar}>
-            S
+            <Fab
+              size="small"
+              className={classes.fab}
+            >
+              <AccountTreeIcon />
+            </Fab>
           </Avatar>
         }
         action={
@@ -295,8 +185,8 @@ const SpatialStructure = ({
             </Popover>
           </div>
         }
-        // title={`${element.Name.value}`}
-        subheader="Structure spatiale"
+        title={`Centre d'informations`}
+        subheader="Espace de recherche et mise à jour des données"
       />
       <CardContent className={classes.cardContent}>
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
@@ -305,65 +195,30 @@ const SpatialStructure = ({
             onChange={handleChange}
             aria-label="basic tabs example"
           >
-            <Tab label="Structure spatiale" {...a11yProps(0)} />
-            <Tab label="Éléments par classes" {...a11yProps(1)} />
+            <Tab label="Sélection" {...a11yProps(0)} />
+            <Tab label="Structure spatiale" {...a11yProps(1)} />
           </Tabs>
         </Box>
         <TabPanel value={value} index={0}>
-          <Grid container>
-            {spatialStructures &&
-              spatialStructures.length &&
-              spatialStructures.map((spatialStructure) => (
-                <>
-                  {spatialStructure.children &&
-                    spatialStructure.children.length > 0 && (
-                      <Grid xs={12}>
-                        <TreeView
-                          className={classes.treeView}
-                          defaultCollapseIcon={<ExpandMoreIcon />}
-                          defaultExpanded={["root"]}
-                          defaultExpandIcon={<ChevronRightIcon />}
-                        >
-                          {renderTree(spatialStructure)}
-                        </TreeView>
-                      </Grid>
-                    )}
-                </>
-              ))}
-          </Grid>
+          {/* <SearchBar /> */}
+          <SearchData
+            viewer={viewer}
+            handleShowMarketplace={handleShowMarketplace}
+            handleShowProperties={handleShowProperties}
+            eids={eids}
+            setEids={setEids}
+          />
         </TabPanel>
         <TabPanel value={value} index={1}>
-          <List sx={{ width: "100%", bgcolor: "background.paper" }}>
-            {ifcElementByType.map((ifcElement, index) => {
-              const labelId = `checkbox-list-label-${ifcElement.class}`;
-              return (
-                <ListItem
-                  key={ifcElement.class}
-                  secondaryAction={
-                    <Chip label={`${ifcElement.elements.length}`} />
-                  }
-                  disablePadding
-                >
-                  <ListItemButton role={undefined} dense>
-                    <ListItemIcon>
-                      <Checkbox
-                        edge="start"
-                        // checked={checked.indexOf(value) !== -1}
-                        tabIndex={-1}
-                        disableRipple
-                        inputProps={{ "aria-labelledby": labelId }}
-                        onChange={() => handleElementsVisibility(index)}
-                      />
-                    </ListItemIcon>
-                    <ListItemText
-                      id={labelId}
-                      primary={`${ifcElement.class}`}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              );
-            })}
-          </List>
+          <ProjectTree
+            viewer={viewer}
+            spatialStructures={spatialStructures}
+            handleShowSpatialStructure={handleShowSpatialStructure}
+            handleShowMarketplace={handleShowMarketplace}
+            handleShowProperties={handleShowProperties}
+            eids={eids}
+            setEids={setEids}
+          />
         </TabPanel>
       </CardContent>
     </Card>

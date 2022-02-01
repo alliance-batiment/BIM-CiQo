@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import * as WebIFC from "web-ifc";
 // import * as WebIFCThree from 'web-ifc-three';
 import { IfcViewerAPI } from "web-ifc-viewer";
@@ -20,11 +20,13 @@ import AppsIcon from '@material-ui/icons/Apps';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import GrainIcon from '@material-ui/icons/Grain';
 import StorageIcon from '@material-ui/icons/Storage';
+import MutltiSelectionIcon from '@mui/icons-material/ControlPointDuplicate';
 import Models from './Components/Models/Models';
 import BcfDialog from './Components/BcfDialog/BcfDialog';
 import Marketplace from './Components/Marketplace/Marketplace';
 import SpatialStructure from './Components/SpatialStructure/SpatialStructure';
 import Properties from './Components/Properties/Properties';
+import ContextMenu from './Components/ContextMenu';
 import DraggableCard from './Components/DraggableCard/DraggableCard';
 import {
   IFCPROJECT,
@@ -118,10 +120,13 @@ const IfcRenderer = () => {
   const [showMarketplace, setShowMarketplace] = useState(false);
   const [showSpatialStructure, setShowSpatialStructure] = useState(false);
   const [showProperties, setShowProperties] = useState(false);
+  const [showContextMenu, setShowContextMenu] = useState(false);
+  const [selectedElementID, setSelectedElementID] = useState(null);
+  const [specificApplication, setSpecificApplication] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [percentageLoading, setPercentageLoading] = useState(0);
   const [apiWebIfc, setApiWebIfc] = useState();
-  const [eid, setEid] = useState(1);
+  const [selectedElementId, setSelectedElementId] = useState(null);
   const [eids, setEids] = useState([]);
 
   const [state, setState] = useState({
@@ -177,106 +182,106 @@ const IfcRenderer = () => {
 
       let counter = 0;
       newViewer.shadowDropper.darkness = 1.5;
-      const handleKeyDown = async (event) => {
-        if (event.code === "KeyF") {
-          // viewer.plans.computeAllPlanViews(0);
-          console.log("KeyF");
-          console.log("VIEWER", newViewer);
-          newViewer.plans.computeAllPlanViews(0);
-        }
-        if (event.code === 'KeyS') {
-          const planNames = Object.keys(newViewer.plans.planLists[0]);
-          if (!planNames[counter]) return;
-          const current = planNames[counter];
-          newViewer.plans.goTo(0, current, true);
-          newViewer.edges.toggle("0");
-        }
-        if (event.code === "KeyT") {
-          // PDF export
+      // const handleKeyDown = async (event) => {
+      //   if (event.code === "KeyF") {
+      //     // viewer.plans.computeAllPlanViews(0);
+      //     console.log("KeyF");
+      //     console.log("VIEWER", newViewer);
+      //     newViewer.plans.computeAllPlanViews(0);
+      //   }
+      //   if (event.code === 'KeyS') {
+      //     const planNames = Object.keys(newViewer.plans.planLists[0]);
+      //     if (!planNames[counter]) return;
+      //     const current = planNames[counter];
+      //     newViewer.plans.goTo(0, current, true);
+      //     newViewer.edges.toggle("0");
+      //   }
+      //   if (event.code === "KeyT") {
+      //     // PDF export
 
-          const currentPlans = newViewer.plans.planLists[0];
-          const planNames = Object.keys(currentPlans);
-          const firstPlan = planNames[0];
-          const currentPlan = newViewer.plans.planLists[0][firstPlan];
+      //     const currentPlans = newViewer.plans.planLists[0];
+      //     const planNames = Object.keys(currentPlans);
+      //     const firstPlan = planNames[0];
+      //     const currentPlan = newViewer.plans.planLists[0][firstPlan];
 
-          const documentName = "test";
-          const doc = new jsPDF("p", "mm", [1000, 1000]);
-          newViewer.pdf.newDocument(documentName, doc, 20);
+      //     const documentName = "test";
+      //     const doc = new jsPDF("p", "mm", [1000, 1000]);
+      //     newViewer.pdf.newDocument(documentName, doc, 20);
 
-          newViewer.pdf.setLineWidth(documentName, 0.2);
-          newViewer.pdf.drawNamedLayer(
-            documentName,
-            currentPlan,
-            "thick",
-            200,
-            200
-          );
+      //     newViewer.pdf.setLineWidth(documentName, 0.2);
+      //     newViewer.pdf.drawNamedLayer(
+      //       documentName,
+      //       currentPlan,
+      //       "thick",
+      //       200,
+      //       200
+      //     );
 
-          newViewer.pdf.setLineWidth(documentName, 0.1);
-          newViewer.pdf.setColor(documentName, new Color(100, 100, 100));
+      //     newViewer.pdf.setLineWidth(documentName, 0.1);
+      //     newViewer.pdf.setColor(documentName, new Color(100, 100, 100));
 
-          const ids = await newViewer.IFC.getAllItemsOfType(
-            0,
-            IFCWALLSTANDARDCASE,
-            false
-          );
-          const subset = newViewer.IFC.loader.ifcManager.createSubset({
-            modelID: 0,
-            ids,
-            removePrevious: true,
-          });
-          const edgesGeometry = new EdgesGeometry(subset.geometry);
-          const vertices = edgesGeometry.attributes.position.array;
-          newViewer.pdf.draw(documentName, vertices, 200, 200);
+      //     const ids = await newViewer.IFC.getAllItemsOfType(
+      //       0,
+      //       IFCWALLSTANDARDCASE,
+      //       false
+      //     );
+      //     const subset = newViewer.IFC.loader.ifcManager.createSubset({
+      //       modelID: 0,
+      //       ids,
+      //       removePrevious: true,
+      //     });
+      //     const edgesGeometry = new EdgesGeometry(subset.geometry);
+      //     const vertices = edgesGeometry.attributes.position.array;
+      //     newViewer.pdf.draw(documentName, vertices, 200, 200);
 
-          newViewer.pdf.drawNamedLayer(
-            documentName,
-            currentPlan,
-            "thin",
-            200,
-            200
-          );
+      //     newViewer.pdf.drawNamedLayer(
+      //       documentName,
+      //       currentPlan,
+      //       "thin",
+      //       200,
+      //       200
+      //     );
 
-          newViewer.pdf.exportPDF(documentName, "test.pdf");
-        }
-        if (event.code === 'KeyB') {
-          const currentPlans = newViewer.plans.planLists[0];
-          const planNames = Object.keys(currentPlans);
-          const firstPlan = planNames[0];
-          const currentPlan = newViewer.plans.planLists[0][firstPlan];
-          const drawingName = "example";
+      //     newViewer.pdf.exportPDF(documentName, "test.pdf");
+      //   }
+      //   if (event.code === 'KeyB') {
+      //     const currentPlans = newViewer.plans.planLists[0];
+      //     const planNames = Object.keys(currentPlans);
+      //     const firstPlan = planNames[0];
+      //     const currentPlan = newViewer.plans.planLists[0][firstPlan];
+      //     const drawingName = "example";
 
-          viewer.dxf.initializeJSDXF(Drawing);
+      //     viewer.dxf.initializeJSDXF(Drawing);
 
-          viewer.dxf.newDrawing(drawingName);
-          // const polygons = viewer.edgesVectorizer.polygons;
-          // viewer.dxf.drawEdges(drawingName, polygons, 'projection', Drawing.ACI.BLUE );
+      //     viewer.dxf.newDrawing(drawingName);
+      //     // const polygons = viewer.edgesVectorizer.polygons;
+      //     // viewer.dxf.drawEdges(drawingName, polygons, 'projection', Drawing.ACI.BLUE );
 
-          viewer.dxf.drawNamedLayer(drawingName, currentPlan, 'thick', 'section_thick', Drawing.ACI.RED);
-          viewer.dxf.drawNamedLayer(drawingName, currentPlan, 'thin', 'section_thin', Drawing.ACI.GREEN);
+      //     viewer.dxf.drawNamedLayer(drawingName, currentPlan, 'thick', 'section_thick', Drawing.ACI.RED);
+      //     viewer.dxf.drawNamedLayer(drawingName, currentPlan, 'thin', 'section_thin', Drawing.ACI.GREEN);
 
-          // const ids = await viewer.IFC.getAllItemsOfType(0, IFCWALLSTANDARDCASE, false);
-          // const subset = viewer.IFC.loader.ifcManager.createSubset({ modelID: 0, ids, removePrevious: true });
-          // const edgesGeometry = new EdgesGeometry(subset.geometry);
-          // const vertices = edgesGeometry.attributes.position.array;
-          // viewer.dxf.draw(drawingName, vertices, 'other', Drawing.ACI.BLUE);
+      //     // const ids = await viewer.IFC.getAllItemsOfType(0, IFCWALLSTANDARDCASE, false);
+      //     // const subset = viewer.IFC.loader.ifcManager.createSubset({ modelID: 0, ids, removePrevious: true });
+      //     // const edgesGeometry = new EdgesGeometry(subset.geometry);
+      //     // const vertices = edgesGeometry.attributes.position.array;
+      //     // viewer.dxf.draw(drawingName, vertices, 'other', Drawing.ACI.BLUE);
 
-          viewer.dxf.exportDXF(drawingName);
+      //     viewer.dxf.exportDXF(drawingName);
 
-        }
-        if (event.code === 'KeyC') {
-          // viewer.context.ifcCamera.toggleProjection();
-          newViewer.shadowDropper.renderShadow(0);
-        }
-        if (event.code === "KeyE") {
-          newViewer.plans.exitPlanView(true);
-          newViewer.edges.toggle("0");
-        }
-      };
+      //   }
+      //   if (event.code === 'KeyC') {
+      //     // viewer.context.ifcCamera.toggleProjection();
+      //     newViewer.shadowDropper.renderShadow(0);
+      //   }
+      //   if (event.code === "KeyE") {
+      //     newViewer.plans.exitPlanView(true);
+      //     newViewer.edges.toggle("0");
+      //   }
+      // };
 
-      window.onkeydown = handleKeyDown;
+      // window.onkeydown = handleKeyDown;
 
-      window.ondblclick = newViewer.addClippingPlane;
+      window.ondblclick = newViewer.clipper.createPlane;
 
       newViewer.shadowDropper.darkness = 1.5;
       setViewer(newViewer);
@@ -386,12 +391,34 @@ const IfcRenderer = () => {
     alert(err.toString());
   };
 
+  const select = (viewer, setModelID, modelID, expressID, pick = true) => {
+    if (pick) viewer.IFC.pickIfcItemsByID(modelID, expressID);
+    setModelID(modelID);
+  }
+
   const handleClick = async () => {
-    await getElementProperties({
-      viewer,
-      setModelID,
-      setElement,
-    });
+    if (showContextMenu) {
+      setShowContextMenu(false);
+    }
+
+    const found = await viewer.IFC.pickIfcItem(true, 1);
+
+    if (found == null || found == undefined) {
+      await viewer.IFC.unpickIfcItems();
+      setEids([]);
+      return
+    };
+    setModelID(found.modelID);
+    setEids([found.id]);
+    select(viewer, setModelID, found.modelID, found.id, false);
+    console.log('found.id', found.id)
+    setSelectedElementID(found.id);
+
+    // await getElementProperties({
+    //   viewer,
+    //   setModelID,
+    //   setElement,
+    // });
   };
 
   const handleClickOpen = () => {
@@ -452,7 +479,8 @@ const IfcRenderer = () => {
     };
   };
 
-  const handleShowMarketplace = () => {
+  const handleShowMarketplace = (specificApp) => {
+    setSpecificApplication(specificApp);
     setShowMarketplace(!showMarketplace);
   };
 
@@ -460,8 +488,12 @@ const IfcRenderer = () => {
     setShowSpatialStructure(!showSpatialStructure);
   };
 
-  const handleShowProperties = () => {
-    setShowProperties(!showProperties);
+  const handleShowProperties = (selectedElemID) => {
+    console.log('selectedElemID', selectedElemID)
+    if (selectedElemID) {
+      setSelectedElementID(selectedElemID);
+    }
+    setShowProperties(true);
   };
 
   const handleDownloadIfc = async () => {
@@ -529,24 +561,28 @@ const IfcRenderer = () => {
             />
           </DraggableCard>
         )}
-        {(spatialStructures && spatialStructures.length > 0 && showSpatialStructure) &&
-          <DraggableCard>
+        {(showSpatialStructure) &&
+          <DraggableCard width={700} height={600}>
             <SpatialStructure
               viewer={viewer}
               spatialStructures={spatialStructures}
               handleShowSpatialStructure={handleShowSpatialStructure}
+              handleShowMarketplace={handleShowMarketplace}
+              handleShowProperties={handleShowProperties}
               eids={eids}
               setEids={setEids}
             />
           </DraggableCard>
 
         }
-        {(element && showProperties) && (
+        {(selectedElementID && showProperties) && (
           <DraggableCard>
             <Properties
               viewer={viewer}
               element={element}
-              handleShowProperties={handleShowProperties}
+              setShowProperties={setShowProperties}
+              selectedElementID={selectedElementID}
+              setSelectedElementID={setSelectedElementID}
               addElementsNewProperties={addElementsNewProperties}
             />
           </DraggableCard>
@@ -557,6 +593,8 @@ const IfcRenderer = () => {
               viewer={viewer}
               modelID={modelID}
               handleShowMarketplace={handleShowMarketplace}
+              specificApplication={specificApplication}
+              setSpecificApplication={setSpecificApplication}
               eids={eids}
               setEids={setEids}
               addElementsNewProperties={addElementsNewProperties}
@@ -639,7 +677,7 @@ const IfcRenderer = () => {
           </Grid>
           <Grid item xs={12}>
             <ToolTipsElem
-              title="Place de marché"
+              title="Capture d'écran"
               placement="right"
               className={classes.fab}
               onClick={handleCapture}
@@ -648,17 +686,24 @@ const IfcRenderer = () => {
             </ToolTipsElem>
           </Grid>
           <Grid item xs={12}>
-            <Fab
+            <ToolTipsElem
+              title="Place de marché"
+              placement="right"
+              className={classes.fab}
+              onClick={() => handleShowMarketplace("home")}
+            >
+              {/* <Fab
               size="small"
               className={classes.fab}
               onClick={handleShowMarketplace}
-            >
+            > */}
               <AppsIcon />
-            </Fab>
+              {/* </Fab> */}
+            </ToolTipsElem>
           </Grid>
           <Grid item xs={12}>
             <ToolTipsElem
-              title="Arborescence"
+              title="Arborescence du projet"
               placement="right"
               className={classes.fab}
               onClick={handleShowSpatialStructure}
@@ -678,7 +723,7 @@ const IfcRenderer = () => {
               }
               placement="right"
               className={classes.fab}
-              onClick={handleShowProperties}
+              onClick={() => handleShowProperties()}
             >
               <DescriptionIcon />
             </ToolTipsElem>
@@ -726,6 +771,16 @@ const IfcRenderer = () => {
           </Dropzone>
         </Grid>
       </Grid>
+      <ContextMenu
+        viewer={viewer}
+        showContextMenu={showContextMenu}
+        setShowContextMenu={setShowContextMenu}
+        setShowProperties={setShowProperties}
+        setShowSpatialStructure={setShowSpatialStructure}
+        handleShowMarketplace={handleShowMarketplace}
+        eids={eids}
+        setEids={setEids}
+      />
       <Backdrop
         style={{
           zIndex: 200,

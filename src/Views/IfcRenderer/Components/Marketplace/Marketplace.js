@@ -91,42 +91,45 @@ const useStyles = makeStyles((theme) => ({
 
 const applications = [
   {
-    name: 'datBIM',
+    name: 'Open dthX',
     img: OpenDthxLogo,
     type: 'data',
     description: "Base de données permettant l'enrichissement de la maquette"
   },
+  // {
+  //   name: 'Dropbox',
+  //   img: DropBoxLogo,
+  //   type: 'storage',
+  //   description: 'Espace permettant le partage et le stockage de fichier'
+  // },
+  // {
+  //   name: 'TriStructure',
+  //   img: TriStructureLogo,
+  //   type: 'structural analysis',
+  //   tags: ['Coming Soon'],
+  //   description: "Application permettant la génération d'un modèle analytique pour du calcul de structure"
+  // }, 
+  // {
+  //   name: 'Google Drive',
+  //   img: GoogleDriveLogo,
+  //   type: 'storage',
+  //   tags: ['Coming Soon'],
+  //   description: 'Espace permettant le partage et le stockage de fichier'
+  // }, 
   {
-    name: 'Dropbox',
-    img: DropBoxLogo,
-    type: 'storage',
-    description: 'Espace permettant le partage et le stockage de fichier'
-  },
-  {
-    name: 'TriStructure',
-    img: TriStructureLogo,
-    type: 'structural analysis',
-    tags: ['Coming Soon'],
-    description: "Application permettant la génération d'un modèle analytique pour du calcul de structure"
-  }, {
-    name: 'Google Drive',
-    img: GoogleDriveLogo,
-    type: 'storage',
-    tags: ['Coming Soon'],
-    description: 'Espace permettant le partage et le stockage de fichier'
-  }, {
     name: 'AxeoBIM',
     img: AxeoBimLogo,
     type: 'storage',
     tags: ['Coming Soon'],
     description: 'Espace permettant le partage et le stockage de fichier'
-  }, {
-    name: 'bsDD',
-    img: BsDDLogo,
-    type: 'data',
-    tags: ['Coming Soon'],
-    description: 'Espace permettant le partage et le stockage de fichier'
-  }
+  },
+  // {
+  //   name: 'bsDD',
+  //   img: BsDDLogo,
+  //   type: 'data',
+  //   tags: ['Coming Soon'],
+  //   description: 'Espace permettant le partage et le stockage de fichier'
+  // }
 ]
 
 const Marketplace = ({
@@ -135,13 +138,20 @@ const Marketplace = ({
   handleShowMarketplace,
   eids,
   setEids,
-  addElementsNewProperties
+  addElementsNewProperties,
+  specificApplication
 }) => {
   const classes = useStyles();
   const [selectedApp, setSelectedApp] = useState("home");
   const [anchorEl, setAnchorEl] = useState(null);
 
-  useEffect(() => { }, []);
+  useEffect(() => {
+    if (specificApplication) {
+      setSelectedApp(specificApplication);
+    } else {
+      setSelectedApp("home");
+    }
+  }, []);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -257,13 +267,14 @@ const Marketplace = ({
             ))}
           </Grid>
         )}
-        {selectedApp === 'datBIM' &&
+        {selectedApp === 'Open dthX' &&
           <DatBimApi
             viewer={viewer}
             modelID={modelID}
             eids={eids}
             setEids={setEids}
             addElementsNewProperties={addElementsNewProperties}
+            handleShowMarketplace={handleShowMarketplace}
           />
         }
       </CardContent>

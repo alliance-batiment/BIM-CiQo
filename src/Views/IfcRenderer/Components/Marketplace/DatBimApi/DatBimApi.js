@@ -147,7 +147,8 @@ const DatBimApi = ({
   modelID,
   eids,
   setEids,
-  addElementsNewProperties
+  addElementsNewProperties,
+  handleShowMarketplace
 }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [selectedPortal, setSelectedPortal] = useState(null);
@@ -198,8 +199,8 @@ const DatBimApi = ({
         ip: "string",
         lang: "fr",
         local_at: "string",
-        login: "guillaume.cassin@triazur.com", //`${data.get("email")}`,
-        password: "Triazur2022",//`${data.get("password")}`,
+        login: `${data.get("email")}`,
+        password: `${data.get("password")}`,
         service: "string",
       },
     })
@@ -278,6 +279,7 @@ const DatBimApi = ({
             eids={eids}
             setEids={setEids}
             addElementsNewProperties={addElementsNewProperties}
+            handleShowMarketplace={handleShowMarketplace}
           />
         );
       // case 4:
@@ -309,9 +311,6 @@ const DatBimApi = ({
           </Step>
         ))}
       </Stepper>
-      <Typography className={classes.instructions}>
-        {getStepContent(activeStep)}
-      </Typography>
       <div className={classes.navigationBar}>
         <Grid container>
           <Grid item xs={6}>
@@ -327,6 +326,9 @@ const DatBimApi = ({
           </Grid>
         </Grid>
       </div>
+      <Typography className={classes.instructions}>
+        {getStepContent(activeStep)}
+      </Typography>
     </>
   );
 };

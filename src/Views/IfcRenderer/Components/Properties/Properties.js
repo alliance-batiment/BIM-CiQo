@@ -60,7 +60,9 @@ const useStyles = makeStyles((theme) => ({
 const Properties = ({
   viewer,
   element,
-  handleShowProperties,
+  selectedElementID,
+  setSelectedElementID,
+  setShowProperties,
   addElementsNewProperties,
 }) => {
   const classes = useStyles();
@@ -69,11 +71,71 @@ const Properties = ({
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (element) {
-      console.log("elements", element);
-      setIfcElement(element);
+    async function init() {
+      console.log('selectedElementID', selectedElementID);
+      if (selectedElementID) {
+        const elementProperties = await viewer.IFC.getProperties(0, selectedElementID, true, true);
+        console.log('elementProperties', elementProperties)
+        let psets = [];
+        if (elementProperties.psets.length > 0) {
+          psets = await Promise.all(elementProperties.psets.map(async (pset) => {
+            if (pset.HasProperties && pset.HasProperties.length > 0) {
+              const newPset = await Promise.all(pset.HasProperties.map(async (property) => {
+                const label = property.Name.value;
+                const value = property.NominalValue ? property.NominalValue.value : null;
+                return {
+                  label,
+                  value
+                }
+              }));
+
+              return {
+                ...pset,
+                HasProperties: [...newPset]
+              }
+            }
+            if (pset.Quantities && pset.Quantities.length > 0) {
+              const newPset = await Promise.all(pset.Quantities.map(async (property) => {
+                const label = property.Name.value;
+                const value = property.NominalValue ? property.NominalValue.value : null;
+                return {
+                  label,
+                  value
+                }
+              }));
+
+              return {
+                ...pset,
+                HasProperties: [...newPset]
+              }
+            }
+            return {
+              ...pset,
+              HasProperties: []
+            }
+          }));
+
+        }
+        const elem = {
+          ...elementProperties,
+          name: elementProperties.Name ? elementProperties.Name.value : 'NO NAME',
+          type: 'NO TYPE',
+          modelID: 0,
+          psets
+        };
+        console.log('elem', elem)
+        setIfcElement(elem);
+      }
+
+      // else {
+      //   if (element) {
+      //     console.log("elements", element);
+      //     setIfcElement(element);
+      //   }
+      // }
     }
-  }, []);
+    init();
+  }, [selectedElementID]);
 
   const handleShowElement = async () => {
     const modelID = element.modelID;
@@ -134,7 +196,7 @@ const Properties = ({
                 </ListItemIcon>
                 <ListItemText primary="Visibility" />
               </ListItem> */}
-              <ListItem
+              {/* <ListItem
                 button
                 onClick={() => {
                   addElementsNewProperties({
@@ -148,8 +210,11 @@ const Properties = ({
                   <AddIcon />
                 </ListItemIcon>
                 <ListItemText primary="Ajouter propriété" />
-              </ListItem>
-              <ListItem button onClick={handleShowProperties}>
+              </ListItem> */}
+              <ListItem button onClick={() => {
+                setShowProperties(false);
+                setSelectedElementID(null);
+              }}>
                 <ListItemIcon>
                   <ClearIcon />
                 </ListItemIcon>
@@ -158,14 +223,14 @@ const Properties = ({
             </Popover>
           </div>
         }
-        title={`${element ? element.Name.value : "Undefined"}`}
-        subheader={`${element.type}`}
+        title={`${ifcElement ? ifcElement.name : "Undefined"}`}
+        subheader={`${ifcElement ? ifcElement.type : "Undefined"}`}
       />
       {isLoading ? (
         <CircularProgress color="inherit" />
       ) : (
         <CardContent className={classes.cardContent}>
-          {element && (
+          {ifcElement && (
             <>
               <Accordion>
                 <AccordionSummary
@@ -183,23 +248,23 @@ const Properties = ({
                       <TableBody>
                         <TableRow key={0}>
                           <TableCell>{`GlobalId`}</TableCell>
-                          <TableCell>{`${element.GlobalId.value}`}</TableCell>
+                          <TableCell>{`${ifcElement.GlobalId.value}`}</TableCell>
                         </TableRow>
                         <TableRow key={1}>
                           <TableCell>{`Name`}</TableCell>
-                          <TableCell>{`${element.Name.value}`}</TableCell>
+                          <TableCell>{`${ifcElement.name}`}</TableCell>
                         </TableRow>
                         <TableRow key={2}>
                           <TableCell>{`Type`}</TableCell>
-                          <TableCell>{`${element.type}`}</TableCell>
+                          <TableCell>{`${ifcElement.type}`}</TableCell>
                         </TableRow>
                       </TableBody>
                     </Table>
                   </TableContainer>
                 </AccordionDetails>
               </Accordion>
-              {element.psets.length > 0 &&
-                element.psets.map((pset, i) => (
+              {ifcElement.psets.length > 0 &&
+                ifcElement.psets.map((pset, i) => (
                   <Accordion key={i}>
                     <AccordionSummary
                       expandIcon={<ExpandMoreIcon />}

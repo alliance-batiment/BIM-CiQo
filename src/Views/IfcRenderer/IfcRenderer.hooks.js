@@ -125,12 +125,13 @@ function UseIfcRenderer({
 
     if (found == null || found == undefined) {
       await viewer.IFC.unpickIfcItems();
+      setEids([]);
       return
     };
 
     setModelID(found.modelID);
     setEids([found.id]);
-
+    console.log('eid', eids)
     select(viewer, setModelID, found.modelID, found.id, false);
     const elementProperties = await viewer.IFC.getProperties(found.modelID, found.id, true, true);
     console.log(elementProperties);
@@ -198,6 +199,14 @@ function UseIfcRenderer({
     return { type: 5, value: v }
   }
 
+  function ifcLabel(v) {
+    return { type: 2, label: 'IFCLABEL', valueType: 1, value: v }
+  }
+
+  function ifcText(v) {
+    return { type: 2, label: 'IFCTEXT', valueType: 1, value: v }
+  }
+
   const addDataToIfc = async ({
     viewer,
     modelId,
@@ -218,8 +227,8 @@ function UseIfcRenderer({
         propertyEid,
         IFCPROPERTYSINGLEVALUE,
         str(`${property.property_name}`),
-        empty(),
-        str(`${property.text_value}`),
+        str(`${property.property_name}`),
+        ifcText(`${property.text_value}`),
         empty(),
       );
 
@@ -239,7 +248,7 @@ function UseIfcRenderer({
       IFCPROPERTYSET,
       str(Math.random().toString(16).substr(2, 8)),
       ref(33),
-      str('Pset_OPENDTHX'),
+      str('Pset_OpendthX'),
       empty(),
       propertiesEids
     );

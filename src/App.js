@@ -33,6 +33,7 @@ const Menu = {
 };
 
 const {
+  REACT_APP_FAVICON,
   REACT_APP_LOGO,
   REACT_APP_COMPANY
 } = process.env;
@@ -67,21 +68,21 @@ const App = () => {
     <ThemeProvider theme={theme}>
       <Helmet>
         <title>{`${REACT_APP_COMPANY} | Applications`}</title>
-        <link rel="icon" type="image/png" href={`${REACT_APP_LOGO}`} sizes="16x16" />
+        <link rel="icon" type="image/png" href={`${REACT_APP_FAVICON}`} sizes="16x16" />
       </Helmet>
       <Router history={history}>
         <AppContainerElem
           title={
             <>
-              {REACT_APP_COMPANY === 'VBMC' ?
-                <>
-                  <img
-                    alt={`${REACT_APP_COMPANY}`}
-                    src={`${REACT_APP_LOGO}`}
-                    style={{ height: '2em', width: 'auto' }}
-                  />
-                </>
-                :
+              {/* {REACT_APP_COMPANY === 'VBMC' ? */}
+              <>
+                <img
+                  alt={`${REACT_APP_COMPANY}`}
+                  src={`${REACT_APP_LOGO}`}
+                  style={{ height: '2em', width: 'auto' }}
+                />
+              </>
+              {/* :
                 <ListItem>
                   <ListItemAvatar>
                     <Avatar
@@ -102,7 +103,7 @@ const App = () => {
                     </Typography>
                   </ListItemText>
                 </ListItem>
-              }
+              } */}
             </>
           }
           menu={Menu}
