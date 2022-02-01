@@ -1,0 +1,98 @@
+<svg
+	xmlns="http://www.w3.org/2000/svg"
+	xmlns:xlink="http://www.w3.org/1999/xlink" width="934" height="281.923" viewBox="0 0 934 281.923">
+	<defs>
+		<filter id="a" x="70.755" y="8.414" width="120.171" height="188.106" filterUnits="userSpaceOnUse">
+			<feOffset input="SourceAlpha"/>
+			<feGaussianBlur stdDeviation="10" result="b"/>
+			<feFlood flood-opacity="0.349"/>
+			<feComposite operator="in" in2="b"/>
+			<feComposite in="SourceGraphic"/>
+		</filter>
+		<filter id="c" x="71.403" y="146.225" width="120.171" height="135.699" filterUnits="userSpaceOnUse">
+			<feOffset input="SourceAlpha"/>
+			<feGaussianBlur stdDeviation="10" result="d"/>
+			<feFlood flood-opacity="0.349"/>
+			<feComposite operator="in" in2="d"/>
+			<feComposite in="SourceGraphic"/>
+		</filter>
+		<filter id="e" x="7.202" y="19.891" width="130.523" height="185.518" filterUnits="userSpaceOnUse">
+			<feOffset input="SourceAlpha"/>
+			<feGaussianBlur stdDeviation="10" result="f"/>
+			<feFlood flood-opacity="0.349"/>
+			<feComposite operator="in" in2="f"/>
+			<feComposite in="SourceGraphic"/>
+		</filter>
+		<filter id="g" x="124.309" y="21.185" width="129.876" height="186.812" filterUnits="userSpaceOnUse">
+			<feOffset input="SourceAlpha"/>
+			<feGaussianBlur stdDeviation="10" result="h"/>
+			<feFlood flood-opacity="0.349"/>
+			<feComposite operator="in" in2="h"/>
+			<feComposite in="SourceGraphic"/>
+		</filter>
+		<filter id="i" x="234.5" y="0" width="204" height="260" filterUnits="userSpaceOnUse">
+			<feOffset input="SourceAlpha"/>
+			<feGaussianBlur stdDeviation="1.5" result="j"/>
+			<feFlood flood-opacity="0.251"/>
+			<feComposite operator="in" in2="j"/>
+			<feComposite in="SourceGraphic"/>
+		</filter>
+		<clipPath id="k">
+			<rect width="357" height="262" transform="translate(-0.271 0.315)" fill="rgba(0,0,0,0)" stroke="#707070" stroke-width="1"/>
+		</clipPath>
+		<filter id="l" x="575.5" y="-1" width="365" height="262" filterUnits="userSpaceOnUse">
+			<feOffset input="SourceAlpha"/>
+			<feGaussianBlur stdDeviation="1.5" result="m"/>
+			<feFlood flood-opacity="0.251"/>
+			<feComposite operator="in" in2="m"/>
+			<feComposite in="SourceGraphic"/>
+		</filter>
+		<filter id="n" x="405.772" y="42.487" width="217.662" height="210.935" filterUnits="userSpaceOnUse">
+			<feOffset input="SourceAlpha"/>
+			<feGaussianBlur stdDeviation="12.5" result="o"/>
+			<feFlood flood-opacity="0.349"/>
+			<feComposite operator="in" in2="o"/>
+			<feComposite in="SourceGraphic"/>
+		</filter>
+	</defs>
+	<g transform="translate(-900 -439.815)">
+		<g transform="translate(900 459.684)">
+			<g transform="translate(0 0)">
+				<rect width="262" height="259" transform="translate(0 -0.369)" fill="none"/>
+			</g>
+			<g transform="translate(37.202 18.545)">
+				<g transform="matrix(1, 0, 0, 1, -37.2, -38.41)" filter="url(#a)">
+					<path d="M154.727,160.368,184.812,32.262,214.9,160.368Z" transform="translate(-53.97 6.15)" fill="#007fff"/>
+				</g>
+				<g transform="matrix(1, 0, 0, 1, -37.2, -38.41)" filter="url(#c)">
+					<path d="M0,75.7,30.085,0,60.171,75.7Z" transform="translate(161.57 251.92) rotate(180)" fill="#007fff"/>
+				</g>
+				<g transform="matrix(1, 0, 0, 1, -37.2, -38.41)" filter="url(#e)">
+					<path d="M56.5,175.518l44.643-7.764L127.023,50l-.138.246Z" transform="translate(-19.3 -0.11)" fill="#fff"/>
+				</g>
+				<g transform="matrix(1, 0, 0, 1, -37.2, -38.41)" filter="url(#g)">
+					<path d="M262.733,169.107l44.643,9.705L237.5,52Z" transform="translate(-83.19 -0.82)" fill="#fcfcfc"/>
+				</g>
+			</g>
+		</g>
+		<g transform="translate(1139.263 444)">
+			<g transform="matrix(1, 0, 0, 1, -239.26, -4.18)" filter="url(#i)">
+				<text transform="translate(239 208.5)" fill="#007fff" font-size="189" font-family="SegoeUI, Segoe UI, sans-serif">
+					<tspan x="0" y="0">Tri</tspan>
+				</text>
+			</g>
+			<g transform="translate(338.007)" clip-path="url(#k)">
+				<g transform="translate(3.798)">
+					<g transform="matrix(1, 0, 0, 1, -581.07, -4.18)" filter="url(#l)">
+						<text transform="translate(581 208.5)" fill="#007fff" stroke="rgba(0,0,0,0)" stroke-width="1" font-size="189" font-family="SegoeUI, Segoe UI, sans-serif">
+							<tspan x="0" y="0">yme</tspan>
+						</text>
+					</g>
+				</g>
+			</g>
+			<g transform="matrix(1, 0, 0, 1, -240.26, -4.18)" filter="url(#n)">
+				<path d="M145.4,142.267H8.682L39.95,122.109h74.217ZM5.72,136.9h0L72.353,6.332V50.483L38.229,115.941l-32.5,20.954Zm142.662,0h0l-32.5-20.966L81.851,50.687V6.536l66.523,130.339Z" transform="translate(437.55 73.65)" fill="#fff"/>
+			</g>
+		</g>
+	</g>
+</svg>
