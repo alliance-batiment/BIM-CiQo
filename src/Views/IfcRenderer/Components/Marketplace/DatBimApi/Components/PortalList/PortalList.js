@@ -39,7 +39,7 @@ const PortalList = ({
               handleNext();
             }}
           >
-            <p className={classes.datBimCardTitle}> {portal.portal_name}</p>
+            <p data-testid="portalName" className={classes.datBimCardTitle}> {portal.portal_name}</p>
           </CardContent>
         </Card>
       ))}

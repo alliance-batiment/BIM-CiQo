@@ -25,7 +25,9 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import AddIcon from "@material-ui/icons/Add";
 import ClearIcon from "@material-ui/icons/Clear";
+import DownloadIcon from '@mui/icons-material/Download';
 import VisibilityIcon from "@material-ui/icons/Visibility";
+import * as WebIFC from "web-ifc";
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -63,6 +65,7 @@ const Properties = ({
   selectedElementID,
   setSelectedElementID,
   setShowProperties,
+  handleShowMarketplace,
   addElementsNewProperties,
 }) => {
   const classes = useStyles();
@@ -73,9 +76,11 @@ const Properties = ({
   useEffect(() => {
     async function init() {
       console.log('selectedElementID', selectedElementID);
+
       if (selectedElementID) {
         const elementProperties = await viewer.IFC.getProperties(0, selectedElementID, true, true);
         console.log('elementProperties', elementProperties)
+        console.log('ifcClass', await viewer.IFC.loader.ifcManager.getIfcType(0, selectedElementID))
         let psets = [];
         if (elementProperties.psets.length > 0) {
           psets = await Promise.all(elementProperties.psets.map(async (pset) => {
@@ -153,6 +158,71 @@ const Properties = ({
     setAnchorEl(null);
   };
 
+  const handleAddProperties = async () => {
+    handleShowMarketplace('Open dthX');
+    setShowProperties(false);
+  }
+
+  const downloadFile = ({ data, fileName, fileType }) => {
+    // Create a blob with the data we want to download as a file
+    const blob = new Blob([data], { type: fileType });
+    // Create an anchor element and dispatch a click event on it
+    // to trigger a download
+    const a = document.createElement('a')
+    a.download = fileName
+    a.href = window.URL.createObjectURL(blob)
+    const clickEvt = new MouseEvent('click', {
+      view: window,
+      bubbles: true,
+      cancelable: true,
+    })
+    a.dispatchEvent(clickEvt)
+    a.remove()
+  }
+
+  // const handleExportToJson = e => {
+  //   e.preventDefault()
+  //   downloadFile({
+  //     data: JSON.stringify(usersData.users),
+  //     fileName: `${ifcElement ? ifcElement.name : "Undefined"}.csv`,
+  //     fileType: 'text/json',
+  //   })
+  // }
+
+  const handleExportToCsv = e => {
+    e.preventDefault()
+    // Headers for each column
+    let propertiesCsv = [];
+    let headers = ['modelId', 'elementName', 'elementClass', 'globalId', 'expressId', 'psetName', 'propertyName', 'propertyValue'].join(',');
+    propertiesCsv.push(headers)
+    // Convert Properties data to a csv
+
+    // let propertiesCsv = ifcElement.psets?.map(pset => pset.HasProperties?.reduce((acc, property) => {
+    //   const { label, value } = property
+    //   acc.push([label, `${value} \n`].join(','))
+    //   console.log(acc[acc.length - 1])
+    //   return acc
+    // }, []));
+
+    console.log('ifcElement', ifcElement)
+    ifcElement.psets?.forEach(pset => pset.HasProperties?.forEach((property) => {
+      const modelID = `${ifcElement.modelID}`;
+      const elementName = `${ifcElement.name}`;
+      const elementClass = `${ifcElement.type}`;
+      const globalID = `${ifcElement.GlobalId.value}`;
+      const expressID = `${ifcElement.expressID}`;
+      const psetName = `${pset.Name.value}`;
+      const { label: propertyName, value: propertyValue } = property;
+      propertiesCsv.push([modelID, elementName, elementClass, globalID, expressID, psetName, propertyName, propertyValue].join(','))
+    }));
+
+    downloadFile({
+      data: [...propertiesCsv].join('\n'),
+      fileName: `${ifcElement ? ifcElement.name : "Undefined"}.csv`,
+      fileType: 'text/csv',
+    })
+  }
+
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
 
@@ -196,21 +266,28 @@ const Properties = ({
                 </ListItemIcon>
                 <ListItemText primary="Visibility" />
               </ListItem> */}
-              {/* <ListItem
-                button
-                onClick={() => {
-                  addElementsNewProperties({
-                    viewer,
-                    modelID: element.modelID,
-                    expressIDs: [element.expressID],
-                  });
-                }}
-              >
-                <ListItemIcon>
-                  <AddIcon />
-                </ListItemIcon>
-                <ListItemText primary="Ajouter propriété" />
-              </ListItem> */}
+              {ifcElement && (
+                <>
+                  <ListItem
+                    button
+                    onClick={handleExportToCsv}
+                  >
+                    <ListItemIcon>
+                      <DownloadIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Télécharger CSV" />
+                  </ListItem>
+                  <ListItem
+                    button
+                    onClick={handleAddProperties}
+                  >
+                    <ListItemIcon>
+                      <AddIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Ajouter propriété" />
+                  </ListItem>
+                </>
+              )}
               <ListItem button onClick={() => {
                 setShowProperties(false);
                 setSelectedElementID(null);

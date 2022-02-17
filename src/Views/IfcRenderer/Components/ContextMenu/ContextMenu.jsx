@@ -15,16 +15,27 @@ import DescriptionIcon from '@material-ui/icons/Description';
 import Cloud from '@mui/icons-material/Cloud';
 import useContextMenu from "./ContextMenu.hooks";
 import OpenDthxLogo from './img/OpenDthxLogo.png';
+import {
+  MeshLambertMaterial,
+  MeshBasicMaterial,
+  DoubleSide,
+  MeshPhysicalMaterial,
+  Mesh
+} from 'three';
+import { VisibilityManager } from 'web-ifc-viewer/dist/components/ifc/visibility-manager';
 
 const ContextMenu = ({
   viewer,
   showContextMenu,
+  meshMaterials,
   setShowContextMenu,
   setShowProperties,
   setShowSpatialStructure,
   handleShowMarketplace,
   eids,
   setEids,
+  subsets,
+  setSubsets
 }) => {
   const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
 
@@ -67,6 +78,77 @@ const ContextMenu = ({
     setShowContextMenu(false);
   }
 
+  const handleShowModel = async () => {
+    console.log(meshMaterials['invisibleMaterial']);
+    console.log(meshMaterials['invisibleMaterial'].uuid);
+
+    subsets.forEach(subset => {
+      viewer.IFC.loader.ifcManager.removeSubset(0, subset.material, 'DEFAULT');
+    })
+  }
+
+  const handleIsolateElement = async () => {
+    // const preselectMat = new MeshLambertMaterial({
+    //   transparent: true,
+    //   opacity: 0.0,
+    //   color: 0xff88ff,
+    //   depthTest: false
+    // })
+    console.log('viewer.IFC.loader.ifcManager.subsets', viewer.IFC.loader.ifcManager.subsets)
+    const models = viewer.context.items.ifcModels;
+    console.log('models', models);
+    const ids = Array.from(
+      new Set(models[0].geometry.attributes.expressID.array)
+    )
+    console.log('ids', ids)
+    const idsHidden = ids.reduce(function (acc, id) {
+      if (eids.indexOf(id) === -1) {
+        acc.push(id);
+      }
+      return acc;
+    }, []);
+
+    console.log('idsHidden', idsHidden)
+    const type = 'invisibleMaterial';
+    console.log(meshMaterials[type].uuid)
+    let mesh = viewer.IFC.loader.ifcManager.createSubset({
+      modelID: 0,
+      ids: idsHidden,
+      material: meshMaterials[type],
+      scene: viewer.IFC.context.scene.scene,
+      removePrevious: true
+    });
+
+    console.log('mesh', mesh)
+    viewer.IFC.selector.selection.hideSelection(mesh);
+    setSubsets([...subsets, { type, material: meshMaterials[type] }]);
+    console.log('viewer.IFC.loader.ifcManager.subsets', viewer.IFC.loader.ifcManager.subsets)
+
+    // mesh.visible = false;
+
+    // setShowContextMenu(false);
+    // viewer.IFC.selector.selection
+  }
+
+  // const handleIsolateElement = async () => {
+  //   const visibilityManager = new VisibilityManager(viewer.IFC.loader, viewer.context);
+  //   const invisibleMaterial = visibilityManager.invisibleMaterial;
+  //   const modelID = 0;
+  //   visibilityManager.createIsolationSubset(modelID, eids, true);
+  //   const models = viewer.context.items.ifcModels;
+  //   visibilityManager.makeIsolatedSubsetPickable(models[modelID]);
+  //   visibilityManager.changeModelMaterial(modelID, invisibleMaterial);
+  //   visibilityManager.makeModelNotPickable(modelID);
+
+  //   // viewer.IFC.loader.ifcManager.createSubset({
+  //   //   modelID: 0,
+  //   //   ids: ids,
+  //   //   material: preselectMat,
+  //   //   scene: viewer.IFC.context.scene.scene,
+  //   //   removePrevious: true
+  //   // })
+  // }
+
   return (
     showContextMenu &&
     <Paper sx={{ width: 250, maxWidth: '100%', top: anchorPoint.y, left: anchorPoint.x, position: 'absolute' }}>
@@ -79,13 +161,17 @@ const ContextMenu = ({
           </ListItemIcon>
           <ListItemText>Sélection par Classe</ListItemText>
         </MenuItem>
-        {/* <MenuItem>
+        {/* <MenuItem
+          onClick={handleIsolateElement}
+        >
           <ListItemIcon>
             <ContentCopy fontSize="small" />
           </ListItemIcon>
           <ListItemText>Isoler</ListItemText>
         </MenuItem>
-        <MenuItem>
+        <MenuItem
+          onClick={handleShowModel}
+        >
           <ListItemIcon>
             <ContentPaste fontSize="small" />
           </ListItemIcon>
