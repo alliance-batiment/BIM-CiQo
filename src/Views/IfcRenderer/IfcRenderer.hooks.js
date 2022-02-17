@@ -29,6 +29,8 @@ import {
   MeshBasicMaterial
 } from 'three';
 import { TransformControls } from "three/examples/jsm/controls/TransformControls";
+import { BuildModel } from './Utils/addColumns';
+
 
 function UseIfcRenderer({
   eids,
@@ -50,6 +52,15 @@ function UseIfcRenderer({
 
     return db;
   }
+
+
+  const meshMaterials = {
+    invisibleMaterial: new MeshLambertMaterial({
+      transparent: true,
+      opacity: 0.1,
+      color: 0x77aaff
+    })
+  };
 
   const getModels = async (db) => {
     let allModels = await db.models.toArray();
@@ -109,6 +120,12 @@ function UseIfcRenderer({
     // if (event.code === 'KeySpacebar') {
     //   transformControls.enabled = !transformControls.enabled;
     // }
+  }
+
+  const handleSelectedElementsIsolation = ({
+    eids
+  }) => {
+
   }
 
   const select = (viewer, setModelID, modelID, expressID, pick = true) => {
@@ -315,13 +332,27 @@ function UseIfcRenderer({
     }
   }
 
+  const addGeometryToIfc = async ({
+    viewer,
+    modelId
+  }) => {
+    const allLines = await viewer.IFC.loader.ifcManager.state.api.GetAllLines(modelId);
+    let maxExpressId = 0;
+    await Object.keys(allLines._data).forEach(index => {
+      maxExpressId = Math.max(maxExpressId, allLines._data[index])
+    });
+    const ifcApi = viewer.IFC.loader.ifcManager.state.api;
+    await BuildModel(modelId, ifcApi);
+  }
   return {
     models,
+    meshMaterials,
     initIndexDB,
     getModels,
     addTransformControls,
     getElementProperties,
-    addElementsNewProperties
+    addElementsNewProperties,
+    addGeometryToIfc
   }
 };
 

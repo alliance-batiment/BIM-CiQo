@@ -42,136 +42,46 @@ const ObjectList = ({
   handleNext,
   typeProperties,
   selectedPortal,
-  handleShowMarketplace
+  handleShowMarketplace,
 }) => {
   const [searchInput, setSearchInput] = useState("");
   const [objects, setObjects] = useState([]);
   const [objectListDefault, setObjectListDefault] = useState([]);
   const [objectsLoader, setObjectsLoader] = useState(false);
-  const [objectListBeforeFlatting, setObjectListBeforeFlatting] = useState({});
+  const [objectListing, setObjectListing] = useState({});
+
+  // const classes = await axios.get(
+  //   `${process.env.REACT_APP_API_DATBIM}/classes/mapping/${typeProperties}`,
+  //   {
+  //     headers: {
+  //       "content-type": "application/json",
+  //       "X-Auth-Token": sessionStorage.getItem("token"),
+  //     },
+  //   }
+  // );
 
   useEffect(() => {
-    setObjectsLoader(true);
-    async function getObjectsOfSelectedObject() {
-      // const classes = await axios.get(
-      //   `${process.env.REACT_APP_API_DATBIM}/classes/mapping/${typeProperties}`,
-      //   {
-      //     headers: {
-      //       "content-type": "application/json",
-      //       "X-Auth-Token": sessionStorage.getItem("token"),
-      //     },
-      //   }
-      // );
-
-      const objectSet = await axios.get(
-        `${process.env.REACT_APP_API_DATBIM}/objects/${selectedObjectSet}`,
-        {
-          headers: {
-            "content-type": "application/json",
-            "X-Auth-Token": sessionStorage.getItem("token"),
-          },
-        }
-      );
-
-      try {
-        const values = await Promise.allSettled(
-          objectSet.data.children.map(async (children) => {
-            return await axios.get(
-              `${process.env.REACT_APP_API_DATBIM}/objects/${children.id}`,
-              {
-                headers: {
-                  "X-Auth-Token": sessionStorage.getItem("token"),
-                },
-              }
-            );
-          })
-        );
-
-        // const objects = values.reduce((acc, value) => {
-        // 	if (value.data.properties) {
-        // 		return acc.concat(value.data.properties);
-        // 	}
-
-        // 	return acc;
-        // }, [])
-
-        const objects = values.reduce((acc, value) => {
-          if (value.status === "fulfilled") {
-            acc.push(value.value.data);
-          }
-          return acc;
-        }, []);
-
-        await getChildren(objects, false);
-      } catch (error) {
-        console.log("error get objects", error);
-      }
-    }
     getObjectsOfSelectedObject();
   }, []);
 
-  async function getChildren(objects, isChildrenObject) {
-    let newObjects = [...objects];
+  async function getObjectsOfSelectedObject() {
+    setObjectsLoader(true);
 
-    for (let i = 0; i < newObjects.length; i++) {
-      for (let j = 0; j < newObjects[i].children.length; j++) {
-        if (newObjects[i].children[j].name === undefined) {
-          const newChildData = await axios.get(newObjects[i].children[j].ref, {
-            headers: {
-              "X-Auth-Token": sessionStorage.getItem("token"),
-            },
-          });
-          newObjects[i].children[j] = newChildData.data;
-        }
-
-        if (
-          newObjects[i].children[j].children !== undefined &&
-          newObjects[i].children[j].children.length > 0
-        ) {
-          await getChildren([newObjects[i].children[j]], true);
-        }
+    const treeOfObjectSet = await axios.get(
+      `${process.env.REACT_APP_API_DATBIM}/objects/${selectedObjectSet}/tree-structure`,
+      {
+        headers: {
+          "content-type": "application/json",
+          "X-Auth-Token": sessionStorage.getItem("token"),
+        },
       }
-    }
+    );
 
-    if (!isChildrenObject) {
-      setObjectListBeforeFlatting({
-        id: selectedObjectSet,
-        name: selectedObjectSetName,
-        children: [...newObjects],
-      });
-      flatChildren(newObjects);
-      setObjectListDefault(newObjects);
-      setObjects(newObjects);
-      setObjectsLoader(false);
-    }
-  }
+    setObjects(treeOfObjectSet.data.children);
 
-  async function flatChildren(objects) {
-    //console.log("objects ==>", objects);
-    objects.forEach((object, index) => {
-      if (
-        object.children !== undefined &&
-        object.children.length > 0 &&
-        (object.flatened === undefined || object.flatened === false)
-      ) {
-        objects.splice(index + 1, 0, ...object.children);
-        object.flatened = true;
-      }
-    });
-    let haveChildren = false;
-    objects.forEach((object) => {
-      if (
-        object.children !== undefined &&
-        object.children.length > 0 &&
-        (object.flatened === undefined || object.flatened === false)
-      ) {
-        haveChildren = true;
-      }
-    });
+    setObjectListing(treeOfObjectSet.data);
 
-    if (haveChildren) {
-      flatChildren(objects);
-    }
+    setObjectsLoader(false);
   }
 
   async function getObjects(typeProperties, selectedPage) {
@@ -250,21 +160,7 @@ const ObjectList = ({
       setObjects([]);
       setObjectsLoader(false);
     }
-
-    // const objects = objectsList.reduce((acc, value) => {
-    // 	if (value.data.properties) {
-    // 		return acc.concat(value.data.properties);
-    // 	}
-
-    // 	return acc;
-    // }, [])
   }
-
-  console.log(objectListBeforeFlatting);
-
-  // Deux ID reçus parent + enfant.
-  // Si pas d'enfant, récupérer premier ID (le second étant le parent)
-  // Passer l'ID dans properties et afficher ses propriétés.
 
   const renderTree = (nodes) => (
     <TreeItem
@@ -302,27 +198,7 @@ const ObjectList = ({
               </Grid>
             ) : (
               <>
-                {/* {objects?.map((object, index) => (
-                  <Card
-                    key={index}
-                    className={`${classes.root} ${classes.datBimCard}`}
-                  >
-                    <CardContent
-                      onClick={() => {
-                        setSelectedObject(object.id);
-                        //console.log("object.id ==>", object.id);
-                      }}
-                    >
-                      <p className={classes.datBimCardTitle}>
-                        {object.parent_name}
-                      </p>
-                      <p className={classes.datBimCardTitle}>
-                        {object.organization_name} - {object.name}
-                      </p>
-                    </CardContent>
-                  </Card>
-                ))} */}
-                {objectListBeforeFlatting && (
+                {objectListing && (
                   <TreeView
                     aria-label="rich object"
                     defaultCollapseIcon={<ExpandMoreIcon />}
@@ -335,7 +211,7 @@ const ObjectList = ({
                       overflowY: "auto",
                     }}
                   >
-                    {renderTree(objectListBeforeFlatting)}
+                    {renderTree(objectListing)}
                   </TreeView>
                 )}
 

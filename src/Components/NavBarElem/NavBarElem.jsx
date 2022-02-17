@@ -38,22 +38,24 @@ const NavBarElem = ({ title, classes, handleDrawerOpen, open }) => {
         <Typography variant="h6" noWrap>
           {title}
         </Typography>
-        <div style={{ position: "absolute", right: "10px" }}>
-          <a
-            href="https://boxboisbim.mydatbim.com/mydatbimCom/mentions-legales"
-            style={{ color: "inherit", margin: "0 20px" }}
-            target="_blank"
-          >
-            Mentions légales
-          </a>
-          <a
-            href="https://www.datbim.com/template/contact/377864"
-            style={{ color: "inherit", margin: "0 20px" }}
-            target="_blank"
-          >
-            Contact
-          </a>
-        </div>
+        {REACT_APP_COMPANY === "VBMC" &&
+          <div style={{ position: "absolute", right: "10px" }}>
+            <a
+              href="https://boxboisbim.mydatbim.com/mydatbimCom/mentions-legales"
+              style={{ color: "inherit", margin: "0 20px" }}
+              target="_blank"
+            >
+              Mentions légales
+         </a>
+            <a
+              href="https://www.datbim.com/template/contact/377864"
+              style={{ color: "inherit", margin: "0 20px" }}
+              target="_blank"
+            >
+              Contact
+         </a>
+          </div>
+        }
       </Toolbar>
     </AppBar>
   );
