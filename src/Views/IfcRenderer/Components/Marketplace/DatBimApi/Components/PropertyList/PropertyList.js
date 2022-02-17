@@ -70,7 +70,7 @@ const PropertyList = ({
   eids,
   setEids,
   addElementsNewProperties,
-  handleShowMarketplace
+  handleShowMarketplace,
 }) => {
   const [searchInput, setSearchInput] = useState("");
   const [propertyListDefault, setPropertyListDefault] = useState([]);
@@ -141,11 +141,9 @@ const PropertyList = ({
       });
   }
 
-  console.log("selectedObject", selectedObject)
   useEffect(() => {
     async function getPropertiesValues() {
       try {
-        console.log("selectedObject", selectedObject)
         const { data: dataProp } = await axios.get(
           `${process.env.REACT_APP_API_DATBIM}/objects/${selectedObject}/properties-values`,
           {
@@ -189,10 +187,10 @@ const PropertyList = ({
       viewer,
       modelID,
       expressIDs: eids,
-      properties
+      properties,
     });
-    handleShowMarketplace('home');
-  }
+    handleShowMarketplace("home");
+  };
 
   return (
     <TableContainer component={Paper}>

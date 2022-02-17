@@ -30,11 +30,18 @@ import MoreVertIcon from '@material-ui/icons/MoreVert';
 import ClearIcon from '@material-ui/icons/Clear';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import DatBimApi from './DatBimApi/DatBimApi';
+import DropBox from "./DropBox/DropBox";
+import BsDD from "./BsDD";
+import AxeoBim from './AxeoBim';
+import Web3 from './Web3';
+import TriStructure from './TriStructure';
+import DropboxChooser from 'react-dropbox-chooser';
 import OpenDthxLogo from './img/OpenDthxLogo.png';
 import DropBoxLogo from './img/DropBoxLogo.png';
 import GoogleDriveLogo from './img/GoogleDriveLogo.png';
 import BsDDLogo from './img/bsDDLogo.png';
 import AxeoBimLogo from './img/AxeoBimLogo.jpeg';
+import IpfsLogo from './img/IpfsLogo.png';
 import TriStructureLogo from './img/TriStructureLogo.png';
 
 const useStyles = makeStyles((theme) => ({
@@ -96,19 +103,19 @@ const applications = [
     type: 'data',
     description: "Base de données permettant l'enrichissement de la maquette"
   },
-  // {
-  //   name: 'Dropbox',
-  //   img: DropBoxLogo,
-  //   type: 'storage',
-  //   description: 'Espace permettant le partage et le stockage de fichier'
-  // },
+  {
+    name: 'DropBox',
+    img: DropBoxLogo,
+    type: 'storage',
+    description: 'Espace permettant le partage et le stockage de fichier'
+  },
   // {
   //   name: 'TriStructure',
   //   img: TriStructureLogo,
   //   type: 'structural analysis',
   //   tags: ['Coming Soon'],
   //   description: "Application permettant la génération d'un modèle analytique pour du calcul de structure"
-  // }, 
+  // },
   // {
   //   name: 'Google Drive',
   //   img: GoogleDriveLogo,
@@ -116,21 +123,33 @@ const applications = [
   //   tags: ['Coming Soon'],
   //   description: 'Espace permettant le partage et le stockage de fichier'
   // }, 
-  {
-    name: 'AxeoBIM',
-    img: AxeoBimLogo,
-    type: 'storage',
-    tags: ['Coming Soon'],
-    description: 'Espace permettant le partage et le stockage de fichier'
-  },
+  // {
+  //   name: 'AxeoBIM',
+  //   img: AxeoBimLogo,
+  //   type: 'storage',
+  //   tags: ['Coming Soon'],
+  //   description: 'Espace permettant le partage et le stockage de fichier'
+  // },
   // {
   //   name: 'bsDD',
   //   img: BsDDLogo,
   //   type: 'data',
   //   tags: ['Coming Soon'],
   //   description: 'Espace permettant le partage et le stockage de fichier'
-  // }
+  // },
+  // {
+  //   name: 'Web3',
+  //   img: IpfsLogo,
+  //   type: 'Storage & Validation',
+  //   tags: ['Coming Soon'],
+  //   description: 'Espace permettant le partage et le stockage de fichier de manière décentralisée'
+  // },
 ]
+
+
+const {
+  REACT_APP_DROPBOX_APP_KEY
+} = process.env;
 
 const Marketplace = ({
   viewer,
@@ -138,12 +157,14 @@ const Marketplace = ({
   handleShowMarketplace,
   eids,
   setEids,
+  onDrop,
   addElementsNewProperties,
   specificApplication
 }) => {
   const classes = useStyles();
   const [selectedApp, setSelectedApp] = useState("home");
   const [anchorEl, setAnchorEl] = useState(null);
+  const [url, setUrl] = useState("")
 
   useEffect(() => {
     if (specificApplication) {
@@ -160,6 +181,16 @@ const Marketplace = ({
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+
+  async function handleSuccess(files) {
+    // setUrl(files[0].thumbnailLink);
+    const rawResponse = await fetch(files[0].link);
+    const result = await rawResponse.text();
+    const ifcBlob = new Blob([result], { type: 'text/plain' });
+    const file = new File([ifcBlob], 'ifcFile');
+    onDrop([file]);
+  }
 
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
@@ -232,11 +263,11 @@ const Marketplace = ({
                 >
                   <CardActionArea
                     onClick={() => {
-                      if (application.name === 'Dropbox') {
-                        viewer.openDropboxWindow();
-                      } else {
-                        setSelectedApp(application.name);
-                      }
+                      // if (application.name === 'Dropbox') {
+                      //   viewer.openDropboxWindow();
+                      // } else {
+                      setSelectedApp(application.name);
+                      // }
                     }}
                   >
                     <CardHeader
@@ -269,6 +300,51 @@ const Marketplace = ({
         )}
         {selectedApp === 'Open dthX' &&
           <DatBimApi
+            viewer={viewer}
+            modelID={modelID}
+            eids={eids}
+            setEids={setEids}
+            addElementsNewProperties={addElementsNewProperties}
+            handleShowMarketplace={handleShowMarketplace}
+          />
+        }
+        {selectedApp === 'AxeoBIM' &&
+          <AxeoBim
+            viewer={viewer}
+            modelID={modelID}
+            eids={eids}
+            setEids={setEids}
+            addElementsNewProperties={addElementsNewProperties}
+            handleShowMarketplace={handleShowMarketplace}
+          />
+        }
+        {selectedApp === 'DropBox' &&
+          <DropBox
+            onDrop={onDrop}
+          />
+        }
+        {selectedApp === 'bsDD' &&
+          <BsDD
+            viewer={viewer}
+            modelID={modelID}
+            eids={eids}
+            setEids={setEids}
+            addElementsNewProperties={addElementsNewProperties}
+            handleShowMarketplace={handleShowMarketplace}
+          />
+        }
+        {selectedApp === 'Web3' &&
+          <Web3
+            viewer={viewer}
+            modelID={modelID}
+            eids={eids}
+            setEids={setEids}
+            addElementsNewProperties={addElementsNewProperties}
+            handleShowMarketplace={handleShowMarketplace}
+          />
+        }
+        {selectedApp === 'TriStructure' &&
+          <TriStructure
             viewer={viewer}
             modelID={modelID}
             eids={eids}

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { IFCLoader } from "web-ifc-three/IFCLoader";
 import { makeStyles } from "@material-ui/core";
 import {
   Checkbox,
@@ -35,7 +36,9 @@ import SearchData from '../SearchData';
 import DescriptionIcon from '@material-ui/icons/Description';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import DeleteIcon from '@mui/icons-material/Delete';
+import DownloadIcon from '@mui/icons-material/Download';
 import OpenDthxLogo from './img/OpenDthxLogo.png';
+import ifcClassType from '../../Utils/types-ifcClass-map';
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -230,7 +233,58 @@ const ProjectTree = ({
   // };
 
 
+  const downloadFile = ({ data, fileName, fileType }) => {
+    // Create a blob with the data we want to download as a file
+    const blob = new Blob([data], { type: fileType });
+    // Create an anchor element and dispatch a click event on it
+    // to trigger a download
+    const a = document.createElement('a')
+    a.download = fileName
+    a.href = window.URL.createObjectURL(blob)
+    const clickEvt = new MouseEvent('click', {
+      view: window,
+      bubbles: true,
+      cancelable: true,
+    })
+    a.dispatchEvent(clickEvt)
+    a.remove()
+  }
 
+  const handleExportToCsv = async (e) => {
+    e.preventDefault()
+    // Headers for each column
+    let propertiesCsv = [];
+    let headers = ['modelId', 'elementName', 'elementClass', 'globalId', 'expressId', 'psetName', 'propertyName', 'propertyValue'].join(',');
+    propertiesCsv.push(headers)
+
+    await Promise.all(eids.map(async eid => {
+      const ifcElement = await viewer.IFC.getProperties(0, eid, true, true);
+      const selectedModelID = await viewer.IFC.getModelID();
+      const ifcLoader = new IFCLoader();
+      // const ifcClass = ifcClassType[];
+      // const ifcClass = await ifcLoader.ifcManager.getIfcType(0, eid);
+      console.log('ifcClass', await viewer.IFC.loader.ifcManager.getIfcType(0, eid))
+      // console.log('ifcClass ', ifcClass)
+      await Promise.all(ifcElement.psets?.map(async pset => pset.HasProperties && await Promise.all(pset.HasProperties?.map(async (property) => {
+        const modelID = 0;
+        const elementName = `${ifcElement.Name?.value}`;
+        const elementClass = `NONE`;
+        const globalID = `${ifcElement.GlobalId.value}`;
+        const expressID = `${ifcElement.expressID}`;
+        const psetName = `${pset.Name.value}`;
+        const propertyName = `${property.Name?.value}`;
+        const propertyValue = `${property.NominalValue?.value}`;
+
+        propertiesCsv.push([modelID, elementName, elementClass, globalID, expressID, psetName, propertyName, propertyValue].join(','))
+      }))))
+    }));
+
+    downloadFile({
+      data: [...propertiesCsv].join('\n'),
+      fileName: `selection.csv`,
+      fileType: 'text/csv',
+    })
+  }
 
 
   const renderTree = (nodes, index) => (
@@ -326,6 +380,14 @@ const ProjectTree = ({
           >
             <MutltiSelectionIcon />
           </Button> */}
+          <Button
+            edge="end"
+            aria-label="comments"
+            className={classes.button}
+            onClick={(e) => handleExportToCsv(e)}
+          >
+            <DownloadIcon />
+          </Button>
           <Button
             edge="end"
             aria-label="comments"
