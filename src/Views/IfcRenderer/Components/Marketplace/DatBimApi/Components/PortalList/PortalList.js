@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import {
-  Grid,
-  Card,
-  CardContent
-} from "@material-ui/core";
+import { Grid, Card, CardContent } from "@material-ui/core";
 
 const PortalList = ({
   classes,
@@ -40,7 +36,6 @@ const PortalList = ({
           <CardContent
             onClick={() => {
               openObjects(portal.portal_id);
-              setSelectedPortal(portal.portal_id);
               handleNext();
             }}
           >
