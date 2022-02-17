@@ -18,6 +18,9 @@ import DescriptionIcon from '@material-ui/icons/Description';
 import StraightenIcon from '@material-ui/icons/Straighten';
 import AppsIcon from '@material-ui/icons/Apps';
 import GetAppIcon from '@material-ui/icons/GetApp';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import MapIcon from '@mui/icons-material/Map';
+import ControlCameraIcon from '@mui/icons-material/ControlCamera';
 import GrainIcon from '@material-ui/icons/Grain';
 import StorageIcon from '@material-ui/icons/Storage';
 import MutltiSelectionIcon from '@mui/icons-material/ControlPointDuplicate';
@@ -26,6 +29,10 @@ import BcfDialog from './Components/BcfDialog/BcfDialog';
 import Marketplace from './Components/Marketplace/Marketplace';
 import SpatialStructure from './Components/SpatialStructure/SpatialStructure';
 import Properties from './Components/Properties/Properties';
+import Camera from './Components/Camera/Camera';
+import Cuts from './Components/Cuts';
+import Drawings from './Components/Drawings/Drawings';
+import Measures from './Components/Measures/Measures';
 import ContextMenu from './Components/ContextMenu';
 import DraggableCard from './Components/DraggableCard/DraggableCard';
 import {
@@ -110,6 +117,7 @@ const IfcRenderer = () => {
   const classes = useStyles();
   const dropzoneRef = useRef(null);
   const [viewer, setViewer] = useState(null);
+  const [ifcModels, setIfcModels] = useState([]);
   const [modelID, setModelID] = useState(-1);
   const [transformControls, setTransformControls] = useState(null);
   const [spatialStructures, setSpatialStructures] = useState([]);
@@ -121,6 +129,10 @@ const IfcRenderer = () => {
   const [showSpatialStructure, setShowSpatialStructure] = useState(false);
   const [showProperties, setShowProperties] = useState(false);
   const [showContextMenu, setShowContextMenu] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
+  const [showCuts, setShowCuts] = useState(false);
+  const [showDrawings, setShowDrawings] = useState(false);
+  const [showMeasures, setShowMeasures] = useState(false);
   const [selectedElementID, setSelectedElementID] = useState(null);
   const [specificApplication, setSpecificApplication] = useState(false);
   const [isLoading, setLoading] = useState(false);
@@ -128,6 +140,7 @@ const IfcRenderer = () => {
   const [apiWebIfc, setApiWebIfc] = useState();
   const [selectedElementId, setSelectedElementId] = useState(null);
   const [eids, setEids] = useState([]);
+  const [subsets, setSubsets] = useState([]);
 
   const [state, setState] = useState({
     bcfDialogOpen: false,
@@ -139,10 +152,12 @@ const IfcRenderer = () => {
 
   const {
     initIndexDB,
+    meshMaterials,
     getModels,
     addTransformControls,
     getElementProperties,
-    addElementsNewProperties
+    addElementsNewProperties,
+    addGeometryToIfc
   } = UseIfcRenderer({
     eids,
     setEids
@@ -281,7 +296,7 @@ const IfcRenderer = () => {
 
       // window.onkeydown = handleKeyDown;
 
-      window.ondblclick = newViewer.clipper.createPlane;
+      // window.ondblclick = newViewer.clipper.createPlane;
 
       newViewer.shadowDropper.darkness = 1.5;
       setViewer(newViewer);
@@ -309,6 +324,7 @@ const IfcRenderer = () => {
       });
 
       const model = await viewer.IFC.loadIfc(files[0], true, ifcOnLoadError);
+
       model.material.forEach((mat) => (mat.side = 2));
       console.log("modelID", model.modelID);
       setModelID(model.modelID);
@@ -323,6 +339,10 @@ const IfcRenderer = () => {
         baseMaterial
       );
 
+
+      const newIfcModels = [...ifcModels, model];
+      setIfcModels(newIfcModels);
+
       await viewer.shadowDropper.renderShadow(model.modelID);
 
       const newSpatialStructure = await viewer.IFC.getSpatialStructure(
@@ -336,6 +356,7 @@ const IfcRenderer = () => {
       ];
       setSpatialStructures(updateSpatialStructures);
       console.log("updateSpatialStructure", updateSpatialStructures);
+
       setLoading(false);
     }
   };
@@ -397,11 +418,12 @@ const IfcRenderer = () => {
   }
 
   const handleClick = async () => {
+    console.log('viewer.IFC.loader.ifcManager.subsets', viewer.IFC.loader.ifcManager.subsets)
     if (showContextMenu) {
       setShowContextMenu(false);
     }
 
-    const found = await viewer.IFC.pickIfcItem(true, 1);
+    const found = await viewer.IFC.pickIfcItem(false, 1);
 
     if (found == null || found == undefined) {
       await viewer.IFC.unpickIfcItems();
@@ -425,9 +447,17 @@ const IfcRenderer = () => {
     dropzoneRef.current.open();
   };
 
-  const handleToggleClipping = () => {
-    viewer.clipper.active = !viewer.clipper.active;
-  };
+  const handleShowCuts = () => {
+    setShowCuts(!showCuts);
+  }
+
+  const handleShowDrawings = () => {
+    setShowDrawings(!showDrawings);
+  }
+
+  const handleShowMeasures = () => {
+    setShowMeasures(!showMeasures);
+  }
 
   const handleShowModels = () => {
     setShowModels(!showModels);
@@ -540,9 +570,17 @@ const IfcRenderer = () => {
     // });
   };
 
+  const handleShowCamera = () => {
+    setShowCamera(!showCamera);
+  };
+
   const handleOpenViewpoint = (viewpoint) => {
     viewer.currentViewpoint = viewpoint;
   };
+
+  const handleRefreshPage = () => {
+    window.location.reload();
+  }
 
   return (
     <>
@@ -583,6 +621,7 @@ const IfcRenderer = () => {
               setShowProperties={setShowProperties}
               selectedElementID={selectedElementID}
               setSelectedElementID={setSelectedElementID}
+              handleShowMarketplace={handleShowMarketplace}
               addElementsNewProperties={addElementsNewProperties}
             />
           </DraggableCard>
@@ -595,9 +634,46 @@ const IfcRenderer = () => {
               handleShowMarketplace={handleShowMarketplace}
               specificApplication={specificApplication}
               setSpecificApplication={setSpecificApplication}
+              onDrop={onDrop}
               eids={eids}
               setEids={setEids}
               addElementsNewProperties={addElementsNewProperties}
+            />
+          </DraggableCard>
+        )}
+        {showCamera && (
+          <DraggableCard>
+            <Camera
+              viewer={viewer}
+              showCamera={showCamera}
+              setShowCamera={setShowCamera}
+            />
+          </DraggableCard>
+        )}
+        {showCuts && (
+          <DraggableCard>
+            <Cuts
+              viewer={viewer}
+              showCuts={showCuts}
+              setShowCuts={setShowCuts}
+            />
+          </DraggableCard>
+        )}
+        {showDrawings && (
+          <DraggableCard>
+            <Drawings
+              viewer={viewer}
+              showDrawings={showDrawings}
+              setShowDrawings={setShowDrawings}
+            />
+          </DraggableCard>
+        )}
+        {showMeasures && (
+          <DraggableCard>
+            <Measures
+              viewer={viewer}
+              showMeasures={showMeasures}
+              setShowMeasures={setShowMeasures}
             />
           </DraggableCard>
         )}
@@ -610,6 +686,16 @@ const IfcRenderer = () => {
               onClick={handleClickOpen}
             >
               <FolderOpenOutlinedIcon />
+            </ToolTipsElem>
+          </Grid>
+          <Grid item xs={12}>
+            <ToolTipsElem
+              title="Reinitialise la page"
+              placement="right"
+              className={classes.fab}
+              onClick={handleRefreshPage}
+            >
+              <RefreshIcon />
             </ToolTipsElem>
           </Grid>
           {/* <Grid item xs={12}>
@@ -632,45 +718,87 @@ const IfcRenderer = () => {
           </Grid> */}
           <Grid item xs={12}>
             <ToolTipsElem
-              title={
-                <div>
-                  <p>
-                    Outil de coupe :
-                    <br />
-                    1. Cliquez sur cet icône
-                    <br />
-                    2. Double-cliquez sur une surface, puis faites glisser les
-                    flèches
-                  </p>
-                  <img src={animationClippedVue} alt="animation" />
-                </div>
-              }
+              // title={
+              //   <div>
+              //     <p>
+              //       Outil de coupe :
+              //       <br />
+              //       1. Cliquez sur cet icône
+              //       <br />
+              //       2. Double-cliquez sur une surface, puis faites glisser les
+              //       flèches
+              //     </p>
+              //     <img src={animationClippedVue} alt="animation" />
+              //   </div>
+              // }
+              title="Coupes"
               placement="right"
               className={classes.fab}
-              onClick={handleToggleClipping}
+              // onClick={() => {
+              //   addGeometryToIfc({
+              //     viewer,
+              //     modelId: 0
+              //   })
+              // }}
+              onClick={handleShowCuts}
             >
               <CropIcon />
             </ToolTipsElem>
           </Grid>
           <Grid item xs={12}>
             <ToolTipsElem
-              title={
-                <div>
-                  <p>
-                    Outil de mesure :
-                    <br />
-                    1. Cliquez sur cet icône
-                    <br />
-                    2. Cliquez sur un point de départ de mesure
-                    <br />
-                    3. Cliquez sur un point d'arrivée
-                  </p>
-                  <img src={animationMeasureTool} alt="animation" />
-                </div>
-              }
+              title="Plans"
+              // title={
+              //   <div>
+              //     <p>
+              //       Outil de coupe :
+              //       <br />
+              //       1. Cliquez sur cet icône
+              //       <br />
+              //       2. Double-cliquez sur une surface, puis faites glisser les
+              //       flèches
+              //     </p>
+              //     <img src={animationClippedVue} alt="animation" />
+              //   </div>
+              // }
               placement="right"
               className={classes.fab}
-              onClick={handleMeasure}
+              onClick={handleShowDrawings}
+            >
+              <MapIcon />
+            </ToolTipsElem>
+          </Grid>
+          <Grid item xs={12}>
+            <ToolTipsElem
+              title="Camera"
+              placement="right"
+              className={classes.fab}
+              onClick={handleShowCamera}
+            >
+              <ControlCameraIcon />
+            </ToolTipsElem>
+          </Grid>
+          <Grid item xs={12}>
+            <ToolTipsElem
+              title="Outils de mesure"
+              // title={
+              //   <div>
+              //     <p>
+              //       Outil de mesure :
+              //       <br />
+              //       1. Cliquez sur cet icône
+              //       <br />
+              //       2. Cliquez sur un point de départ de mesure
+              //       <br />
+              //       3. Cliquez sur un point d'arrivée
+              //     </p>
+              //     <img src={animationMeasureTool} alt="animation" />
+              //   </div>
+              // }
+              placement="right"
+              className={classes.fab}
+              onClick={handleShowMeasures}
+            // onClick={handleMeasure}
             >
               <StraightenIcon />
             </ToolTipsElem>
@@ -774,12 +902,15 @@ const IfcRenderer = () => {
       <ContextMenu
         viewer={viewer}
         showContextMenu={showContextMenu}
+        meshMaterials={meshMaterials}
         setShowContextMenu={setShowContextMenu}
         setShowProperties={setShowProperties}
         setShowSpatialStructure={setShowSpatialStructure}
         handleShowMarketplace={handleShowMarketplace}
         eids={eids}
         setEids={setEids}
+        subsets={subsets}
+        setSubsets={setSubsets}
       />
       <Backdrop
         style={{

@@ -33,6 +33,7 @@ import AccountTreeIcon from "@material-ui/icons/AccountTree";
 import { IFCSLAB, IFCMEMBER, IFCSTRUCTURALCURVEMEMBER } from "web-ifc";
 import SearchData from '../SearchData';
 import ProjectTree from "../ProjectTree";
+import Settings from "../Settings";
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -197,6 +198,7 @@ const SpatialStructure = ({
           >
             <Tab label="Sélection" {...a11yProps(0)} />
             <Tab label="Structure spatiale" {...a11yProps(1)} />
+            <Tab label="Classes" {...a11yProps(2)} />
           </Tabs>
         </Box>
         <TabPanel value={value} index={0}>
@@ -214,6 +216,15 @@ const SpatialStructure = ({
             viewer={viewer}
             spatialStructures={spatialStructures}
             handleShowSpatialStructure={handleShowSpatialStructure}
+            handleShowMarketplace={handleShowMarketplace}
+            handleShowProperties={handleShowProperties}
+            eids={eids}
+            setEids={setEids}
+          />
+        </TabPanel>
+        <TabPanel value={value} index={2}>
+          <Settings
+            viewer={viewer}
             handleShowMarketplace={handleShowMarketplace}
             handleShowProperties={handleShowProperties}
             eids={eids}

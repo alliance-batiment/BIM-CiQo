@@ -22,7 +22,8 @@ import {
   Grid,
   Button,
   ButtonGroup,
-  Divider
+  Divider,
+  Badge
 } from "@mui/material";
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import { useDemoData } from '@mui/x-data-grid-generator';
@@ -42,7 +43,12 @@ import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import MutltiSelectionIcon from '@mui/icons-material/ControlPointDuplicate';
+import DownloadIcon from '@mui/icons-material/Download';
 import OpenDthxLogo from './img/OpenDthxLogo.png';
+
+import ifcClasses from './utils/ifcClasses';
+import IfcIcons from '../../Utils/ifc-full-icons.json';
+import * as WebIFC from "web-ifc";
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -107,24 +113,27 @@ const Settings = ({
   const classes = useStyles();
   const [value, setValue] = useState(0);
   const [checked, setChecked] = React.useState([0]);
-  const [selectedElements, setSelectedElements] = useState([]);
-  // const [ifcElementByType, setIfcElementByType] = useState([]);
-  // const [expressIDList, setExpressIDList] = useState([]);
+  const [ifcModelsClasses, setIfcModelsClasses] = useState([]);
 
   useEffect(() => {
     async function init() {
-      const selectedElements = await Promise.all(eids.map(async (eid) => {
-        const elementProperties = await viewer.IFC.getProperties(0, eid, false, false);
-        console.log(elementProperties);
-        console.log('viewer', viewer);
-        const type = await viewer.IFC.loader.ifcManager.getIfcType(0, eid);
-        console.log(type);
+      // const ifcApi = new WebIFC.IfcAPI();
+      const newIfcModelsClasses = [];
+      for (let ifcClass of ifcClasses) {
+        if (WebIFC[`${ifcClass.toUpperCase()}`]) {
+          const classEids = await viewer.getAllItemsOfType(0, WebIFC[`${ifcClass.toUpperCase()}`], false, false);
+          if (classEids && classEids.length > 0) {
+            newIfcModelsClasses.push({
+              name: ifcClass,
+              icon: IfcIcons[`${ifcClass}`],
+              eids: [...classEids]
+            })
+          }
+        }
 
-        return elementProperties;
-      }));
+      }
+      setIfcModelsClasses(newIfcModelsClasses);
 
-      setSelectedElements(selectedElements);
-      console.log('EIDS', eids)
     }
     init();
   }, [eids]);
@@ -167,28 +176,60 @@ const Settings = ({
   }
 
 
-  // const open = Boolean(anchorEl);
-  // const id = open ? "simple-popover" : undefined;
+  const handleShowElement = async (ids) => {
+    setEids(ids);
+    await viewer.IFC.pickIfcItemsByID(0, ids, false, 0);
+  }
 
-  const rows = [
-    { id: 1, col1: 'Hello', col2: 'World' },
-    { id: 2, col1: 'DataGridPro', col2: 'is Awesome' },
-    { id: 3, col1: 'MUI', col2: 'is Amazing' },
-  ];
+  const downloadFile = ({ data, fileName, fileType }) => {
+    // Create a blob with the data we want to download as a file
+    const blob = new Blob([data], { type: fileType });
+    // Create an anchor element and dispatch a click event on it
+    // to trigger a download
+    const a = document.createElement('a')
+    a.download = fileName
+    a.href = window.URL.createObjectURL(blob)
+    const clickEvt = new MouseEvent('click', {
+      view: window,
+      bubbles: true,
+      cancelable: true,
+    })
+    a.dispatchEvent(clickEvt)
+    a.remove()
+  }
 
-  const columns = [
-    { field: 'col1', headerName: 'Column 1', width: 150 },
-    { field: 'col2', headerName: 'Column 2', width: 150 },
-  ];
+  const handleExportToCsv = async (e, ifcClass) => {
+    e.preventDefault()
+    // Headers for each column
+    let propertiesCsv = [];
+    let headers = ['modelId', 'elementName', 'elementClass', 'globalId', 'expressId', 'psetName', 'propertyName', 'propertyValue'].join(',');
+    propertiesCsv.push(headers)
 
-  const VISIBLE_FIELDS = ['name', 'rating', 'country', 'dateCreated', 'isAdmin'];
 
-  const { data } = useDemoData({
-    dataSet: 'Employee',
-    visibleFields: VISIBLE_FIELDS,
-    rowLength: 100,
-  });
 
+    await Promise.all(ifcClass.eids.map(async eid => {
+      const ifcElement = await viewer.IFC.getProperties(0, eid, true, true);
+      console.log('ifcElement', ifcElement)
+      await Promise.all(ifcElement.psets?.map(async pset => await Promise.all(pset.HasProperties?.map(async (property) => {
+        const modelID = 0;
+        const elementName = `${ifcElement.Name?.value}`;
+        const elementClass = `${ifcClass.name}`;
+        const globalID = `${ifcElement.GlobalId.value}`;
+        const expressID = `${ifcElement.expressID}`;
+        const psetName = `${pset.Name.value}`;
+        const propertyName = `${property.Name?.value}`;
+        const propertyValue = `${property.NominalValue?.value}`;
+
+        propertiesCsv.push([modelID, elementName, elementClass, globalID, expressID, psetName, propertyName, propertyValue].join(','))
+      }))))
+    }));
+
+    downloadFile({
+      data: [...propertiesCsv].join('\n'),
+      fileName: `${ifcClass ? ifcClass.name : "Undefined"}.csv`,
+      fileType: 'text/csv',
+    })
+  }
   return (
     <Grid container>
       <Grid item xs={12}>
@@ -199,7 +240,7 @@ const Settings = ({
           // color="secondary" aria-label="medium secondary button group"
           className={classes.buttonGroup}
         >
-          <Button
+          {/* <Button
             edge="end"
             aria-label="comments"
           // onClick={() => handleGetAllItemsOfType(element)}
@@ -212,7 +253,7 @@ const Settings = ({
             onClick={handleRemoveAllElements}
           >
             <DeleteIcon />
-          </Button>
+          </Button> */}
         </ButtonGroup>
       </Grid>
       <Grid item xs={6} style={{ textAlign: 'right' }}>
@@ -221,14 +262,14 @@ const Settings = ({
           // aria-label="outlined primary button group"
           className={classes.buttonGroup}
         >
-          <Button
+          {/* <Button
             edge="end"
             aria-label="comments"
             className={classes.button}
           // onClick={() => handleGetAllItemsOfType(element)}
           >
             <MutltiSelectionIcon />
-          </Button>
+          </Button> */}
           <Button
             edge="end"
             aria-label="comments"
@@ -250,7 +291,7 @@ const Settings = ({
       </Grid>
       <Grid item xs={12}>
         <List sx={{ width: "100%" }}>
-          {selectedElements.map((element, index) => (
+          {ifcModelsClasses.map((ifcClass, index) => (
             <ListItem
               key={index}
               secondaryAction={
@@ -272,9 +313,9 @@ const Settings = ({
                   <IconButton
                     edge="end"
                     aria-label="comments"
-                    onClick={() => handleRemoveElement(element)}
+                    onClick={(e) => handleExportToCsv(e, ifcClass)}
                   >
-                    <CloseIcon />
+                    <DownloadIcon />
                   </IconButton>
                 </>
               }
@@ -283,20 +324,23 @@ const Settings = ({
               <ListItemButton
                 role={undefined}
                 dense
-                onClick={() => handleElementSelection(element)}
+                onClick={() => handleShowElement(ifcClass.eids)}
               >
                 <ListItemIcon>
-                  <Checkbox
+                  {/* <Checkbox
                     edge="start"
                     checked={checked.indexOf(element) !== -1}
                     tabIndex={-1}
                     disableRipple
                     inputProps={{ 'aria-labelledby': `checkbox-list-label-${index}` }}
-                  />
+                  /> */}
+                  <Badge badgeContent={`${ifcClass.eids.length}`} color="primary">
+                    <i class='material-icons'>{`${ifcClass.icon}`}</i>
+                  </Badge>
                 </ListItemIcon>
                 <ListItemText
                   id={`checkbox-list-label-${index}`}
-                  primary={`${element.Name.value}`}
+                  primary={`${ifcClass.name}`}
                 // secondary={secondary ? 'Secondary text' : null}
                 />
               </ListItemButton>
