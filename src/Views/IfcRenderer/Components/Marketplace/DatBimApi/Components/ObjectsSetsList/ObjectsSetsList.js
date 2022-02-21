@@ -4,8 +4,8 @@ import {
   Grid,
   Card,
   CardContent,
-  Button,
   CircularProgress,
+  Button,
 } from "@material-ui/core";
 import Pagination from "@material-ui/lab/Pagination";
 
@@ -16,7 +16,6 @@ const ObjectsSetsList = ({
   setSelectedObjectSetName,
   handleNext,
 }) => {
-  const [objectsSets, setObjectsSets] = useState([]);
   const [objectsSetsListDefault, setObjectsSetsListDefault] = useState([]);
   const [objectsSetsListLoader, setObjectsSetsListLoader] = useState(false);
 
