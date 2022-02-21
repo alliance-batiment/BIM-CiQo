@@ -152,7 +152,7 @@ const PropertyList = ({
             },
           }
         );
-        console.log("data", dataProp);
+        //console.log("data", dataProp);
         const temporaryFixProperties = dataProp.data.map((property) => {
           if (
             property.data_type_name === "Entier" &&
@@ -203,9 +203,9 @@ const PropertyList = ({
       <Table className={classes.table} aria-label="simple table">
         <TableHead>
           <TableRow className={`${classes.root} ${classes.datBimCardTitle}`}>
-            <TableCell>Property</TableCell>
-            <TableCell align="center">Value</TableCell>
-            <TableCell align="center">Unit</TableCell>
+            <TableCell>Propriété</TableCell>
+            <TableCell align="center">Valeur</TableCell>
+            <TableCell align="center">Unité</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
