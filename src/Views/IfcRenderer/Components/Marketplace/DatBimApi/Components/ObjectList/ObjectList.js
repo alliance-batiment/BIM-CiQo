@@ -33,6 +33,7 @@ const ObjectList = ({
   //const [objectListDefault, setObjectListDefault] = useState([]);
   const [objectsLoader, setObjectsLoader] = useState(false);
   const [objectListing, setObjectListing] = useState({});
+  const [keepSelectedObjectColor, setKeepSelectedObjectColor] = useState(true);
 
   // const classes = await axios.get(
   //   `${process.env.REACT_APP_API_DATBIM}/classes/mapping/${typeProperties}`,
@@ -108,8 +109,6 @@ const ObjectList = ({
     setObjects(treeOfObjectSet.data.children);
     //console.log("selectedObjectSet ==>", selectedObjectSet);
 
-    setObjects(treeOfObjectSet.data.children);
-
     setObjectListing(treeOfObjectSet.data);
     console.log("objectListing ==>", treeOfObjectSet.data);
 
@@ -179,12 +178,14 @@ const ObjectList = ({
         nodeId={nodes.id}
         label={nodes.name}
         style={{
-          color: `${objectsListOfAdvancedSearch.findIndex(
-            (object) => object.id === nodes.id
-          ) !== -1
-            ? "red"
-            : "white"
-            }`,
+          color: keepSelectedObjectColor
+            ? `${objectsListOfAdvancedSearch.findIndex(
+              (object) => object.id === nodes.id
+            ) !== -1
+              ? "red"
+              : ""
+            }`
+            : "",
         }}
         onClick={() => setSelectedObject(nodes.id)}
       >
@@ -207,6 +208,7 @@ const ObjectList = ({
           getObjectsOfAdvancedSearch={getObjectsOfAdvancedSearch}
           getSelectorsOfObjectSet={getSelectorsOfObjectSet}
           setSearchBarInput={setSearchBarInput}
+          setKeepSelectedObjectColor={setKeepSelectedObjectColor}
         />
         <Grid item xs={12} style={{ display: "flex" }}>
           <Grid item xs={4}>

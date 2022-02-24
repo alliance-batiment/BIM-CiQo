@@ -32,6 +32,7 @@ const SelectionComponent = ({
   getSelectorsOfObjectSet,
   searchObject,
   setSearchBarInput,
+  setKeepSelectedObjectColor,
 }) => {
   const handleChangeKeyword = (value) => {
     console.log(value);
@@ -39,6 +40,7 @@ const SelectionComponent = ({
   };
 
   const resetSelectors = () => {
+    setKeepSelectedObjectColor(false);
     setSelectorsRequest([]);
     getSelectorsOfObjectSet();
   };
@@ -90,6 +92,7 @@ const SelectionComponent = ({
                                 selectorIndex,
                                 getObjectsOfAdvancedSearch,
                                 selectorsRequest,
+                                setKeepSelectedObjectColor,
                               })}
                             </TableCell>
                             <TableCell width="10%" align="center">
