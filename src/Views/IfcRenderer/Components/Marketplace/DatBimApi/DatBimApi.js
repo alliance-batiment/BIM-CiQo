@@ -148,7 +148,7 @@ const DatBimApi = ({
   eids,
   setEids,
   addElementsNewProperties,
-  handleShowMarketplace
+  handleShowMarketplace,
 }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [selectedPortal, setSelectedPortal] = useState(null);

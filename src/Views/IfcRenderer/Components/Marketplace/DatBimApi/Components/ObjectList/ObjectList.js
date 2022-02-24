@@ -108,6 +108,8 @@ const ObjectList = ({
     setObjects(treeOfObjectSet.data.children);
     //console.log("selectedObjectSet ==>", selectedObjectSet);
 
+    setObjects(treeOfObjectSet.data.children);
+
     setObjectListing(treeOfObjectSet.data);
     console.log("objectListing ==>", treeOfObjectSet.data);
 
@@ -177,13 +179,12 @@ const ObjectList = ({
         nodeId={nodes.id}
         label={nodes.name}
         style={{
-          color: `${
-            objectsListOfAdvancedSearch.findIndex(
-              (object) => object.id === nodes.id
-            ) !== -1
-              ? "red"
-              : "white"
-          }`,
+          color: `${objectsListOfAdvancedSearch.findIndex(
+            (object) => object.id === nodes.id
+          ) !== -1
+            ? "red"
+            : "white"
+            }`,
         }}
         onClick={() => setSelectedObject(nodes.id)}
       >
@@ -228,6 +229,7 @@ const ObjectList = ({
                       overflowY: "auto",
                     }}
                   >
+                    {console.log("objectListing ==>", objectListing)}
                     {renderTree(objectListing)}
                   </TreeView>
                 )}
