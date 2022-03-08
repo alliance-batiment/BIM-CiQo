@@ -16,7 +16,6 @@ import Login from "./Components/Login/Login";
 import PortalList from "./Components/PortalList/PortalList";
 import ObjectsSetsList from "./Components/ObjectsSetsList/ObjectsSetsList";
 import ObjectList from "./Components/ObjectList/ObjectList";
-import PropertyList from "./Components/PropertyList/PropertyList";
 import axios from "axios";
 
 const useStyles = makeStyles((theme) => ({
@@ -140,9 +139,6 @@ const QontoConnector = withStyles({
 })(StepConnector);
 
 const DatBimApi = ({
-  openProperties,
-  projectId,
-  objSelected,
   viewer,
   modelID,
   eids,
@@ -247,22 +243,11 @@ const DatBimApi = ({
             selectedPortal={selectedPortal}
             setSelectedObjectSet={setSelectedObjectSet}
             setSelectedObjectSetName={setSelectedObjectSetName}
+            eids={eids}
             handleNext={handleNext}
           />
         );
       case 3:
-        // return <PropertyList
-        //   classes={classes}
-        //   projectId={projectId}
-        //   // setLoader={setLoader}
-        //   objSelected={objSelected}
-        //   selectedObject={selectedObject}
-        //   viewer={viewer}
-        //   modelID={modelID}
-        //   eids={eids}
-        //   setEids={setEids}
-        //   addElementsNewProperties={addElementsNewProperties}
-        // />
         return (
           <ObjectList
             classes={classes}
@@ -282,17 +267,6 @@ const DatBimApi = ({
             handleShowMarketplace={handleShowMarketplace}
           />
         );
-      // case 4:
-      //   return (
-      //     <PropertyList
-      //       classes={classes}
-      //       projectId={projectId}
-      //       // setLoader={setLoader}
-      //       objSelected={objSelected}
-      //       selectedObject={selectedObject}
-      //       addElementsNewProperties={addElementsNewProperties}
-      //     />
-      //   );
       default:
         return "Unknown step";
     }

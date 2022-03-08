@@ -6,12 +6,7 @@ import TreeItem from "@material-ui/lab/TreeItem";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 
-const TreeClass = ({
-  selectedPortal,
-  setSelectedClassID,
-  getobjectsSetsBySelectedClass,
-  handleNext,
-}) => {
+const TreeClass = ({ selectedPortal, getobjectsSetsBySelectedClass }) => {
   const [classListing, setClassListing] = useState({});
   const [treeClassListLoader, setTreeClassListLoader] = useState(false);
 
@@ -29,7 +24,7 @@ const TreeClass = ({
         },
       }
     );
-    console.log(treeClassList);
+    // console.log(treeClassList);
     setClassListing({
       id: "ClassList",
       name: "Liste des classes",
@@ -110,7 +105,7 @@ const TreeClass = ({
                 overflowY: "auto",
               }}
             >
-              {console.log("classListing", classListing)}
+              {/* {console.log("classListing", classListing)} */}
               {renderTree(classListing)}
             </TreeView>
           )}
