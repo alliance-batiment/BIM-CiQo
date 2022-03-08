@@ -25,15 +25,11 @@ const ObjectList = ({
 }) => {
   const [searchBarInput, setSearchBarInput] = useState("");
   const [selectors, setSelectors] = useState([]);
-  const [objectsListOfAdvancedSearch, setObjectsListOfAdvancedSearch] =
-    useState([]);
   const [selectorsRequest, setSelectorsRequest] = useState([]);
   const [selectorsLoader, setSelectorsLoader] = useState(false);
-  const [objects, setObjects] = useState([]);
-  //const [objectListDefault, setObjectListDefault] = useState([]);
   const [objectsLoader, setObjectsLoader] = useState(false);
   const [objectListing, setObjectListing] = useState({});
-  const [keepSelectedObjectColor, setKeepSelectedObjectColor] = useState(true);
+  const [objectCounter, setObjectCounter] = useState(0);
 
   // const classes = await axios.get(
   //   `${process.env.REACT_APP_API_DATBIM}/classes/mapping/${typeProperties}`,
@@ -48,6 +44,8 @@ const ObjectList = ({
   useEffect(() => {
     getSelectorsOfObjectSet();
     getObjectsOfSelectedObject();
+
+    let isCancelled = false;
   }, []);
 
   async function getSelectorsOfObjectSet() {
@@ -68,10 +66,11 @@ const ObjectList = ({
 
   const getObjectsOfAdvancedSearch = async (selectorsRequest) => {
     setSelectorsLoader(true);
-    console.log("selectorsRequest ==>", selectorsRequest);
+    setObjectsLoader(true);
+    //console.log("selectorsRequest ==>", selectorsRequest);
     const objectsOfAdvancedSearch = await axios({
       method: "post",
-      url: `${process.env.REACT_APP_API_DATBIM}/objects/${selectedObjectSet}/search-on-selector`,
+      url: `${process.env.REACT_APP_API_DATBIM}/objects/${selectedObjectSet}/search-on-selector?tree=1`,
       headers: {
         "content-type": "application/json",
         "X-Auth-Token": sessionStorage.getItem("token"),
@@ -82,15 +81,18 @@ const ObjectList = ({
       },
     });
 
-    console.log("objectsListOfAdvancedSearch ==>", objectsOfAdvancedSearch);
-
     setSelectors(objectsOfAdvancedSearch.data.search);
-    setObjectsListOfAdvancedSearch(objectsOfAdvancedSearch.data.result);
-    console.log(
-      "objectsListOfAdvancedSearch.data.result ==>",
-      objectsOfAdvancedSearch.data.result
-    );
+    // console.log(
+    //   "objectsListOfAdvancedSearch.data.result ==>",
+    //   objectsOfAdvancedSearch.data.result
+    // );
+    setObjectListing({
+      id: "FiltredObjects",
+      name: "Liste des objets filtrés",
+      children: objectsOfAdvancedSearch.data.result,
+    });
     setSelectorsLoader(false);
+    setObjectsLoader(false);
   };
 
   async function getObjectsOfSelectedObject() {
@@ -106,11 +108,8 @@ const ObjectList = ({
       }
     );
 
-    setObjects(treeOfObjectSet.data.children);
-    //console.log("selectedObjectSet ==>", selectedObjectSet);
-
     setObjectListing(treeOfObjectSet.data);
-    console.log("objectListing ==>", treeOfObjectSet.data);
+    //console.log("objectListing ==>", treeOfObjectSet.data);
 
     setObjectsLoader(false);
   }
@@ -171,29 +170,31 @@ const ObjectList = ({
   //   }
   // }
 
-  const renderTree = (nodes) => {
-    return (
+  const childRenderTree = ([renderedChildren, count], node) => {
+    const [renderedChild, newCount] = renderTree(node, count);
+    return [renderedChildren.concat(<div>{renderedChild}</div>), newCount];
+  };
+
+  const renderTree = (nodes, count) => {
+    const [children, newCount] =
+      Array.isArray(nodes.children) && nodes.children.length > 0
+        ? nodes.children.reduce(childRenderTree, [[], count])
+        : [null, count + 1];
+
+    return [
       <TreeItem
         key={nodes.id}
         nodeId={nodes.id}
         label={nodes.name}
-        style={{
-          color: keepSelectedObjectColor
-            ? `${objectsListOfAdvancedSearch.findIndex(
-              (object) => object.id === nodes.id
-            ) !== -1
-              ? "red"
-              : ""
-            }`
-            : "",
-        }}
         onClick={() => setSelectedObject(nodes.id)}
       >
-        {Array.isArray(nodes.children) &&
-          nodes.children.map((node) => <div>{renderTree(node)}</div>)}
-      </TreeItem>
-    );
+        {children}
+      </TreeItem>,
+      newCount,
+    ];
   };
+
+  console.log("objectCounter", objectCounter);
 
   return (
     <>
@@ -201,14 +202,14 @@ const ObjectList = ({
         <SelectionComponent
           classes={classes}
           selectors={selectors}
-          selectorsLoader={selectorsLoader}
           setSelectors={setSelectors}
+          selectorsLoader={selectorsLoader}
+          getObjectsOfAdvancedSearch={getObjectsOfAdvancedSearch}
           selectorsRequest={selectorsRequest}
           setSelectorsRequest={setSelectorsRequest}
-          getObjectsOfAdvancedSearch={getObjectsOfAdvancedSearch}
           getSelectorsOfObjectSet={getSelectorsOfObjectSet}
           setSearchBarInput={setSearchBarInput}
-          setKeepSelectedObjectColor={setKeepSelectedObjectColor}
+          getObjectsOfSelectedObject={getObjectsOfSelectedObject}
         />
         <Grid item xs={12} style={{ display: "flex" }}>
           <Grid item xs={4}>
@@ -232,7 +233,7 @@ const ObjectList = ({
                     }}
                   >
                     {console.log("objectListing ==>", objectListing)}
-                    {renderTree(objectListing)}
+                    {renderTree(objectListing, 0)}
                   </TreeView>
                 )}
 

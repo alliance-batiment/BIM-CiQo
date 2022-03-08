@@ -15,7 +15,6 @@ function DefineTypeComponent({
   selectorsRequest,
   setSelectorsRequest,
   getObjectsOfAdvancedSearch,
-  setKeepSelectedObjectColor,
 }) {
   const [selectedRangedValues, setSelectedRangedValues] = useState([
     selector.value_min,
@@ -23,7 +22,6 @@ function DefineTypeComponent({
   ]);
 
   const handleChangeIntervalCommitted = (event, selectorIndex) => {
-    setKeepSelectedObjectColor(true);
     const newSelectorRequest = [...selectorsRequest];
     let checkExist = false;
 
@@ -57,7 +55,6 @@ function DefineTypeComponent({
   };
 
   const handleChangeDefinitionCommitted = (event) => {
-    setKeepSelectedObjectColor(true);
     const newSelectorRequest = [...selectorsRequest];
     let checkExist = false;
 
@@ -89,7 +86,6 @@ function DefineTypeComponent({
 
   const searchSubmit = (event, selectorIndex) => {
     // console.log("selectorsRequest", selectorsRequest);
-    setKeepSelectedObjectColor(true);
     const newSelectorRequest = [...selectorsRequest];
     let checkExist = false;
 
