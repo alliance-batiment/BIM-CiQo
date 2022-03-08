@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import {
-  Grid,
-  Card,
-  CardContent,
-  CircularProgress,
-  Button,
-} from "@material-ui/core";
+import { Grid, Card, CardContent, CircularProgress } from "@material-ui/core";
 import Pagination from "@material-ui/lab/Pagination";
 import TreeClass from "./TreeClass";
 
@@ -15,49 +9,66 @@ const ObjectsSetsList = ({
   selectedPortal,
   setSelectedObjectSet,
   setSelectedObjectSetName,
+  eids,
   handleNext,
 }) => {
   const [objectsSetsListDefault, setObjectsSetsListDefault] = useState([]);
+  const [objectsSetsListWithEIDS, setObjectsSetsListWithEIDS] = useState([]);
   const [objectsSetsListLoader, setObjectsSetsListLoader] = useState(false);
-  // const [selectedClassID, setSelectedClassID] = useState(null);
 
   useEffect(() => {
-    getObjectsSets();
-  }, []);
+    getObjectsSetsList();
+  }, [eids]);
 
-  async function getObjectsSets() {
+  const getObjectsSetsList = () => {
+    if (eids.length > 0) {
+      // console.log("eids.length > 0");
+      getobjectsSetsBySelectedEids();
+    } else {
+      // console.log("eids.length === 0");
+      getobjectsSets();
+    }
+  };
+
+  const getobjectsSets = async () => {
     setObjectsSetsListLoader(true);
-    const organizations = await axios.get(
-      `${process.env.REACT_APP_API_DATBIM}/portals/${selectedPortal}/organizations`,
-      {
-        headers: {
-          "X-Auth-Token": sessionStorage.getItem("token"),
-        },
-      }
-    );
 
-    Promise.allSettled(
-      organizations.data.data.map(async (organizationProperty) => {
-        return await axios.get(
-          `${process.env.REACT_APP_API_DATBIM}/organizations/${organizationProperty.organization_id}/object-sets`,
-          {
-            headers: {
-              "X-Auth-Token": sessionStorage.getItem("token"),
-            },
-          }
-        );
-      })
-    ).then(function (values) {
-      const objects = values.reduce((acc, value) => {
-        if (value.status === "fulfilled") {
-          value.value.data.data.map((value) => acc.push(value));
-        }
-        return acc;
-      }, []);
-      setObjectsSetsListDefault(objects);
+    if (objectsSetsListDefault && objectsSetsListDefault.length > 0) {
       setObjectsSetsListLoader(false);
-    });
-  }
+    } else {
+      const organizations = await axios.get(
+        `${process.env.REACT_APP_API_DATBIM}/portals/${selectedPortal}/organizations`,
+        {
+          headers: {
+            "X-Auth-Token": sessionStorage.getItem("token"),
+          },
+        }
+      );
+
+      Promise.allSettled(
+        organizations.data.data.map(async (organizationProperty) => {
+          return await axios.get(
+            `${process.env.REACT_APP_API_DATBIM}/organizations/${organizationProperty.organization_id}/object-sets`,
+            {
+              headers: {
+                "X-Auth-Token": sessionStorage.getItem("token"),
+              },
+            }
+          );
+        })
+      ).then(function (values) {
+        const objectsSets = values.reduce((acc, value) => {
+          if (value.status === "fulfilled") {
+            value.value.data.data.map((value) => acc.push(value));
+          }
+          return acc;
+        }, []);
+        setObjectsSetsListDefault(objectsSets);
+        // console.log("objectsSetsListDefault", objectsSets);
+        setObjectsSetsListLoader(false);
+      });
+    }
+  };
 
   const getobjectsSetsBySelectedClass = async (classId) => {
     setObjectsSetsListLoader(true);
@@ -70,10 +81,44 @@ const ObjectsSetsList = ({
       }
     );
 
-    //console.log("objectsSetsBySelectedClass ==>", objectsSetsBySelectedClass);
-
     setObjectsSetsListDefault(objectsSetsBySelectedClass.data.data);
     setObjectsSetsListLoader(false);
+  };
+
+  const getobjectsSetsBySelectedEids = async () => {
+    setObjectsSetsListLoader(true);
+    const treeClassList = await axios.get(
+      `${process.env.REACT_APP_API_DATBIM}/classes/mapping/IfcWall`,
+      {
+        headers: {
+          "X-Auth-Token": sessionStorage.getItem("token"),
+        },
+      }
+    );
+    // console.log("treeClassList.data.data", treeClassList.data.data);
+
+    Promise.allSettled(
+      treeClassList.data.data.map(async (treeClassListElement) => {
+        return await axios.get(
+          `${process.env.REACT_APP_API_DATBIM}/classes/${treeClassListElement.class_reference_id}/object-sets`,
+          {
+            headers: {
+              "X-Auth-Token": sessionStorage.getItem("token"),
+            },
+          }
+        );
+      })
+    ).then(function (values) {
+      const objectsSets = values.reduce((acc, value) => {
+        if (value.status === "fulfilled") {
+          value.value.data.data.map((value) => acc.push(value));
+        }
+        return acc;
+      }, []);
+      setObjectsSetsListWithEIDS(objectsSets);
+      // console.log("ObjectsSetsListWithEIDS", objectsSets);
+      setObjectsSetsListLoader(false);
+    });
   };
 
   return (
@@ -81,9 +126,7 @@ const ObjectsSetsList = ({
       <Grid item xs={6}>
         <TreeClass
           selectedPortal={selectedPortal}
-          // setSelectedClassID={setSelectedClassID}
           getobjectsSetsBySelectedClass={getobjectsSetsBySelectedClass}
-          handleNext={handleNext}
         />
       </Grid>
       <Grid item xs={6}>
@@ -93,7 +136,10 @@ const ObjectsSetsList = ({
           </Grid>
         ) : (
           <>
-            {objectsSetsListDefault?.map((object, index) => (
+            {(eids.length > 0
+              ? objectsSetsListWithEIDS
+              : objectsSetsListDefault
+            )?.map((object, index) => (
               <Card
                 key={index}
                 className={`${classes.root} ${classes.datBimCard}`}
@@ -117,7 +163,7 @@ const ObjectsSetsList = ({
             {objectsSetsListDefault?.meta && (
               <Pagination
                 count={objectsSetsListDefault.meta.current_items}
-                onChange={(e, value) => getObjectsSets()}
+                onChange={(e, value) => getObjectsSetsList()}
                 variant="outlined"
               />
             )}

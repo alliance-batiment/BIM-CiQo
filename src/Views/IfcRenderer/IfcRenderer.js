@@ -8,33 +8,33 @@ import {
   makeStyles,
   CircularProgress,
   Fab,
-  Grid
-} from '@material-ui/core';
-import FolderOpenOutlinedIcon from '@material-ui/icons/FolderOpenOutlined';
-import CropIcon from '@material-ui/icons/Crop';
-import PhotoCameraIcon from '@material-ui/icons/PhotoCamera';
-import AccountTreeIcon from '@material-ui/icons/AccountTree';
-import DescriptionIcon from '@material-ui/icons/Description';
-import StraightenIcon from '@material-ui/icons/Straighten';
-import AppsIcon from '@material-ui/icons/Apps';
-import GetAppIcon from '@material-ui/icons/GetApp';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import MapIcon from '@mui/icons-material/Map';
-import ControlCameraIcon from '@mui/icons-material/ControlCamera';
-import GrainIcon from '@material-ui/icons/Grain';
-import StorageIcon from '@material-ui/icons/Storage';
-import MutltiSelectionIcon from '@mui/icons-material/ControlPointDuplicate';
-import Models from './Components/Models/Models';
-import BcfDialog from './Components/BcfDialog/BcfDialog';
-import Marketplace from './Components/Marketplace/Marketplace';
-import SpatialStructure from './Components/SpatialStructure/SpatialStructure';
-import Properties from './Components/Properties/Properties';
-import Camera from './Components/Camera/Camera';
-import Cuts from './Components/Cuts';
-import Drawings from './Components/Drawings/Drawings';
-import Measures from './Components/Measures/Measures';
-import ContextMenu from './Components/ContextMenu';
-import DraggableCard from './Components/DraggableCard/DraggableCard';
+  Grid,
+} from "@material-ui/core";
+import FolderOpenOutlinedIcon from "@material-ui/icons/FolderOpenOutlined";
+import CropIcon from "@material-ui/icons/Crop";
+import PhotoCameraIcon from "@material-ui/icons/PhotoCamera";
+import AccountTreeIcon from "@material-ui/icons/AccountTree";
+import DescriptionIcon from "@material-ui/icons/Description";
+import StraightenIcon from "@material-ui/icons/Straighten";
+import AppsIcon from "@material-ui/icons/Apps";
+import GetAppIcon from "@material-ui/icons/GetApp";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import MapIcon from "@mui/icons-material/Map";
+import ControlCameraIcon from "@mui/icons-material/ControlCamera";
+import GrainIcon from "@material-ui/icons/Grain";
+import StorageIcon from "@material-ui/icons/Storage";
+import MutltiSelectionIcon from "@mui/icons-material/ControlPointDuplicate";
+import Models from "./Components/Models/Models";
+import BcfDialog from "./Components/BcfDialog/BcfDialog";
+import Marketplace from "./Components/Marketplace/Marketplace";
+import SpatialStructure from "./Components/SpatialStructure/SpatialStructure";
+import Properties from "./Components/Properties/Properties";
+import Camera from "./Components/Camera/Camera";
+import Cuts from "./Components/Cuts";
+import Drawings from "./Components/Drawings/Drawings";
+import Measures from "./Components/Measures/Measures";
+import ContextMenu from "./Components/ContextMenu";
+import DraggableCard from "./Components/DraggableCard/DraggableCard";
 import {
   IFCPROJECT,
   IFCSPACE,
@@ -67,14 +67,14 @@ import {
   EdgesGeometry,
   LineBasicMaterial,
   MeshBasicMaterial,
-  Vector2
-} from 'three';
+  Vector2,
+} from "three";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls";
 import { HorizontalBlurShader } from "three/examples/jsm/shaders/HorizontalBlurShader.js";
 import { VerticalBlurShader } from "three/examples/jsm/shaders/VerticalBlurShader.js";
 
 import { UseIfcRenderer } from "./IfcRenderer.hooks";
-import ToolTipsElem from '../../Components/ToolTipsElem/ToolTipsElem.js';
+import ToolTipsElem from "../../Components/ToolTipsElem/ToolTipsElem.js";
 import animationClippedVue from "./Images/animation-vue-de-coupe.gif";
 import animationMeasureTool from "./Images/animation-outil-de-mesure.gif";
 
@@ -157,10 +157,10 @@ const IfcRenderer = () => {
     addTransformControls,
     getElementProperties,
     addElementsNewProperties,
-    addGeometryToIfc
+    addGeometryToIfc,
   } = UseIfcRenderer({
     eids,
-    setEids
+    setEids,
   });
 
   useEffect(() => {
@@ -339,7 +339,6 @@ const IfcRenderer = () => {
         baseMaterial
       );
 
-
       const newIfcModels = [...ifcModels, model];
       setIfcModels(newIfcModels);
 
@@ -415,10 +414,13 @@ const IfcRenderer = () => {
   const select = (viewer, setModelID, modelID, expressID, pick = true) => {
     if (pick) viewer.IFC.pickIfcItemsByID(modelID, expressID);
     setModelID(modelID);
-  }
+  };
 
   const handleClick = async () => {
-    console.log('viewer.IFC.loader.ifcManager.subsets', viewer.IFC.loader.ifcManager.subsets)
+    console.log(
+      "viewer.IFC.loader.ifcManager.subsets",
+      viewer.IFC.loader.ifcManager.subsets
+    );
     if (showContextMenu) {
       setShowContextMenu(false);
     }
@@ -427,13 +429,21 @@ const IfcRenderer = () => {
 
     if (found == null || found == undefined) {
       await viewer.IFC.unpickIfcItems();
-      setEids([]);
-      return
-    };
+      if (eids.length > 0) {
+        setEids([]);
+      }
+
+      return;
+    }
     setModelID(found.modelID);
-    setEids([found.id]);
+
+    console.log("eids ==>", eids);
+    if (eids[0] !== found.id) {
+      setEids([found.id]);
+    }
+
     select(viewer, setModelID, found.modelID, found.id, false);
-    console.log('found.id', found.id)
+    console.log("found.id", found.id);
     setSelectedElementID(found.id);
 
     // await getElementProperties({
@@ -449,29 +459,33 @@ const IfcRenderer = () => {
 
   const handleShowCuts = () => {
     setShowCuts(!showCuts);
-  }
+  };
 
   const handleShowDrawings = () => {
     setShowDrawings(!showDrawings);
-  }
+  };
 
   const handleShowMeasures = () => {
     setShowMeasures(!showMeasures);
-  }
+  };
 
   const handleShowModels = () => {
     setShowModels(!showModels);
   };
 
   const handleCapture = () => {
-    const link = document.createElement('a');
-    link.href = viewer.context.renderer.newScreenshot(false, undefined, new Vector2(4000, 4000));
+    const link = document.createElement("a");
+    link.href = viewer.context.renderer.newScreenshot(
+      false,
+      undefined,
+      new Vector2(4000, 4000)
+    );
     const date = new Date();
     link.download = `capture-${date}.jpeg`;
     document.body.appendChild(link);
     link.click();
     link.remove();
-  }
+  };
 
   const handleMeasure = () => {
     setShowMeasure(!showMeasure);
@@ -519,7 +533,7 @@ const IfcRenderer = () => {
   };
 
   const handleShowProperties = (selectedElemID) => {
-    console.log('selectedElemID', selectedElemID)
+    console.log("selectedElemID", selectedElemID);
     if (selectedElemID) {
       setSelectedElementID(selectedElemID);
     }
@@ -580,7 +594,7 @@ const IfcRenderer = () => {
 
   const handleRefreshPage = () => {
     window.location.reload();
-  }
+  };
 
   return (
     <>
@@ -599,7 +613,7 @@ const IfcRenderer = () => {
             />
           </DraggableCard>
         )}
-        {(showSpatialStructure) &&
+        {showSpatialStructure && (
           <DraggableCard width={700} height={600}>
             <SpatialStructure
               viewer={viewer}
@@ -611,9 +625,8 @@ const IfcRenderer = () => {
               setEids={setEids}
             />
           </DraggableCard>
-
-        }
-        {(selectedElementID && showProperties) && (
+        )}
+        {selectedElementID && showProperties && (
           <DraggableCard>
             <Properties
               viewer={viewer}
@@ -798,7 +811,7 @@ const IfcRenderer = () => {
               placement="right"
               className={classes.fab}
               onClick={handleShowMeasures}
-            // onClick={handleMeasure}
+              // onClick={handleMeasure}
             >
               <StraightenIcon />
             </ToolTipsElem>
