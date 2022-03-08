@@ -25,14 +25,12 @@ const SelectionComponent = ({
   selectors,
   setSelectors,
   selectorsLoader,
-  selectorValueModified,
   getObjectsOfAdvancedSearch,
   selectorsRequest,
   setSelectorsRequest,
   getSelectorsOfObjectSet,
-  searchObject,
   setSearchBarInput,
-  setKeepSelectedObjectColor,
+  getObjectsOfSelectedObject,
 }) => {
   const handleChangeKeyword = (value) => {
     console.log(value);
@@ -40,9 +38,9 @@ const SelectionComponent = ({
   };
 
   const resetSelectors = () => {
-    setKeepSelectedObjectColor(false);
     setSelectorsRequest([]);
     getSelectorsOfObjectSet();
+    getObjectsOfSelectedObject();
   };
 
   return (
@@ -86,13 +84,9 @@ const SelectionComponent = ({
                               {DefineTypeComponent({
                                 type: selector.type,
                                 selector,
-                                setSelectors,
-                                selectorValueModified,
-                                setSelectorsRequest,
-                                selectorIndex,
-                                getObjectsOfAdvancedSearch,
                                 selectorsRequest,
-                                setKeepSelectedObjectColor,
+                                setSelectorsRequest,
+                                getObjectsOfAdvancedSearch,
                               })}
                             </TableCell>
                             <TableCell width="10%" align="center">
