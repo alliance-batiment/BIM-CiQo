@@ -306,7 +306,7 @@ const Marketplace = ({
             handleShowMarketplace={handleShowMarketplace}
           />
         )}
-        {selectedApp === "AxeoBIM" && (
+        {selectedApp === "AxeoBIM" &&
           <AxeoBim
             viewer={viewer}
             modelID={modelID}
@@ -315,9 +315,14 @@ const Marketplace = ({
             addElementsNewProperties={addElementsNewProperties}
             handleShowMarketplace={handleShowMarketplace}
           />
-        )}
-        {selectedApp === "DropBox" && <DropBox onDrop={onDrop} />}
-        {selectedApp === "bsDD" && (
+        }
+        {selectedApp === 'DropBox' &&
+          <DropBox
+            viewer={viewer}
+            onDrop={onDrop}
+          />
+        }
+        {selectedApp === 'bsDD' &&
           <BsDD
             viewer={viewer}
             modelID={modelID}
@@ -326,7 +331,7 @@ const Marketplace = ({
             addElementsNewProperties={addElementsNewProperties}
             handleShowMarketplace={handleShowMarketplace}
           />
-        )}
+        }
         {selectedApp === "Web3" && (
           <Web3
             viewer={viewer}

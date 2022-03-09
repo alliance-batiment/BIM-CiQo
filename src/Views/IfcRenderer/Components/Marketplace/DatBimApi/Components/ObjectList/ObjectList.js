@@ -180,7 +180,7 @@ const ObjectList = ({
       Array.isArray(nodes.children) && nodes.children.length > 0
         ? nodes.children.reduce(childRenderTree, [[], count])
         : [null, count + 1];
-
+    // setObjectCounter(newCount);
     return [
       <TreeItem
         key={nodes.id}
@@ -247,6 +247,7 @@ const ObjectList = ({
               </>
             )}
           </Grid>
+
           <Grid item xs={8}>
             <PropertyList
               classes={classes}

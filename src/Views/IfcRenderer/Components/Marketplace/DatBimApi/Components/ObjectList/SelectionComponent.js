@@ -14,7 +14,7 @@ import {
   Typography,
 } from "@material-ui/core";
 
-import SearchBar from "../../../../../../../Components/SearchBar/SearchBar.jsx";
+import SearchBar from "../../../../../../../Components/SearchBar";
 
 import DefineTypeComponent from "./DefineTypeComponent";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";

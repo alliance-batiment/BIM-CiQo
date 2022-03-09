@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Grid,
   makeStyles,
@@ -66,6 +66,7 @@ const useStyles = makeStyles((theme) => ({
     color: "white",
     margin: theme.spacing(1),
     cursor: "pointer",
+    height: "8em",
   },
   datBimTitle: {
     textAlign: "center",
@@ -152,6 +153,16 @@ const DatBimApi = ({
   const [selectedObjectSetName, setSelectedObjectSetName] = useState(null);
   const [selectedObject, setSelectedObject] = useState(null);
 
+  useEffect(() => {
+    const init = async () => {
+      const token = sessionStorage.getItem("token");
+      if (token) {
+        handleNext();
+      }
+    }
+    init();
+  }, []);
+
   const steps = getSteps();
   const classes = useStyles();
 
@@ -210,6 +221,11 @@ const DatBimApi = ({
       });
   }
 
+  async function handleDisconnect() {
+    sessionStorage.setItem("token", null);
+    setActiveStep(0);
+  }
+
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
   };
@@ -243,6 +259,7 @@ const DatBimApi = ({
             selectedPortal={selectedPortal}
             setSelectedObjectSet={setSelectedObjectSet}
             setSelectedObjectSetName={setSelectedObjectSetName}
+            viewer={viewer}
             eids={eids}
             handleNext={handleNext}
           />
@@ -274,6 +291,31 @@ const DatBimApi = ({
 
   return (
     <>
+      <Grid container>
+        <Grid item xs={6}
+          style={{ textAlign: 'left' }}
+        >
+          {activeStep > 0 && (
+            <Button
+              disabled={activeStep === 0}
+              onClick={handleBack}
+              className={classes.button}
+            >
+              Back
+            </Button>
+          )}
+        </Grid>
+        <Grid item xs={6}
+          style={{ textAlign: 'right' }}
+        >
+          <Button
+            className={classes.button}
+            onClick={handleDisconnect}
+          >
+            Déconnexion
+        </Button>
+        </Grid>
+      </Grid>
       <Stepper
         alternativeLabel
         activeStep={activeStep}
@@ -285,7 +327,7 @@ const DatBimApi = ({
           </Step>
         ))}
       </Stepper>
-      <div className={classes.navigationBar}>
+      {/* <div className={classes.navigationBar}>
         <Grid container>
           <Grid item xs={6}>
             {activeStep > 0 && (
@@ -299,7 +341,7 @@ const DatBimApi = ({
             )}
           </Grid>
         </Grid>
-      </div>
+      </div> */}
       <Typography className={classes.instructions}>
         {getStepContent(activeStep)}
       </Typography>

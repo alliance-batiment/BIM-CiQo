@@ -1,10 +1,20 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Grid, Card, CardContent, CircularProgress } from "@material-ui/core";
+import {
+  Grid,
+  Card,
+  CardContent,
+  CircularProgress,
+  Breadcrumbs,
+  Typography,
+  Divider
+} from "@material-ui/core";
+import SearchBar from "../../../../../../../Components/SearchBar";
 import Pagination from "@material-ui/lab/Pagination";
 import TreeClass from "./TreeClass";
 
 const ObjectsSetsList = ({
+  viewer,
   classes,
   selectedPortal,
   setSelectedObjectSet,
@@ -87,8 +97,9 @@ const ObjectsSetsList = ({
 
   const getobjectsSetsBySelectedEids = async () => {
     setObjectsSetsListLoader(true);
+    const ifcClass = await viewer.IFC.loader.ifcManager.getIfcType(0, eids[0]);
     const treeClassList = await axios.get(
-      `${process.env.REACT_APP_API_DATBIM}/classes/mapping/IfcWall`,
+      `${process.env.REACT_APP_API_DATBIM}/classes/mapping/${ifcClass}`,
       {
         headers: {
           "X-Auth-Token": sessionStorage.getItem("token"),
@@ -122,54 +133,78 @@ const ObjectsSetsList = ({
   };
 
   return (
-    <Grid container>
-      <Grid item xs={6}>
-        <TreeClass
-          selectedPortal={selectedPortal}
-          getobjectsSetsBySelectedClass={getobjectsSetsBySelectedClass}
-        />
-      </Grid>
-      <Grid item xs={6}>
-        {objectsSetsListLoader ? (
-          <Grid container justify="center">
-            <CircularProgress color="inherit" />
-          </Grid>
-        ) : (
+    <Grid container spacing={3}>
+      {objectsSetsListLoader ? (
+        <Grid container justify="center">
+          <CircularProgress color="inherit" />
+        </Grid>
+      )
+        : (
           <>
-            {(eids.length > 0
-              ? objectsSetsListWithEIDS
-              : objectsSetsListDefault
-            )?.map((object, index) => (
-              <Card
-                key={index}
-                className={`${classes.root} ${classes.datBimCard}`}
-              >
-                <CardContent
-                  onClick={() => {
-                    setSelectedObjectSet(object.object_id);
-                    setSelectedObjectSetName(object.object_name);
-                    handleNext();
-                  }}
-                >
-                  <p className={classes.datBimCardTitle}>
-                    {object.parent_name}
-                  </p>
-                  <p className={classes.datBimCardTitle}>
-                    {object.organization_name} - {object.object_name}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-            {objectsSetsListDefault?.meta && (
-              <Pagination
-                count={objectsSetsListDefault.meta.current_items}
-                onChange={(e, value) => getObjectsSetsList()}
-                variant="outlined"
+            <Grid item xs={12}>
+              <Breadcrumbs aria-label="breadcrumb">
+                <Typography color="text.primary">{selectedPortal}</Typography>
+              </Breadcrumbs>
+            </Grid>
+            <Divider />
+            <Grid item xs={12}>
+              <SearchBar
+                // onChange={handleChangeKeyword}
+                className={classes.searchBar}
+                placeholder="Mot clé"
               />
-            )}
+            </Grid>
+            <Grid item xs={4}>
+              <TreeClass
+                selectedPortal={selectedPortal}
+                getobjectsSetsBySelectedClass={getobjectsSetsBySelectedClass}
+              />
+            </Grid>
+            <Grid item xs={8}>
+              {objectsSetsListLoader ? (
+                <Grid container justify="center">
+                  <CircularProgress color="inherit" />
+                </Grid>
+              ) : (
+                <Grid container spacing={1}>
+                  {(eids.length > 0
+                    ? objectsSetsListWithEIDS
+                    : objectsSetsListDefault
+                  )?.map((object, index) => (
+                    <Grid item sm={4}>
+                      <Card
+                        key={index}
+                        className={`${classes.root} ${classes.datBimCard}`}
+                      >
+                        <CardContent
+                          onClick={() => {
+                            setSelectedObjectSet(object.object_id);
+                            setSelectedObjectSetName(object.object_name);
+                            handleNext();
+                          }}
+                        >
+                          <p className={classes.datBimCardTitle}>
+                            {object.parent_name}
+                          </p>
+                          <p className={classes.datBimCardTitle}>
+                            {object.organization_name} - {object.object_name}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                  {objectsSetsListDefault?.meta && (
+                    <Pagination
+                      count={objectsSetsListDefault.meta.current_items}
+                      onChange={(e, value) => getObjectsSetsList()}
+                      variant="outlined"
+                    />
+                  )}
+                </Grid>
+              )}
+            </Grid>
           </>
         )}
-      </Grid>
     </Grid>
   );
 };
