@@ -96,8 +96,9 @@ const TreeClass = ({ selectedPortal, getobjectsSetsBySelectedClass }) => {
             <TreeView
               aria-label="rich object"
               defaultCollapseIcon={<ExpandMoreIcon />}
-              defaultExpanded={["root"]}
+              // defaultExpanded={["root"]}
               defaultExpandIcon={<ChevronRightIcon />}
+              defaultExpanded={[1]}
               sx={{
                 height: 110,
                 flexGrow: 1,

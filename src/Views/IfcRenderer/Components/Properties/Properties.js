@@ -80,17 +80,24 @@ const Properties = ({
       if (selectedElementID) {
         const elementProperties = await viewer.IFC.getProperties(0, selectedElementID, true, true);
         console.log('elementProperties', elementProperties)
-        console.log('ifcClass', await viewer.IFC.loader.ifcManager.getIfcType(0, selectedElementID))
+
+        console.log('viewer', viewer)
+        console.log('ifcClass', viewer.IFC.loader.ifcManager.getIfcType(0, selectedElementID))
+        const ifcClass = viewer.IFC.loader.ifcManager.getIfcType(0, selectedElementID);
         let psets = [];
         if (elementProperties.psets.length > 0) {
           psets = await Promise.all(elementProperties.psets.map(async (pset) => {
             if (pset.HasProperties && pset.HasProperties.length > 0) {
               const newPset = await Promise.all(pset.HasProperties.map(async (property) => {
+                console.log('property', property)
                 const label = property.Name.value;
-                const value = property.NominalValue ? property.NominalValue.value : null;
+                const value = property.NominalValue ? property.NominalValue.value : '';
+                const unit = (property.Unit == null) ? '' : (property.Unit.value === 'null' ? '' : property.Unit.value);
+                console.log('unit', unit)
                 return {
                   label,
-                  value
+                  value,
+                  unit
                 }
               }));
 
@@ -124,7 +131,7 @@ const Properties = ({
         const elem = {
           ...elementProperties,
           name: elementProperties.Name ? elementProperties.Name.value : 'NO NAME',
-          type: 'NO TYPE',
+          type: ifcClass ? ifcClass : 'NO TYPE',
           modelID: 0,
           psets
         };
@@ -365,6 +372,7 @@ const Properties = ({
                                 <TableRow key={index}>
                                   <TableCell>{`${property.label}`}</TableCell>
                                   <TableCell>{`${property.value}`}</TableCell>
+                                  <TableCell>{`${property.unit}`}</TableCell>
                                 </TableRow>
                               ))}
                           </TableBody>

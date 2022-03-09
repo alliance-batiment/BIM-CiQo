@@ -57,8 +57,10 @@ function UseIfcRenderer({
   const meshMaterials = {
     invisibleMaterial: new MeshLambertMaterial({
       transparent: true,
-      opacity: 0.1,
-      color: 0x77aaff
+      opacity: 0,
+      color: 0x77aaff,
+      depthTest: false,
+      side: DoubleSide,
     })
   };
 
@@ -161,7 +163,7 @@ function UseIfcRenderer({
         if (pset.HasProperties && pset.HasProperties.length > 0) {
           const newPset = await Promise.all(pset.HasProperties.map(async (property) => {
             const label = property.Name.value;
-            const value = property.NominalValue ? property.NominalValue.value : null;
+            const value = property.NominalValue ? (property.NominalValue.value ? property.NominalValue.value : '') : '';
             return {
               label,
               value
@@ -246,7 +248,7 @@ function UseIfcRenderer({
         str(`${property.property_name}`),
         str(`${property.property_name}`),
         ifcText(`${property.text_value}`),
-        empty(),
+        property.unit ? str(`${property.unit}`) : empty(),
       );
 
       let rawLineIfcPropertySingleValue = {

@@ -162,6 +162,7 @@ const SearchData = ({
 
   const handleRemoveElement = async (element) => {
     const newEids = eids.filter(eid => eid !== element.expressID);
+    await viewer.IFC.pickIfcItemsByID(0, newEids);
     setEids(newEids);
   }
 
