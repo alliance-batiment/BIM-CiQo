@@ -7,7 +7,8 @@ import {
   CircularProgress,
   Breadcrumbs,
   Typography,
-  Divider
+  Divider,
+  Button,
 } from "@material-ui/core";
 import SearchBar from "../../../../../../../Components/SearchBar";
 import Pagination from "@material-ui/lab/Pagination";
@@ -22,8 +23,10 @@ const ObjectsSetsList = ({
   eids,
   handleNext,
 }) => {
+  const [objectsSetsList, setObjectsSetsList] = useState([]);
   const [objectsSetsListDefault, setObjectsSetsListDefault] = useState([]);
   const [objectsSetsListWithEIDS, setObjectsSetsListWithEIDS] = useState([]);
+  const [searchInput, setSearchInput] = useState("");
   const [objectsSetsListLoader, setObjectsSetsListLoader] = useState(false);
 
   useEffect(() => {
@@ -36,14 +39,16 @@ const ObjectsSetsList = ({
       getobjectsSetsBySelectedEids();
     } else {
       // console.log("eids.length === 0");
-      getobjectsSets();
+      getObjectsSets();
     }
   };
 
-  const getobjectsSets = async () => {
+  const getObjectsSets = async () => {
     setObjectsSetsListLoader(true);
 
     if (objectsSetsListDefault && objectsSetsListDefault.length > 0) {
+      // console.log("objectsSetsListDefault", objectsSetsListDefault);
+      // console.log("objectsSetsList", objectsSetsList);
       setObjectsSetsListLoader(false);
     } else {
       const organizations = await axios.get(
@@ -74,6 +79,8 @@ const ObjectsSetsList = ({
           return acc;
         }, []);
         setObjectsSetsListDefault(objectsSets);
+        setObjectsSetsList(objectsSets);
+
         // console.log("objectsSetsListDefault", objectsSets);
         setObjectsSetsListLoader(false);
       });
@@ -91,7 +98,7 @@ const ObjectsSetsList = ({
       }
     );
 
-    setObjectsSetsListDefault(objectsSetsBySelectedClass.data.data);
+    setObjectsSetsList(objectsSetsBySelectedClass.data.data);
     setObjectsSetsListLoader(false);
   };
 
@@ -132,79 +139,160 @@ const ObjectsSetsList = ({
     });
   };
 
+  const searchObject = (input) => {
+    // console.log("input ==>", input);
+
+    if (objectsSetsListDefault && objectsSetsListDefault.length > 0) {
+      const filtered = objectsSetsListDefault.filter((objectsSets) => {
+        const searchByObjectName = objectsSets.object_name
+          .toLowerCase()
+          .includes(input.toLowerCase());
+        // const searchByOrganizationName = object.organization_name
+        //   .toLowerCase()
+        //   .includes(input.toLowerCase());
+
+        if (searchByObjectName) {
+          return searchByObjectName;
+        }
+        // else if (searchByOrganizationName) {
+        //   return searchByOrganizationName;
+        // }
+      });
+      setSearchInput(input);
+      setObjectsSetsList(filtered);
+    }
+  };
+
+  const getObjectsSetsByKeyWord = async () => {
+    setObjectsSetsListLoader(true);
+
+    const organizations = await axios.get(
+      `${process.env.REACT_APP_API_DATBIM}/portals/${selectedPortal}/organizations`,
+      {
+        headers: {
+          "X-Auth-Token": sessionStorage.getItem("token"),
+        },
+      }
+    );
+
+    Promise.allSettled(
+      organizations.data.data.map(async (organizationProperty) => {
+        return await axios({
+          method: "get",
+          url: `${process.env.REACT_APP_API_DATBIM}/organizations/${organizationProperty.organization_id}/object-sets`,
+          params: { search: `${searchInput}` },
+          headers: {
+            "X-Auth-Token": sessionStorage.getItem("token"),
+          },
+        });
+      })
+    ).then(function (values) {
+      // console.log("values", values);
+      const objectsSets = values.reduce((acc, value) => {
+        if (value.status === "fulfilled") {
+          value.value.data.data.map((value) => acc.push(value));
+        }
+        return acc;
+      }, []);
+      // console.log("objectsSets", objectsSets);
+      setObjectsSetsList(objectsSets);
+
+      // console.log("objectsSetsListDefault", objectsSets);
+      setObjectsSetsListLoader(false);
+    });
+  };
+
+  const resetObjectsSetsList = () => {
+    setObjectsSetsList(objectsSetsListDefault);
+  };
+
   return (
     <Grid container spacing={3}>
       {objectsSetsListLoader ? (
         <Grid container justify="center">
           <CircularProgress color="inherit" />
         </Grid>
-      )
-        : (
-          <>
-            <Grid item xs={12}>
-              <Breadcrumbs aria-label="breadcrumb">
-                <Typography color="text.primary">{selectedPortal}</Typography>
-              </Breadcrumbs>
-            </Grid>
-            <Divider />
-            <Grid item xs={12}>
-              <SearchBar
-                // onChange={handleChangeKeyword}
-                className={classes.searchBar}
-                placeholder="Mot clé"
-              />
-            </Grid>
-            <Grid item xs={4}>
-              <TreeClass
-                selectedPortal={selectedPortal}
-                getobjectsSetsBySelectedClass={getobjectsSetsBySelectedClass}
-              />
-            </Grid>
-            <Grid item xs={8}>
-              {objectsSetsListLoader ? (
-                <Grid container justify="center">
-                  <CircularProgress color="inherit" />
-                </Grid>
-              ) : (
-                <Grid container spacing={1}>
-                  {(eids.length > 0
-                    ? objectsSetsListWithEIDS
-                    : objectsSetsListDefault
-                  )?.map((object, index) => (
-                    <Grid item sm={4}>
-                      <Card
-                        key={index}
-                        className={`${classes.root} ${classes.datBimCard}`}
+      ) : (
+        <>
+          <Grid item xs={12}>
+            <Breadcrumbs aria-label="breadcrumb">
+              <Typography color="text.primary">{selectedPortal}</Typography>
+            </Breadcrumbs>
+          </Grid>
+          <Divider />
+          <Grid item xs={6}>
+            <SearchBar
+              input={searchInput}
+              onChange={searchObject}
+              className={classes.searchBar}
+              placeholder="Mot clé"
+            />
+          </Grid>
+          <Grid item xs={3}>
+            <Button
+              className={classes.button}
+              onClick={getObjectsSetsByKeyWord}
+            >
+              Recherche par mot clé
+            </Button>
+          </Grid>
+          <Grid item xs={3}>
+            <Button className={classes.button} onClick={resetObjectsSetsList}>
+              Réinitialiser
+            </Button>
+          </Grid>
+
+          <Grid item xs={4}>
+            <TreeClass
+              selectedPortal={selectedPortal}
+              getobjectsSetsBySelectedClass={getobjectsSetsBySelectedClass}
+            />
+          </Grid>
+          <Grid item xs={8}>
+            {objectsSetsListLoader ? (
+              <Grid container justify="center">
+                <CircularProgress color="inherit" />
+              </Grid>
+            ) : (
+              <Grid container spacing={1}>
+                {(eids.length > 0
+                  ? objectsSetsListWithEIDS
+                  : objectsSetsList
+                )?.map((object, index) => (
+                  <Grid item sm={4}>
+                    <Card
+                      key={index}
+                      className={`${classes.root} ${classes.datBimCard}`}
+                    >
+                      <CardContent
+                        onClick={() => {
+                          setSelectedObjectSet(object.object_id);
+                          setSelectedObjectSetName(object.object_name);
+                          handleNext();
+                        }}
                       >
-                        <CardContent
-                          onClick={() => {
-                            setSelectedObjectSet(object.object_id);
-                            setSelectedObjectSetName(object.object_name);
-                            handleNext();
-                          }}
-                        >
-                          <p className={classes.datBimCardTitle}>
-                            {object.parent_name}
-                          </p>
-                          <p className={classes.datBimCardTitle}>
-                            {object.organization_name} - {object.object_name}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  ))}
-                  {objectsSetsListDefault?.meta && (
-                    <Pagination
-                      count={objectsSetsListDefault.meta.current_items}
-                      onChange={(e, value) => getObjectsSetsList()}
-                      variant="outlined"
-                    />
-                  )}
-                </Grid>
-              )}
-            </Grid>
-          </>
-        )}
+                        <p className={classes.datBimCardTitle}>
+                          {object.parent_name}
+                        </p>
+                        <p className={classes.datBimCardTitle}>
+                          {object.organization_name} - {object.object_name}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+                {objectsSetsList?.meta && (
+                  <Pagination
+                    count={objectsSetsList.meta.current_items}
+                    onChange={(e, value) => getObjectsSetsList()}
+                    variant="outlined"
+                  />
+                )}
+              </Grid>
+            )}
+          </Grid>
+        </>
+      )}
     </Grid>
   );
 };
