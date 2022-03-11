@@ -34,11 +34,13 @@ const ObjectsSetsList = ({
   }, [eids]);
 
   const getObjectsSetsList = () => {
-    if (eids.length > 0) {
-      // console.log("eids.length > 0");
+    if ((eids.length > 0) & (searchInput.length > 0)) {
+      getobjectsSetsBySelectedEids();
+    } else if (eids.length > 0) {
       getobjectsSetsBySelectedEids();
     } else {
-      // console.log("eids.length === 0");
+      setSearchInput("");
+      setObjectsSetsList(objectsSetsListDefault);
       getObjectsSets();
     }
   };
@@ -47,8 +49,6 @@ const ObjectsSetsList = ({
     setObjectsSetsListLoader(true);
 
     if (objectsSetsListDefault && objectsSetsListDefault.length > 0) {
-      // console.log("objectsSetsListDefault", objectsSetsListDefault);
-      // console.log("objectsSetsList", objectsSetsList);
       setObjectsSetsListLoader(false);
     } else {
       const organizations = await axios.get(
@@ -134,6 +134,7 @@ const ObjectsSetsList = ({
         return acc;
       }, []);
       setObjectsSetsListWithEIDS(objectsSets);
+      setObjectsSetsList(objectsSets);
       // console.log("ObjectsSetsListWithEIDS", objectsSets);
       setObjectsSetsListLoader(false);
     });
@@ -141,25 +142,48 @@ const ObjectsSetsList = ({
 
   const searchObject = (input) => {
     // console.log("input ==>", input);
+    if (eids.length > 0) {
+      if (objectsSetsListWithEIDS && objectsSetsListWithEIDS.length > 0) {
+        const filtered = objectsSetsListWithEIDS.filter((objectsSets) => {
+          // console.log("objectsSetsListWithEIDS", objectsSetsListWithEIDS);
+          const searchByObjectName = objectsSets.object_name
+            .toLowerCase()
+            .includes(input.toLowerCase());
+          // const searchByOrganizationName = object.organization_name
+          //   .toLowerCase()
+          //   .includes(input.toLowerCase());
 
-    if (objectsSetsListDefault && objectsSetsListDefault.length > 0) {
-      const filtered = objectsSetsListDefault.filter((objectsSets) => {
-        const searchByObjectName = objectsSets.object_name
-          .toLowerCase()
-          .includes(input.toLowerCase());
-        // const searchByOrganizationName = object.organization_name
-        //   .toLowerCase()
-        //   .includes(input.toLowerCase());
+          if (searchByObjectName) {
+            // console.log("searchByObjectName", searchByObjectName);
+            return searchByObjectName;
+          }
+          // else if (searchByOrganizationName) {
+          //   return searchByOrganizationName;
+          // }
+        });
+        setSearchInput(input);
+        setObjectsSetsList(filtered);
+      }
+    } else {
+      if (objectsSetsListDefault && objectsSetsListDefault.length > 0) {
+        const filtered = objectsSetsListDefault.filter((objectsSets) => {
+          const searchByObjectName = objectsSets.object_name
+            .toLowerCase()
+            .includes(input.toLowerCase());
+          // const searchByOrganizationName = object.organization_name
+          //   .toLowerCase()
+          //   .includes(input.toLowerCase());
 
-        if (searchByObjectName) {
-          return searchByObjectName;
-        }
-        // else if (searchByOrganizationName) {
-        //   return searchByOrganizationName;
-        // }
-      });
-      setSearchInput(input);
-      setObjectsSetsList(filtered);
+          if (searchByObjectName) {
+            return searchByObjectName;
+          }
+          // else if (searchByOrganizationName) {
+          //   return searchByOrganizationName;
+          // }
+        });
+        setSearchInput(input);
+        setObjectsSetsList(filtered);
+      }
     }
   };
 
@@ -255,7 +279,7 @@ const ObjectsSetsList = ({
               </Grid>
             ) : (
               <Grid container spacing={1}>
-                {(eids.length > 0
+                {((eids.length > 0) & (searchInput.length === 0)
                   ? objectsSetsListWithEIDS
                   : objectsSetsList
                 )?.map((object, index) => (
