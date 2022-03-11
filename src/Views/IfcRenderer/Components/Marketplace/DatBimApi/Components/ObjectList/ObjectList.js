@@ -223,7 +223,14 @@ const ObjectList = ({
                   <TreeView
                     aria-label="rich object"
                     defaultCollapseIcon={<ExpandMoreIcon />}
-                    defaultExpanded={["root"]}
+                    defaultExpanded={
+                      objectListing.id === "FiltredObjects"
+                        ? [
+                            `${objectListing.id}`,
+                            `${objectListing.children[0].id}`,
+                          ]
+                        : [`${objectListing.id}`]
+                    }
                     defaultExpandIcon={<ChevronRightIcon />}
                     sx={{
                       height: 110,
