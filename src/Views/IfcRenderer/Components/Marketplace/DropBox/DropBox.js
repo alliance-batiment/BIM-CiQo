@@ -51,7 +51,8 @@ const DropBox = ({
             appKey={REACT_APP_DROPBOX_APP_KEY}
             success={handleSuccess}
             cancel={() => console.log('closed')}
-            multiselect={true}
+            multiselect={false}
+            extensions={['.ifc']}
           >
             <Card
             >

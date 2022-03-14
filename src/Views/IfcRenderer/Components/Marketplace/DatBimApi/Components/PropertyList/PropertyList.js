@@ -11,6 +11,11 @@ import {
   Paper,
   TableCell,
   makeStyles,
+  Input,
+  InputLabel,
+  InputAdornment,
+  Tooltip,
+  IconButton
 } from "@material-ui/core";
 import Add from "@material-ui/icons/Add";
 import { useHistory } from "react-router-dom";
@@ -18,6 +23,7 @@ import axios from "axios";
 import moment from "moment";
 import SearchBar from "../../../../../../../Components/SearchBar/SearchBar.jsx";
 import DefineTypeComponent from "./DefineTypeComponent";
+import InfoIcon from '@mui/icons-material/Info';
 
 const useStyles = makeStyles((theme) => ({
   searchBar: {
@@ -167,6 +173,7 @@ const PropertyList = ({
         });
         setPropertyListDefault(temporaryFixProperties);
         setProperties(temporaryFixProperties);
+        console.log('temporaryFixProperties', temporaryFixProperties)
       } catch (err) {
         console.log("error", err);
       }
@@ -204,6 +211,7 @@ const PropertyList = ({
         <TableHead>
           <TableRow className={`${classes.root} ${classes.datBimCardTitle}`}>
             <TableCell>Propriété</TableCell>
+            <TableCell align="center">Info</TableCell>
             <TableCell align="center">Valeur</TableCell>
             <TableCell align="center">Unité</TableCell>
           </TableRow>
@@ -214,10 +222,19 @@ const PropertyList = ({
               key={property.property_id}
               className={`${classes.root} ${classes.datBimList}`}
             >
-              <TableCell width="40%" component="th" scope="row">
+              <TableCell width="35%" component="th" scope="row">
                 {property.property_name}
               </TableCell>
-              <TableCell width="40%" align="right">
+              <TableCell width="10%" component="th" scope="row">
+                {(property.property_definition) &&
+                  <Tooltip title={`${property.property_definition}`} placement="top-start">
+                    <IconButton>
+                      <InfoIcon />
+                    </IconButton>
+                  </Tooltip>
+                }
+              </TableCell>
+              <TableCell width="35%" align="right">
                 {DefineTypeComponent(
                   property.data_type_name,
                   property,

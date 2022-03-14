@@ -73,6 +73,18 @@ const Properties = ({
   const [anchorEl, setAnchorEl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  function DecodeIFCString(ifcString) {
+    const ifcUnicodeRegEx = /\\X2\\(.*?)\\X0\\/uig;
+    let resultString = ifcString;
+    let match = ifcUnicodeRegEx.exec(ifcString);
+    while (match) {
+      const unicodeChar = String.fromCharCode(parseInt(match[1], 16));
+      resultString = resultString.replace(match[0], unicodeChar);
+      match = ifcUnicodeRegEx.exec(ifcString);
+    }
+    return resultString;
+  }
+
   useEffect(() => {
     async function init() {
       console.log('selectedElementID', selectedElementID);
@@ -90,8 +102,8 @@ const Properties = ({
             if (pset.HasProperties && pset.HasProperties.length > 0) {
               const newPset = await Promise.all(pset.HasProperties.map(async (property) => {
                 console.log('property', property)
-                const label = property.Name.value;
-                const value = property.NominalValue ? property.NominalValue.value : '';
+                const label = DecodeIFCString(property.Name.value);
+                const value = property.NominalValue ? DecodeIFCString(property.NominalValue.value) : '';
                 const unit = (property.Unit == null) ? '' : (property.Unit.value === 'null' ? '' : property.Unit.value);
                 console.log('unit', unit)
                 return {
@@ -108,8 +120,8 @@ const Properties = ({
             }
             if (pset.Quantities && pset.Quantities.length > 0) {
               const newPset = await Promise.all(pset.Quantities.map(async (property) => {
-                const label = property.Name.value;
-                const value = property.NominalValue ? property.NominalValue.value : null;
+                const label = DecodeIFCString(property.Name.value);
+                const value = property.NominalValue ? DecodeIFCString(property.NominalValue.value) : null;
                 return {
                   label,
                   value
@@ -307,7 +319,7 @@ const Properties = ({
             </Popover>
           </div>
         }
-        title={`${ifcElement ? ifcElement.name : "Undefined"}`}
+        title={`${ifcElement ? DecodeIFCString(ifcElement.name) : "Undefined"}`}
         subheader={`${ifcElement ? ifcElement.type : "Undefined"}`}
       />
       {isLoading ? (
@@ -357,7 +369,7 @@ const Properties = ({
                     >
                       <Typography
                         className={classes.heading}
-                      >{`${pset.Name.value}`}</Typography>
+                      >{`${DecodeIFCString(pset.Name.value)}`}</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
                       <TableContainer>
