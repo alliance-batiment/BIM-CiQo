@@ -105,7 +105,7 @@ const TreeClass = ({ selectedPortal, getobjectsSetsBySelectedClass }) => {
                 overflowY: "auto",
               }}
             >
-              {/* {console.log("classListing", classListing)} */}
+              {console.log("classListing", classListing)}
               {renderTree(classListing)}
             </TreeView>
           )}

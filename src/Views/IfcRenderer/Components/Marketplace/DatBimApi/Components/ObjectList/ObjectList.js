@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Grid, CircularProgress } from "@material-ui/core";
+import { makeStyles, Grid, CircularProgress } from "@material-ui/core";
 import PropertyList from "../PropertyList/PropertyList";
 import SelectionComponent from "./SelectionComponent";
 
@@ -9,8 +9,81 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import TreeItem from "@material-ui/lab/TreeItem";
 
+const useStyles = makeStyles((theme) => ({
+  root: {
+    flexGrow: 1,
+    "& .MuiTextField-root": {
+      margin: theme.spacing(1),
+      backgroundColor: "white",
+    },
+  },
+  button: {
+    backgroundColor: "#E6464D",
+    color: "white",
+    "&:hover": {
+      backgroundColor: "#E6464D",
+      color: "white",
+    },
+    "&:disabled": {
+      opacity: 0.8,
+      color: "white",
+    },
+  },
+  navigationBar: {
+    margin: 0,
+    bottom: 0,
+    width: "100%",
+    backgroundColor: "white",
+    padding: "10px",
+  },
+  modal: {
+    display: "flex",
+    padding: theme.spacing(1),
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalDatBim: {
+    width: "50%",
+    height: "70%",
+    backgroundColor: theme.palette.background.paper,
+    border: "2px solid #000",
+    boxShadow: theme.shadows[5],
+    padding: theme.spacing(2, 4, 3),
+    overflow: "hidden scroll",
+    position: "relative",
+  },
+  datBimCard: {
+    backgroundColor: "#E6464D",
+    color: "white",
+    margin: theme.spacing(1),
+    cursor: "pointer",
+    height: "8em",
+  },
+  datBimTitle: {
+    textAlign: "center",
+    textTransform: "none",
+  },
+  datBimCardTitle: {
+    margin: 0,
+    color: "white",
+  },
+  datBimFooterCard: {
+    display: "block",
+    textAlign: "right",
+  },
+  datBimCardButton: {
+    textAlign: "right",
+    color: "white",
+  },
+  accordionDetails: {
+    display: "block",
+  },
+  datBimIcon: {
+    width: "3em",
+  },
+}));
+
 const ObjectList = ({
-  classes,
   projectId,
   objSelected,
   addElementsNewProperties,
@@ -23,13 +96,14 @@ const ObjectList = ({
   setEids,
   handleShowMarketplace,
 }) => {
+  const classes = useStyles();
+
   const [searchBarInput, setSearchBarInput] = useState("");
   const [selectors, setSelectors] = useState([]);
   const [selectorsRequest, setSelectorsRequest] = useState([]);
   const [selectorsLoader, setSelectorsLoader] = useState(false);
   const [objectsLoader, setObjectsLoader] = useState(false);
   const [objectListing, setObjectListing] = useState({});
-  const [objectCounter, setObjectCounter] = useState(0);
 
   // const classes = await axios.get(
   //   `${process.env.REACT_APP_API_DATBIM}/classes/mapping/${typeProperties}`,
@@ -44,8 +118,6 @@ const ObjectList = ({
   useEffect(() => {
     getSelectorsOfObjectSet();
     getObjectsOfSelectedObject();
-
-    let isCancelled = false;
   }, []);
 
   async function getSelectorsOfObjectSet() {
@@ -194,7 +266,35 @@ const ObjectList = ({
     ];
   };
 
-  console.log("objectCounter", objectCounter);
+  let listing = null;
+
+  if (objectListing) {
+    const [tree, count] = renderTree(objectListing, 0);
+
+    listing = (
+      <div>
+        <p>Objets trouvés: {count}</p>
+        <TreeView
+          aria-label="rich object"
+          defaultCollapseIcon={<ExpandMoreIcon />}
+          defaultExpanded={
+            objectListing.id === "FiltredObjects"
+              ? [`${objectListing.id}`, `${objectListing.children[0].id}`]
+              : [`${objectListing.id}`]
+          }
+          defaultExpandIcon={<ChevronRightIcon />}
+          sx={{
+            height: 110,
+            flexGrow: 1,
+            maxWidth: 400,
+            overflowY: "auto",
+          }}
+        >
+          {tree}
+        </TreeView>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -219,30 +319,7 @@ const ObjectList = ({
               </Grid>
             ) : (
               <>
-                {objectListing && (
-                  <TreeView
-                    aria-label="rich object"
-                    defaultCollapseIcon={<ExpandMoreIcon />}
-                    defaultExpanded={
-                      objectListing.id === "FiltredObjects"
-                        ? [
-                            `${objectListing.id}`,
-                            `${objectListing.children[0].id}`,
-                          ]
-                        : [`${objectListing.id}`]
-                    }
-                    defaultExpandIcon={<ChevronRightIcon />}
-                    sx={{
-                      height: 110,
-                      flexGrow: 1,
-                      maxWidth: 400,
-                      overflowY: "auto",
-                    }}
-                  >
-                    {console.log("objectListing ==>", objectListing)}
-                    {renderTree(objectListing, 0)}
-                  </TreeView>
-                )}
+                {listing}
 
                 {/* {objects?.meta && (
                   <Pagination
