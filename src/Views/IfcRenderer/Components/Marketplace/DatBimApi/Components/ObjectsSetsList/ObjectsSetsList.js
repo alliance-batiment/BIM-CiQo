@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import {
+  makeStyles,
   Grid,
   Card,
   CardContent,
@@ -14,15 +15,54 @@ import SearchBar from "../../../../../../../Components/SearchBar";
 import Pagination from "@material-ui/lab/Pagination";
 import TreeClass from "./TreeClass";
 
+const useStyles = makeStyles((theme) => ({
+  root: {
+    flexGrow: 1,
+    "& .MuiTextField-root": {
+      margin: theme.spacing(1),
+      backgroundColor: "white",
+    },
+  },
+  datBimCard: {
+    backgroundColor: "#E6464D",
+    color: "white",
+    margin: theme.spacing(1),
+    cursor: "pointer",
+    height: "8em",
+  },
+  datBimCardTitle: {
+    margin: 0,
+    color: "white",
+    fontWeight: "bold",
+  },
+  datBimCardDesc: {
+    margin: 0,
+    fontStyle: "italic",
+  },
+  button: {
+    backgroundColor: "#E6464D",
+    color: "white",
+    "&:hover": {
+      backgroundColor: "#E6464D",
+      color: "white",
+    },
+    "&:disabled": {
+      opacity: 0.8,
+      color: "white",
+    },
+  },
+}));
+
 const ObjectsSetsList = ({
   viewer,
-  classes,
   selectedPortal,
   setSelectedObjectSet,
   setSelectedObjectSetName,
   eids,
   handleNext,
 }) => {
+  const classes = useStyles();
+
   const [objectsSetsList, setObjectsSetsList] = useState([]);
   const [objectsSetsListDefault, setObjectsSetsListDefault] = useState([]);
   const [objectsSetsListWithEIDS, setObjectsSetsListWithEIDS] = useState([]);
@@ -295,12 +335,13 @@ const ObjectsSetsList = ({
                           handleNext();
                         }}
                       >
-                        <p className={classes.datBimCardTitle}>
-                          {object.parent_name}
-                        </p>
-                        <p className={classes.datBimCardTitle}>
-                          {object.organization_name} - {object.object_name}
-                        </p>
+                        <Typography className={classes.datBimCardTitle}>
+                          {object.object_name}
+                          <br />-
+                        </Typography>
+                        <Typography className={classes.datBimCardDesc}>
+                          {object.organization_name}
+                        </Typography>
                       </CardContent>
                     </Card>
                   </Grid>

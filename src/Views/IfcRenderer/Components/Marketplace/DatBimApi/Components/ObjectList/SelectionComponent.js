@@ -23,7 +23,6 @@ import React from "react";
 const SelectionComponent = ({
   classes,
   selectors,
-  setSelectors,
   selectorsLoader,
   getObjectsOfAdvancedSearch,
   selectorsRequest,

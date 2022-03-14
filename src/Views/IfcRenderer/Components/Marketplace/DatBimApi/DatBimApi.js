@@ -70,7 +70,6 @@ const useStyles = makeStyles((theme) => ({
   },
   datBimTitle: {
     textAlign: "center",
-    // color: '#E6464D',
     textTransform: "none",
   },
   datBimCardTitle: {
@@ -159,7 +158,7 @@ const DatBimApi = ({
       if (token) {
         handleNext();
       }
-    }
+    };
     init();
   }, []);
 
@@ -241,11 +240,10 @@ const DatBimApi = ({
   function getStepContent(step) {
     switch (step) {
       case 0:
-        return <Login classes={classes} handleSubmit={handleSubmit} />;
+        return <Login handleSubmit={handleSubmit} />;
       case 1:
         return (
           <PortalList
-            classes={classes}
             openObjects={openObjects}
             setSelectedPortal={setSelectedPortal}
             handleNext={handleNext}
@@ -255,7 +253,6 @@ const DatBimApi = ({
       case 2:
         return (
           <ObjectsSetsList
-            classes={classes}
             selectedPortal={selectedPortal}
             setSelectedObjectSet={setSelectedObjectSet}
             setSelectedObjectSetName={setSelectedObjectSetName}
@@ -267,7 +264,6 @@ const DatBimApi = ({
       case 3:
         return (
           <ObjectList
-            classes={classes}
             selectedObject={selectedObject}
             selectedObjectSet={selectedObjectSet}
             selectedObjectSetName={selectedObjectSetName}
@@ -292,9 +288,7 @@ const DatBimApi = ({
   return (
     <>
       <Grid container>
-        <Grid item xs={6}
-          style={{ textAlign: 'left' }}
-        >
+        <Grid item xs={6} style={{ textAlign: "left" }}>
           {activeStep > 0 && (
             <Button
               disabled={activeStep === 0}
@@ -305,15 +299,10 @@ const DatBimApi = ({
             </Button>
           )}
         </Grid>
-        <Grid item xs={6}
-          style={{ textAlign: 'right' }}
-        >
-          <Button
-            className={classes.button}
-            onClick={handleDisconnect}
-          >
+        <Grid item xs={6} style={{ textAlign: "right" }}>
+          <Button className={classes.button} onClick={handleDisconnect}>
             Déconnexion
-        </Button>
+          </Button>
         </Grid>
       </Grid>
       <Stepper
