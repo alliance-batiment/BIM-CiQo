@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { makeStyles, Grid, CircularProgress } from "@material-ui/core";
+import {
+  makeStyles,
+  Grid,
+  CircularProgress,
+  Typography,
+  Breadcrumbs,
+  Divider,
+} from "@material-ui/core";
 import PropertyList from "../PropertyList/PropertyList";
 import SelectionComponent from "./SelectionComponent";
 
@@ -8,6 +15,81 @@ import TreeView from "@material-ui/lab/TreeView";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import TreeItem from "@material-ui/lab/TreeItem";
+import NavigateNextIcon from "@material-ui/icons/NavigateNext";
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    flexGrow: 1,
+    "& .MuiTextField-root": {
+      margin: theme.spacing(1),
+      backgroundColor: "white",
+    },
+  },
+  button: {
+    backgroundColor: "#E6464D",
+    color: "white",
+    "&:hover": {
+      backgroundColor: "#E6464D",
+      color: "white",
+    },
+    "&:disabled": {
+      opacity: 0.8,
+      color: "white",
+    },
+  },
+  navigationBar: {
+    margin: 0,
+    bottom: 0,
+    width: "100%",
+    backgroundColor: "white",
+    padding: "10px",
+  },
+  modal: {
+    display: "flex",
+    padding: theme.spacing(1),
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalDatBim: {
+    width: "50%",
+    height: "70%",
+    backgroundColor: theme.palette.background.paper,
+    border: "2px solid #000",
+    boxShadow: theme.shadows[5],
+    padding: theme.spacing(2, 4, 3),
+    overflow: "hidden scroll",
+    position: "relative",
+  },
+  datBimCard: {
+    backgroundColor: "#E6464D",
+    color: "white",
+    margin: theme.spacing(1),
+    cursor: "pointer",
+    height: "8em",
+  },
+  datBimTitle: {
+    textAlign: "center",
+    textTransform: "none",
+  },
+  datBimCardTitle: {
+    margin: 0,
+    color: "white",
+  },
+  datBimFooterCard: {
+    display: "block",
+    textAlign: "right",
+  },
+  datBimCardButton: {
+    textAlign: "right",
+    color: "white",
+  },
+  accordionDetails: {
+    display: "block",
+  },
+  datBimIcon: {
+    width: "3em",
+  },
+}));
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -94,6 +176,7 @@ const ObjectList = ({
   modelID,
   eids,
   setEids,
+  breadcrumbMap,
   handleShowMarketplace,
 }) => {
   const classes = useStyles();
@@ -104,6 +187,7 @@ const ObjectList = ({
   const [selectorsLoader, setSelectorsLoader] = useState(false);
   const [objectsLoader, setObjectsLoader] = useState(false);
   const [objectListing, setObjectListing] = useState({});
+  const [selectedObjectName, setSelectedObjectName] = useState("");
 
   // const classes = await axios.get(
   //   `${process.env.REACT_APP_API_DATBIM}/classes/mapping/${typeProperties}`,
@@ -116,6 +200,7 @@ const ObjectList = ({
   // );
 
   useEffect(() => {
+    console.log("BreadcrumbMap", breadcrumbMap);
     getSelectorsOfObjectSet();
     getObjectsOfSelectedObject();
   }, []);
@@ -258,7 +343,10 @@ const ObjectList = ({
         key={nodes.id}
         nodeId={nodes.id}
         label={nodes.name}
-        onClick={() => setSelectedObject(nodes.id)}
+        onClick={() => {
+          setSelectedObject(nodes.id);
+          setSelectedObjectName(nodes.name);
+        }}
       >
         {children}
       </TreeItem>,
@@ -299,6 +387,31 @@ const ObjectList = ({
   return (
     <>
       <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <Breadcrumbs
+            separator={<NavigateNextIcon fontSize="small" />}
+            aria-label="breadcrumb"
+          >
+            <Typography color="inherit">
+              {breadcrumbMap[0].length > 15
+                ? breadcrumbMap[0].slice(0, 15) + "..."
+                : breadcrumbMap[0]}
+            </Typography>
+            <Typography color={selectedObjectName ? "inherit" : "textPrimary"}>
+              {breadcrumbMap[1].length > 15
+                ? breadcrumbMap[1].slice(0, 15) + "..."
+                : breadcrumbMap[1]}
+            </Typography>
+            <Typography color={selectedObjectName ? "textPrimary" : "inherit"}>
+              {selectedObject
+                ? selectedObjectName.length > 25
+                  ? selectedObjectName.slice(0, 25) + "..."
+                  : selectedObjectName
+                : "Sélectionnez un objet"}
+            </Typography>
+          </Breadcrumbs>
+        </Grid>
+        <Divider />
         <SelectionComponent
           classes={classes}
           selectors={selectors}

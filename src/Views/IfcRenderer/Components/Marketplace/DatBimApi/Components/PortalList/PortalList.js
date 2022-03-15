@@ -29,7 +29,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const PortalList = ({ openObjects, handleNext, setActiveStep }) => {
+const PortalList = ({
+  openObjects,
+  setBreadcrumbMap,
+  handleNext,
+  setActiveStep,
+}) => {
   const classes = useStyles();
 
   const [portals, setPortals] = useState([]);
@@ -66,6 +71,7 @@ const PortalList = ({ openObjects, handleNext, setActiveStep }) => {
               <CardContent
                 onClick={() => {
                   openObjects(portal.portal_id);
+                  setBreadcrumbMap([portal.portal_name]);
                   handleNext();
                 }}
               >
