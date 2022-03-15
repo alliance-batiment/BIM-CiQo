@@ -233,6 +233,10 @@ function UseIfcRenderer({
     properties
   }) => {
     const allLines = await viewer.IFC.loader.ifcManager.state.api.GetAllLines(modelId);
+    console.log('allLines', allLines)
+    //const line = await viewer.IFC.loader.ifcManager.state.api.GetLine(modelId, 39116);
+    const line = await viewer.IFC.loader.ifcManager.state.api.GetRawLineData(modelId, 39116);
+    console.log('lines', line)
     let maxExpressId = 0;
     await Object.keys(allLines._data).forEach(index => {
       maxExpressId = Math.max(maxExpressId, allLines._data[index])
@@ -245,9 +249,9 @@ function UseIfcRenderer({
       let ifcPropertySingleValue = new WebIFC.IfcPropertySingleValue(
         propertyEid,
         IFCPROPERTYSINGLEVALUE,
-        str(`${property.property_name}`),
-        str(`${property.property_name}`),
-        ifcText(`${property.text_value}`),
+        property.property_name ? str(`${property.property_name}`) : empty(),
+        property.property_definition ? str(`${property.property_definition}`) : empty(),
+        property.text_value ? ifcText(`${property.text_value}`) : empty(),
         property.unit ? str(`${property.unit}`) : empty(),
       );
 

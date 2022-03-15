@@ -230,17 +230,17 @@ const ObjectsSetsList = ({
           const searchByObjectName = objectsSets.object_name
             .toLowerCase()
             .includes(input.toLowerCase());
-          // const searchByOrganizationName = object.organization_name
-          //   .toLowerCase()
-          //   .includes(input.toLowerCase());
+          const searchByOrganizationName = objectsSets.organization_name
+            .toLowerCase()
+            .includes(input.toLowerCase());
 
           if (searchByObjectName) {
             // console.log("searchByObjectName", searchByObjectName);
             return searchByObjectName;
           }
-          // else if (searchByOrganizationName) {
-          //   return searchByOrganizationName;
-          // }
+          else if (searchByOrganizationName) {
+            return searchByOrganizationName;
+          }
         });
         setSearchInput(input);
         setObjectsSetsList(filtered);
@@ -251,16 +251,16 @@ const ObjectsSetsList = ({
           const searchByObjectName = objectsSets.object_name
             .toLowerCase()
             .includes(input.toLowerCase());
-          // const searchByOrganizationName = object.organization_name
-          //   .toLowerCase()
-          //   .includes(input.toLowerCase());
+          const searchByOrganizationName = objectsSets.organization_name
+            .toLowerCase()
+            .includes(input.toLowerCase());
 
           if (searchByObjectName) {
             return searchByObjectName;
           }
-          // else if (searchByOrganizationName) {
-          //   return searchByOrganizationName;
-          // }
+          else if (searchByOrganizationName) {
+            return searchByOrganizationName;
+          }
         });
         setSearchInput(input);
         setObjectsSetsList(filtered);
