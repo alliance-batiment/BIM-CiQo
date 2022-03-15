@@ -262,13 +262,13 @@ const ProjectTree = ({
       const selectedModelID = await viewer.IFC.getModelID();
       const ifcLoader = new IFCLoader();
       // const ifcClass = ifcClassType[];
-      // const ifcClass = await ifcLoader.ifcManager.getIfcType(0, eid);
+      const ifcClass = await viewer.IFC.loader.ifcManager.getIfcType(0, eid);
+
       console.log('ifcClass', await viewer.IFC.loader.ifcManager.getIfcType(0, eid))
-      // console.log('ifcClass ', ifcClass)
       await Promise.all(ifcElement.psets?.map(async pset => pset.HasProperties && await Promise.all(pset.HasProperties?.map(async (property) => {
         const modelID = 0;
         const elementName = `${ifcElement.Name?.value}`;
-        const elementClass = `NONE`;
+        const elementClass = ifcClass ? ifcClass : `NONE`;
         const globalID = `${ifcElement.GlobalId.value}`;
         const expressID = `${ifcElement.expressID}`;
         const psetName = `${pset.Name.value}`;

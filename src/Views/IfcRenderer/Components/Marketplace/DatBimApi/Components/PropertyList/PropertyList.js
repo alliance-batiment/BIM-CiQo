@@ -11,6 +11,11 @@ import {
   Paper,
   TableCell,
   makeStyles,
+  Input,
+  InputLabel,
+  InputAdornment,
+  Tooltip,
+  IconButton
 } from "@material-ui/core";
 import Add from "@material-ui/icons/Add";
 import { useHistory } from "react-router-dom";
@@ -18,6 +23,7 @@ import axios from "axios";
 import moment from "moment";
 import SearchBar from "../../../../../../../Components/SearchBar/SearchBar.jsx";
 import DefineTypeComponent from "./DefineTypeComponent";
+import InfoIcon from '@mui/icons-material/Info';
 
 const useStyles = makeStyles((theme) => ({
   searchBar: {
@@ -152,7 +158,7 @@ const PropertyList = ({
             },
           }
         );
-        console.log("data", dataProp);
+        //console.log("data", dataProp);
         const temporaryFixProperties = dataProp.data.map((property) => {
           if (
             property.data_type_name === "Entier" &&
@@ -167,6 +173,7 @@ const PropertyList = ({
         });
         setPropertyListDefault(temporaryFixProperties);
         setProperties(temporaryFixProperties);
+        console.log('temporaryFixProperties', temporaryFixProperties)
       } catch (err) {
         console.log("error", err);
       }
@@ -203,9 +210,10 @@ const PropertyList = ({
       <Table className={classes.table} aria-label="simple table">
         <TableHead>
           <TableRow className={`${classes.root} ${classes.datBimCardTitle}`}>
-            <TableCell>Property</TableCell>
-            <TableCell align="center">Value</TableCell>
-            <TableCell align="center">Unit</TableCell>
+            <TableCell>Propriété</TableCell>
+            <TableCell align="center">Info</TableCell>
+            <TableCell align="center">Valeur</TableCell>
+            <TableCell align="center">Unité</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -214,10 +222,19 @@ const PropertyList = ({
               key={property.property_id}
               className={`${classes.root} ${classes.datBimList}`}
             >
-              <TableCell width="40%" component="th" scope="row">
+              <TableCell width="35%" component="th" scope="row">
                 {property.property_name}
               </TableCell>
-              <TableCell width="40%" align="right">
+              <TableCell width="10%" component="th" scope="row">
+                {(property.property_definition) &&
+                  <Tooltip title={`${property.property_definition}`} placement="top-start">
+                    <IconButton>
+                      <InfoIcon />
+                    </IconButton>
+                  </Tooltip>
+                }
+              </TableCell>
+              <TableCell width="35%" align="right">
                 {DefineTypeComponent(
                   property.data_type_name,
                   property,

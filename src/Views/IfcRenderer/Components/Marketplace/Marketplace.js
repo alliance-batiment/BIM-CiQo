@@ -22,27 +22,27 @@ import {
   ListItemIcon,
   ListItemText,
   Badge,
-  Fab
-} from '@material-ui/core';
-import AppsIcon from '@material-ui/icons/Apps';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
-import ClearIcon from '@material-ui/icons/Clear';
-import VisibilityIcon from '@material-ui/icons/Visibility';
-import DatBimApi from './DatBimApi/DatBimApi';
+  Fab,
+} from "@material-ui/core";
+import AppsIcon from "@material-ui/icons/Apps";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import MoreVertIcon from "@material-ui/icons/MoreVert";
+import ClearIcon from "@material-ui/icons/Clear";
+import VisibilityIcon from "@material-ui/icons/Visibility";
+import DatBimApi from "./DatBimApi/DatBimApi";
 import DropBox from "./DropBox/DropBox";
 import BsDD from "./BsDD";
-import AxeoBim from './AxeoBim';
-import Web3 from './Web3';
-import TriStructure from './TriStructure';
-import DropboxChooser from 'react-dropbox-chooser';
-import OpenDthxLogo from './img/OpenDthxLogo.png';
-import DropBoxLogo from './img/DropBoxLogo.png';
-import GoogleDriveLogo from './img/GoogleDriveLogo.png';
-import BsDDLogo from './img/bsDDLogo.png';
-import AxeoBimLogo from './img/AxeoBimLogo.jpeg';
-import IpfsLogo from './img/IpfsLogo.png';
-import TriStructureLogo from './img/TriStructureLogo.png';
+import AxeoBim from "./AxeoBim";
+import Web3 from "./Web3";
+import TriStructure from "./TriStructure";
+import DropboxChooser from "react-dropbox-chooser";
+import OpenDthxLogo from "./img/OpenDthxLogo.png";
+import DropBoxLogo from "./img/DropBoxLogo.png";
+import GoogleDriveLogo from "./img/GoogleDriveLogo.png";
+import BsDDLogo from "./img/bsDDLogo.png";
+import AxeoBimLogo from "./img/AxeoBimLogo.jpeg";
+import IpfsLogo from "./img/IpfsLogo.png";
+import TriStructureLogo from "./img/TriStructureLogo.png";
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -73,41 +73,41 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   application: {
-    height: '17em'
+    height: "17em",
   },
   avatar: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     width: theme.spacing(7),
     height: theme.spacing(7),
-    padding: '5px',
-    borderRadius: '0px'
+    padding: "5px",
+    borderRadius: "0px",
   },
   root: {
     maxWidth: 345,
-    margin: '10px',
-    cursor: 'pointer',
+    margin: "10px",
+    cursor: "pointer",
   },
   media: {
     height: 0,
-    paddingTop: '56.25%', // 16:9
+    paddingTop: "56.25%", // 16:9
   },
   fab: {
-    backgroundColor: 'white'
-  }
+    backgroundColor: "white",
+  },
 }));
 
 const applications = [
   {
-    name: 'Open dthX',
+    name: "Open dthX",
     img: OpenDthxLogo,
-    type: 'data',
-    description: "Base de données permettant l'enrichissement de la maquette"
+    type: "data",
+    description: "Base de données permettant l'enrichissement de la maquette",
   },
   {
-    name: 'DropBox',
+    name: "DropBox",
     img: DropBoxLogo,
-    type: 'storage',
-    description: 'Espace permettant le partage et le stockage de fichier'
+    type: "storage",
+    description: "Espace permettant le partage et le stockage de fichier",
   },
   // {
   //   name: 'TriStructure',
@@ -122,7 +122,7 @@ const applications = [
   //   type: 'storage',
   //   tags: ['Coming Soon'],
   //   description: 'Espace permettant le partage et le stockage de fichier'
-  // }, 
+  // },
   // {
   //   name: 'AxeoBIM',
   //   img: AxeoBimLogo,
@@ -144,12 +144,9 @@ const applications = [
   //   tags: ['Coming Soon'],
   //   description: 'Espace permettant le partage et le stockage de fichier de manière décentralisée'
   // },
-]
+];
 
-
-const {
-  REACT_APP_DROPBOX_APP_KEY
-} = process.env;
+const { REACT_APP_DROPBOX_APP_KEY } = process.env;
 
 const Marketplace = ({
   viewer,
@@ -159,12 +156,12 @@ const Marketplace = ({
   setEids,
   onDrop,
   addElementsNewProperties,
-  specificApplication
+  specificApplication,
 }) => {
   const classes = useStyles();
   const [selectedApp, setSelectedApp] = useState("home");
   const [anchorEl, setAnchorEl] = useState(null);
-  const [url, setUrl] = useState("")
+  const [url, setUrl] = useState("");
 
   useEffect(() => {
     if (specificApplication) {
@@ -182,13 +179,12 @@ const Marketplace = ({
     setAnchorEl(null);
   };
 
-
   async function handleSuccess(files) {
     // setUrl(files[0].thumbnailLink);
     const rawResponse = await fetch(files[0].link);
     const result = await rawResponse.text();
-    const ifcBlob = new Blob([result], { type: 'text/plain' });
-    const file = new File([ifcBlob], 'ifcFile');
+    const ifcBlob = new Blob([result], { type: "text/plain" });
+    const file = new File([ifcBlob], "ifcFile");
     onDrop([file]);
   }
 
@@ -258,9 +254,7 @@ const Marketplace = ({
           <Grid container spacing={3}>
             {applications.map((application) => (
               <Grid item xs={4}>
-                <Card
-                  className={classes.application}
-                >
+                <Card className={classes.application}>
                   <CardActionArea
                     onClick={() => {
                       // if (application.name === 'Dropbox') {
@@ -281,7 +275,11 @@ const Marketplace = ({
                         />
                       }
                       title={application.name}
-                      subheader={<Badge color="success" pill>{application.type}</Badge>}
+                      subheader={
+                        <Badge color="success" pill>
+                          {application.type}
+                        </Badge>
+                      }
                     />
                     <CardContent>
                       <Typography
@@ -298,7 +296,7 @@ const Marketplace = ({
             ))}
           </Grid>
         )}
-        {selectedApp === 'Open dthX' &&
+        {selectedApp === "Open dthX" && (
           <DatBimApi
             viewer={viewer}
             modelID={modelID}
@@ -307,8 +305,8 @@ const Marketplace = ({
             addElementsNewProperties={addElementsNewProperties}
             handleShowMarketplace={handleShowMarketplace}
           />
-        }
-        {selectedApp === 'AxeoBIM' &&
+        )}
+        {selectedApp === "AxeoBIM" &&
           <AxeoBim
             viewer={viewer}
             modelID={modelID}
@@ -320,6 +318,7 @@ const Marketplace = ({
         }
         {selectedApp === 'DropBox' &&
           <DropBox
+            viewer={viewer}
             onDrop={onDrop}
           />
         }
@@ -333,7 +332,7 @@ const Marketplace = ({
             handleShowMarketplace={handleShowMarketplace}
           />
         }
-        {selectedApp === 'Web3' &&
+        {selectedApp === "Web3" && (
           <Web3
             viewer={viewer}
             modelID={modelID}
@@ -342,8 +341,8 @@ const Marketplace = ({
             addElementsNewProperties={addElementsNewProperties}
             handleShowMarketplace={handleShowMarketplace}
           />
-        }
-        {selectedApp === 'TriStructure' &&
+        )}
+        {selectedApp === "TriStructure" && (
           <TriStructure
             viewer={viewer}
             modelID={modelID}
@@ -352,7 +351,7 @@ const Marketplace = ({
             addElementsNewProperties={addElementsNewProperties}
             handleShowMarketplace={handleShowMarketplace}
           />
-        }
+        )}
       </CardContent>
     </Card>
   );
