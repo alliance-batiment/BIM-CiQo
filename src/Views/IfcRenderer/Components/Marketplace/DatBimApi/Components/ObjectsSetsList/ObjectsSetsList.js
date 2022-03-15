@@ -54,44 +54,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    flexGrow: 1,
-    "& .MuiTextField-root": {
-      margin: theme.spacing(1),
-      backgroundColor: "white",
-    },
-  },
-  datBimCard: {
-    backgroundColor: "#E6464D",
-    color: "white",
-    margin: theme.spacing(1),
-    cursor: "pointer",
-    height: "8em",
-  },
-  datBimCardTitle: {
-    margin: 0,
-    color: "white",
-    fontWeight: "bold",
-  },
-  datBimCardDesc: {
-    margin: 0,
-    fontStyle: "italic",
-  },
-  button: {
-    backgroundColor: "#E6464D",
-    color: "white",
-    "&:hover": {
-      backgroundColor: "#E6464D",
-      color: "white",
-    },
-    "&:disabled": {
-      opacity: 0.8,
-      color: "white",
-    },
-  },
-}));
-
 const ObjectsSetsList = ({
   viewer,
   selectedPortal,
