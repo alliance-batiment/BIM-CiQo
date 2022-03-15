@@ -147,6 +147,7 @@ const DatBimApi = ({
   handleShowMarketplace,
 }) => {
   const [activeStep, setActiveStep] = useState(0);
+  const [breadcrumbMap, setBreadcrumbMap] = useState([]);
   const [selectedPortal, setSelectedPortal] = useState(null);
   const [selectedObjectSet, setSelectedObjectSet] = useState(null);
   const [selectedObjectSetName, setSelectedObjectSetName] = useState(null);
@@ -247,6 +248,8 @@ const DatBimApi = ({
             openObjects={openObjects}
             setSelectedPortal={setSelectedPortal}
             handleNext={handleNext}
+            breadcrumbMap={breadcrumbMap}
+            setBreadcrumbMap={setBreadcrumbMap}
             setActiveStep={setActiveStep}
           />
         );
@@ -258,6 +261,8 @@ const DatBimApi = ({
             setSelectedObjectSetName={setSelectedObjectSetName}
             viewer={viewer}
             eids={eids}
+            breadcrumbMap={breadcrumbMap}
+            setBreadcrumbMap={setBreadcrumbMap}
             handleNext={handleNext}
           />
         );
@@ -278,6 +283,8 @@ const DatBimApi = ({
             setEids={setEids}
             addElementsNewProperties={addElementsNewProperties}
             handleShowMarketplace={handleShowMarketplace}
+            breadcrumbMap={breadcrumbMap}
+            setBreadcrumbMap={setBreadcrumbMap}
           />
         );
       default:

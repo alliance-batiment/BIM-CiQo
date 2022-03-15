@@ -14,6 +14,45 @@ import {
 import SearchBar from "../../../../../../../Components/SearchBar";
 import Pagination from "@material-ui/lab/Pagination";
 import TreeClass from "./TreeClass";
+import NavigateNextIcon from "@material-ui/icons/NavigateNext";
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    flexGrow: 1,
+    "& .MuiTextField-root": {
+      margin: theme.spacing(1),
+      backgroundColor: "white",
+    },
+  },
+  datBimCard: {
+    backgroundColor: "#E6464D",
+    color: "white",
+    margin: theme.spacing(1),
+    cursor: "pointer",
+    height: "8em",
+  },
+  datBimCardTitle: {
+    margin: 0,
+    color: "white",
+    fontWeight: "bold",
+  },
+  datBimCardDesc: {
+    margin: 0,
+    fontStyle: "italic",
+  },
+  button: {
+    backgroundColor: "#E6464D",
+    color: "white",
+    "&:hover": {
+      backgroundColor: "#E6464D",
+      color: "white",
+    },
+    "&:disabled": {
+      opacity: 0.8,
+      color: "white",
+    },
+  },
+}));
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -59,6 +98,8 @@ const ObjectsSetsList = ({
   setSelectedObjectSet,
   setSelectedObjectSetName,
   eids,
+  breadcrumbMap,
+  setBreadcrumbMap,
   handleNext,
 }) => {
   const classes = useStyles();
@@ -279,8 +320,14 @@ const ObjectsSetsList = ({
       ) : (
         <>
           <Grid item xs={12}>
-            <Breadcrumbs aria-label="breadcrumb">
-              <Typography color="text.primary">{selectedPortal}</Typography>
+            <Breadcrumbs
+              separator={<NavigateNextIcon fontSize="small" />}
+              aria-label="breadcrumb"
+            >
+              <Typography color="textPrimary">{breadcrumbMap[0]}</Typography>
+              <Typography color="inherit">
+                {"Sélectionnez une fiche produit"}
+              </Typography>
             </Breadcrumbs>
           </Grid>
           <Divider />
@@ -332,6 +379,10 @@ const ObjectsSetsList = ({
                         onClick={() => {
                           setSelectedObjectSet(object.object_id);
                           setSelectedObjectSetName(object.object_name);
+                          setBreadcrumbMap([
+                            ...breadcrumbMap,
+                            object.object_name,
+                          ]);
                           handleNext();
                         }}
                       >
