@@ -38,6 +38,7 @@ const ContextMenu = ({
   setSubsets
 }) => {
   const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
+  const [showAllModel, setShowAllModel] = useState(true);
 
   useEffect(() => {
     document.addEventListener("contextmenu", handleContextMenu);
@@ -79,28 +80,136 @@ const ContextMenu = ({
   }
 
   const handleShowModel = async () => {
-    console.log(meshMaterials['invisibleMaterial']);
-    console.log(meshMaterials['invisibleMaterial'].uuid);
+    const models = viewer.context.items.ifcModels;
+    const pickableModels = viewer.context.items.pickableIfcModels;
 
-    subsets.forEach(subset => {
-      viewer.IFC.loader.ifcManager.removeSubset(0, subset.material, 'DEFAULT');
-    })
+    const ifcModel = models[0];
+    const scene = ifcModel.parent;
+    const ids = Array.from(
+      new Set(ifcModel.geometry.attributes.expressID.array)
+    )
+
+    let subset = viewer.IFC.loader.ifcManager.createSubset({
+      modelID: ifcModel.modelID,
+      ids: ids,
+      scene,//viewer.IFC.context.getScene(),
+      applyBH: true,
+      removePrevious: false,
+      customID: 'SHOW'
+    });
+
+
+
+    let index = pickableModels.indexOf(ifcModel);
+    if (index >= 0) pickableModels.splice(index);
+    index = models.indexOf(ifcModel);
+    if (index >= 0) models.splice(index);
+
+    // scene.remove(ifcModel);
+    models.push(subset);
+    pickableModels.push(subset);
+
+    // let hideItems = viewer.IFC.loader.ifcManager.removeFromSubset(
+    //   ifcModel.modelID,
+    //   idsHidden,
+    //   'HIDE'
+    // );
+
+    // showFill(ifcModel.modelID, ids)
+
+    setSubsets([...subsets, subset]);
+  }
+
+
+
+
+
+
+  const showFill = (modelID, ids, rootItemType) => {
+    const fill = viewer.filler.fills[`${modelID}`];
+    if (fill === null || fill === undefined) {
+      return;
+    }
+    if (rootItemType === 'IFCPROJECT' || rootItemType === 'IFCBUILDING' || rootItemType === 'IFCSITE') {
+      fill.visible = true;
+    }
+    viewer.IFC.loader.ifcManager.createSubset({
+      modelID,
+      ids,
+      customID: `${modelID}`,
+      material: fill.material,
+      applyBVH: true,
+      removePrevious: false,
+    });
+
+  }
+
+  const hideFill = async (modelID, ids) => {
+    const fill = viewer.filler.fills[`${modelID}`];
+    if (fill === null || fill === undefined) {
+      return;
+    }
+
+    const name = `${modelID}`;
+    const ifcManager = viewer.IFC.loader.ifcManager;
+    await ifcManager.removeFromSubset(modelID, ids, name, fill.material);
+  }
+
+  const handleHideElement = async () => {
+    const models = viewer.context.items.ifcModels;
+    const pickableModels = viewer.context.items.pickableIfcModels;
+
+    const ifcModel = models[0];
+    const scene = ifcModel.parent;
+    const ids = Array.from(
+      new Set(ifcModel.geometry.attributes.expressID.array)
+    )
+
+    const idsHidden = [...eids];
+
+    const type = 'invisibleMaterial';
+
+    let subset = viewer.IFC.loader.ifcManager.createSubset({
+      modelID: ifcModel.modelID,
+      ids: ids,
+      // material: meshMaterials[type],
+      scene,//viewer.IFC.context.getScene(),
+      applyBH: true,
+      removePrevious: true,
+      customID: 'HIDE'
+    });
+
+    let index = pickableModels.indexOf(ifcModel);
+    if (index >= 0) pickableModels.splice(index);
+    index = models.indexOf(ifcModel);
+    if (index >= 0) models.splice(index);
+
+    scene.remove(ifcModel);
+    models.push(subset);
+    pickableModels.push(subset);
+
+    let hideItems = viewer.IFC.loader.ifcManager.removeFromSubset(
+      ifcModel.modelID,
+      idsHidden,
+      'HIDE'
+    );
+
+    hideFill(ifcModel.modelID, idsHidden)
+
+    setSubsets([...subsets, { type, material: meshMaterials[type] }]);
   }
 
   const handleIsolateElement = async () => {
-    // const preselectMat = new MeshLambertMaterial({
-    //   transparent: true,
-    //   opacity: 0.0,
-    //   color: 0xff88ff,
-    //   depthTest: false
-    // })
-    console.log('viewer.IFC.loader.ifcManager.subsets', viewer.IFC.loader.ifcManager.subsets)
+
     const models = viewer.context.items.ifcModels;
-    console.log('models', models);
+    const pickableModels = viewer.context.items.pickableIfcModels;
+
+    const ifcModel = models[0];
+    const scene = ifcModel.parent;
     const ids = Array.from(
-      new Set(models[0].geometry.attributes.expressID.array)
+      new Set(ifcModel.geometry.attributes.expressID.array)
     )
-    console.log('ids', ids)
+
     const idsHidden = ids.reduce(function (acc, id) {
       if (eids.indexOf(id) === -1) {
         acc.push(id);
@@ -108,26 +217,37 @@ const ContextMenu = ({
       return acc;
     }, []);
 
-    console.log('idsHidden', idsHidden)
     const type = 'invisibleMaterial';
-    console.log(meshMaterials[type].uuid)
-    let mesh = viewer.IFC.loader.ifcManager.createSubset({
-      modelID: 0,
-      ids: idsHidden,
-      material: meshMaterials[type],
-      scene: viewer.IFC.context.scene.scene,
-      removePrevious: true
+
+
+    let subset = viewer.IFC.loader.ifcManager.createSubset({
+      modelID: ifcModel.modelID,
+      ids,
+      // material: meshMaterials[type],
+      scene,//viewer.IFC.context.getScene(),
+      applyBH: true,
+      removePrevious: true,
+      customID: 'HIDE'
     });
 
-    console.log('mesh', mesh)
-    viewer.IFC.selector.selection.hideSelection(mesh);
-    setSubsets([...subsets, { type, material: meshMaterials[type] }]);
-    console.log('viewer.IFC.loader.ifcManager.subsets', viewer.IFC.loader.ifcManager.subsets)
+    let index = pickableModels.indexOf(ifcModel);
+    if (index >= 0) pickableModels.splice(index);
+    index = models.indexOf(ifcModel);
+    if (index >= 0) models.splice(index);
 
-    // mesh.visible = false;
+    scene.remove(ifcModel);
+    models.push(subset);
+    pickableModels.push(subset);
 
-    // setShowContextMenu(false);
-    // viewer.IFC.selector.selection
+    let hideItems = viewer.IFC.loader.ifcManager.removeFromSubset(
+      ifcModel.modelID,
+      idsHidden,
+      'HIDE'
+    );
+
+    hideFill(ifcModel.modelID, idsHidden)
+
+    setSubsets([...subsets, subset]);
   }
 
   // const handleIsolateElement = async () => {

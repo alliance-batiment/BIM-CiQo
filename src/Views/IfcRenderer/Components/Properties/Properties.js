@@ -73,6 +73,18 @@ const Properties = ({
   const [anchorEl, setAnchorEl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  function DecodeIFCString(ifcString) {
+    const ifcUnicodeRegEx = /\\X2\\(.*?)\\X0\\/uig;
+    let resultString = ifcString;
+    let match = ifcUnicodeRegEx.exec(ifcString);
+    while (match) {
+      const unicodeChar = String.fromCharCode(parseInt(match[1], 16));
+      resultString = resultString.replace(match[0], unicodeChar);
+      match = ifcUnicodeRegEx.exec(ifcString);
+    }
+    return resultString;
+  }
+
   useEffect(() => {
     async function init() {
       console.log('selectedElementID', selectedElementID);
@@ -80,17 +92,24 @@ const Properties = ({
       if (selectedElementID) {
         const elementProperties = await viewer.IFC.getProperties(0, selectedElementID, true, true);
         console.log('elementProperties', elementProperties)
-        console.log('ifcClass', await viewer.IFC.loader.ifcManager.getIfcType(0, selectedElementID))
+
+        console.log('viewer', viewer)
+        console.log('ifcClass', viewer.IFC.loader.ifcManager.getIfcType(0, selectedElementID))
+        const ifcClass = viewer.IFC.loader.ifcManager.getIfcType(0, selectedElementID);
         let psets = [];
         if (elementProperties.psets.length > 0) {
           psets = await Promise.all(elementProperties.psets.map(async (pset) => {
             if (pset.HasProperties && pset.HasProperties.length > 0) {
               const newPset = await Promise.all(pset.HasProperties.map(async (property) => {
-                const label = property.Name.value;
-                const value = property.NominalValue ? property.NominalValue.value : null;
+                console.log('property', property)
+                const label = DecodeIFCString(property.Name.value);
+                const value = property.NominalValue ? DecodeIFCString(property.NominalValue.value) : '';
+                const unit = (property.Unit == null) ? '' : (property.Unit.value === 'null' ? '' : property.Unit.value);
+                console.log('unit', unit)
                 return {
                   label,
-                  value
+                  value,
+                  unit
                 }
               }));
 
@@ -101,8 +120,8 @@ const Properties = ({
             }
             if (pset.Quantities && pset.Quantities.length > 0) {
               const newPset = await Promise.all(pset.Quantities.map(async (property) => {
-                const label = property.Name.value;
-                const value = property.NominalValue ? property.NominalValue.value : null;
+                const label = DecodeIFCString(property.Name.value);
+                const value = property.NominalValue ? DecodeIFCString(property.NominalValue.value) : null;
                 return {
                   label,
                   value
@@ -124,7 +143,7 @@ const Properties = ({
         const elem = {
           ...elementProperties,
           name: elementProperties.Name ? elementProperties.Name.value : 'NO NAME',
-          type: 'NO TYPE',
+          type: ifcClass ? ifcClass : 'NO TYPE',
           modelID: 0,
           psets
         };
@@ -300,7 +319,7 @@ const Properties = ({
             </Popover>
           </div>
         }
-        title={`${ifcElement ? ifcElement.name : "Undefined"}`}
+        title={`${ifcElement ? DecodeIFCString(ifcElement.name) : "Undefined"}`}
         subheader={`${ifcElement ? ifcElement.type : "Undefined"}`}
       />
       {isLoading ? (
@@ -350,7 +369,7 @@ const Properties = ({
                     >
                       <Typography
                         className={classes.heading}
-                      >{`${pset.Name.value}`}</Typography>
+                      >{`${DecodeIFCString(pset.Name.value)}`}</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
                       <TableContainer>
@@ -365,6 +384,7 @@ const Properties = ({
                                 <TableRow key={index}>
                                   <TableCell>{`${property.label}`}</TableCell>
                                   <TableCell>{`${property.value}`}</TableCell>
+                                  <TableCell>{`${property.unit}`}</TableCell>
                                 </TableRow>
                               ))}
                           </TableBody>

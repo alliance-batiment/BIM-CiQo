@@ -25,6 +25,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const DropBox = ({
+  viewer,
   onDrop
 }) => {
   const [selectedApp, setSelectedApp] = useState({
@@ -38,7 +39,7 @@ const DropBox = ({
     const result = await rawResponse.text();
     const ifcBlob = new Blob([result], { type: 'text/plain' });
     const file = new File([ifcBlob], 'ifcFile');
-    onDrop([file]);
+    onDrop({ files: [file], viewer });
   }
 
   return (
@@ -50,7 +51,8 @@ const DropBox = ({
             appKey={REACT_APP_DROPBOX_APP_KEY}
             success={handleSuccess}
             cancel={() => console.log('closed')}
-            multiselect={true}
+            multiselect={false}
+            extensions={['.ifc']}
           >
             <Card
             >
