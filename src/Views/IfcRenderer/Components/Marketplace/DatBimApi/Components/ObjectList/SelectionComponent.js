@@ -32,11 +32,12 @@ const SelectionComponent = ({
   getObjectsOfSelectedObject,
 }) => {
   const handleChangeKeyword = (value) => {
-    console.log(value);
+    // console.log(value);
     setSearchBarInput(value);
   };
 
   const resetSelectors = () => {
+    setSearchBarInput("");
     setSelectorsRequest([]);
     getSelectorsOfObjectSet();
     getObjectsOfSelectedObject();

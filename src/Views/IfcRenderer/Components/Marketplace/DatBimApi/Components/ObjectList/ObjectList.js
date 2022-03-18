@@ -17,7 +17,6 @@ import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import TreeItem from "@material-ui/lab/TreeItem";
 import NavigateNextIcon from "@material-ui/icons/NavigateNext";
 
-
 const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
@@ -127,7 +126,6 @@ const ObjectList = ({
   // );
 
   useEffect(() => {
-    console.log("BreadcrumbMap", breadcrumbMap);
     getSelectorsOfObjectSet();
     getObjectsOfSelectedObject();
   }, []);
@@ -143,7 +141,7 @@ const ObjectList = ({
         },
       }
     );
-    //console.log("selectorsOfObjectSet.data", selectorsOfObjectSet.data);
+    // console.log("selectorsOfObjectSet.data", selectorsOfObjectSet.data);
     setSelectors(selectorsOfObjectSet.data);
     setSelectorsLoader(false);
   }
@@ -151,7 +149,7 @@ const ObjectList = ({
   const getObjectsOfAdvancedSearch = async (selectorsRequest) => {
     setSelectorsLoader(true);
     setObjectsLoader(true);
-    //console.log("selectorsRequest ==>", selectorsRequest);
+    // console.log("selectorsRequest ==>", selectorsRequest);
     const objectsOfAdvancedSearch = await axios({
       method: "post",
       url: `${process.env.REACT_APP_API_DATBIM}/objects/${selectedObjectSet}/search-on-selector?tree=1`,
@@ -286,6 +284,7 @@ const ObjectList = ({
   if (objectListing) {
     const [tree, count] = renderTree(objectListing, 0);
 
+    console.log("objectListing", objectListing);
     listing = (
       <div>
         <p>Objets trouvés: {count}</p>
