@@ -9,7 +9,9 @@ import {
   Breadcrumbs,
   Typography,
   Divider,
-  Button,
+  CardActions,
+  CardActionArea,
+  Chip
 } from "@material-ui/core";
 import SearchBar from "../../../../../../../Components/SearchBar";
 import Pagination from "@material-ui/lab/Pagination";
@@ -29,16 +31,22 @@ const useStyles = makeStyles((theme) => ({
     color: "white",
     margin: theme.spacing(1),
     cursor: "pointer",
-    height: "8em",
+    // height: "8em",
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between'
   },
   datBimCardTitle: {
+    fontSize: 12,
     margin: 0,
     color: "white",
     fontWeight: "bold",
   },
   datBimCardDesc: {
+    fontSize: 8,
     margin: 0,
-    fontStyle: "italic",
+    // fontStyle: "italic",
   },
   button: {
     backgroundColor: "#E6464D",
@@ -52,6 +60,14 @@ const useStyles = makeStyles((theme) => ({
       color: "white",
     },
   },
+  link: {
+    color: "inherit",
+    "&:hover": {
+      color: "textPrimary",
+      cursor: "pointer",
+      textDecoration: "underline",
+    },
+  },
 }));
 
 const ObjectsSetsList = ({
@@ -63,6 +79,7 @@ const ObjectsSetsList = ({
   breadcrumbMap,
   setBreadcrumbMap,
   handleNext,
+  setActiveStep,
 }) => {
   const classes = useStyles();
 
@@ -78,8 +95,10 @@ const ObjectsSetsList = ({
 
   const getObjectsSetsList = () => {
     if ((eids.length > 0) & (searchInput.length > 0)) {
+      setSearchInput("");
       getobjectsSetsBySelectedEids();
     } else if (eids.length > 0) {
+      setSearchInput("");
       getobjectsSetsBySelectedEids();
     } else {
       setSearchInput("");
@@ -199,8 +218,7 @@ const ObjectsSetsList = ({
           if (searchByObjectName) {
             // console.log("searchByObjectName", searchByObjectName);
             return searchByObjectName;
-          }
-          else if (searchByOrganizationName) {
+          } else if (searchByOrganizationName) {
             return searchByOrganizationName;
           }
         });
@@ -219,8 +237,7 @@ const ObjectsSetsList = ({
 
           if (searchByObjectName) {
             return searchByObjectName;
-          }
-          else if (searchByOrganizationName) {
+          } else if (searchByOrganizationName) {
             return searchByOrganizationName;
           }
         });
@@ -270,51 +287,51 @@ const ObjectsSetsList = ({
   };
 
   const resetObjectsSetsList = () => {
+    setSearchInput("");
     setObjectsSetsList(objectsSetsListDefault);
   };
 
   return (
     <Grid container spacing={3}>
+      <Grid item xs={12}>
+        <Breadcrumbs
+          separator={<NavigateNextIcon fontSize="small" />}
+          aria-label="breadcrumb"
+        >
+          <Typography
+            className={classes.link}
+            onClick={(e) => setActiveStep(1)}
+          >
+            Portails
+          </Typography>
+          <Typography color="textPrimary">
+            {breadcrumbMap[0].length > 15
+              ? breadcrumbMap[0].slice(0, 15) + "..."
+              : breadcrumbMap[0]}
+          </Typography>
+        </Breadcrumbs>
+        <Typography color="inherit">
+          {"Sélectionnez une collection d'objets"}
+        </Typography>
+      </Grid>
+      <Divider />
+      <Grid item xs={12}>
+        <SearchBar
+          disabled={objectsSetsListLoader === true}
+          input={searchInput}
+          onChange={searchObject}
+          className={classes.searchBar}
+          placeholder="Mot clé"
+          onClickOne={getObjectsSetsByKeyWord}
+          onClickTwo={resetObjectsSetsList}
+        />
+      </Grid>
       {objectsSetsListLoader ? (
         <Grid container justify="center">
           <CircularProgress color="inherit" />
         </Grid>
       ) : (
         <>
-          <Grid item xs={12}>
-            <Breadcrumbs
-              separator={<NavigateNextIcon fontSize="small" />}
-              aria-label="breadcrumb"
-            >
-              <Typography color="textPrimary">{breadcrumbMap[0]}</Typography>
-              <Typography color="inherit">
-                {"Sélectionnez une fiche produit"}
-              </Typography>
-            </Breadcrumbs>
-          </Grid>
-          <Divider />
-          <Grid item xs={6}>
-            <SearchBar
-              input={searchInput}
-              onChange={searchObject}
-              className={classes.searchBar}
-              placeholder="Mot clé"
-            />
-          </Grid>
-          <Grid item xs={3}>
-            <Button
-              className={classes.button}
-              onClick={getObjectsSetsByKeyWord}
-            >
-              Recherche par mot clé
-            </Button>
-          </Grid>
-          <Grid item xs={3}>
-            <Button className={classes.button} onClick={resetObjectsSetsList}>
-              Réinitialiser
-            </Button>
-          </Grid>
-
           <Grid item xs={4}>
             <TreeClass
               selectedPortal={selectedPortal}
@@ -337,25 +354,30 @@ const ObjectsSetsList = ({
                       key={index}
                       className={`${classes.root} ${classes.datBimCard}`}
                     >
-                      <CardContent
-                        onClick={() => {
-                          setSelectedObjectSet(object.object_id);
-                          setSelectedObjectSetName(object.object_name);
-                          setBreadcrumbMap([
-                            ...breadcrumbMap,
-                            object.object_name,
-                          ]);
-                          handleNext();
-                        }}
-                      >
-                        <Typography className={classes.datBimCardTitle}>
-                          {object.object_name}
-                          <br />-
-                        </Typography>
-                        <Typography className={classes.datBimCardDesc}>
+                      <CardActionArea>
+                        <CardContent
+                          onClick={() => {
+                            setSelectedObjectSet(object.object_id);
+                            setSelectedObjectSetName(object.object_name);
+                            setBreadcrumbMap([
+                              ...breadcrumbMap,
+                              object.object_name,
+                            ]);
+                            handleNext();
+                          }}
+                        >
+                          <Typography className={classes.datBimCardTitle}>
+                            {object.object_name}
+                            <br />
+                          </Typography>
+                        </CardContent>
+                      </CardActionArea>
+                      <CardActions>
+                        {/* <Typography className={classes.datBimCardDesc}>
                           {object.organization_name}
-                        </Typography>
-                      </CardContent>
+                        </Typography> */}
+                        <Chip className={classes.datBimCardDesc} label={`${object.organization_name}`} />
+                      </CardActions>
                     </Card>
                   </Grid>
                 ))}

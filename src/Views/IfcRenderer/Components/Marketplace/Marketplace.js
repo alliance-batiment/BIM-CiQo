@@ -94,6 +94,14 @@ const useStyles = makeStyles((theme) => ({
   fab: {
     backgroundColor: "white",
   },
+  button: {
+    color: "#E6464D",
+    "&:hover": {
+      color: "white",
+      backgroundColor: "#E6464D",
+      cursor: "pointer",
+    },
+  },
 }));
 
 const applications = [
@@ -210,6 +218,7 @@ const Marketplace = ({
             <IconButton
               aria-label="settings"
               aria-describedby={id}
+              className={classes.button}
               onClick={handleClick}
             >
               <MoreVertIcon />
@@ -306,7 +315,7 @@ const Marketplace = ({
             handleShowMarketplace={handleShowMarketplace}
           />
         )}
-        {selectedApp === "AxeoBIM" &&
+        {selectedApp === "AxeoBIM" && (
           <AxeoBim
             viewer={viewer}
             modelID={modelID}
@@ -315,14 +324,11 @@ const Marketplace = ({
             addElementsNewProperties={addElementsNewProperties}
             handleShowMarketplace={handleShowMarketplace}
           />
-        }
-        {selectedApp === 'DropBox' &&
-          <DropBox
-            viewer={viewer}
-            onDrop={onDrop}
-          />
-        }
-        {selectedApp === 'bsDD' &&
+        )}
+        {selectedApp === "DropBox" && (
+          <DropBox viewer={viewer} onDrop={onDrop} />
+        )}
+        {selectedApp === "bsDD" && (
           <BsDD
             viewer={viewer}
             modelID={modelID}
@@ -331,7 +337,7 @@ const Marketplace = ({
             addElementsNewProperties={addElementsNewProperties}
             handleShowMarketplace={handleShowMarketplace}
           />
-        }
+        )}
         {selectedApp === "Web3" && (
           <Web3
             viewer={viewer}
