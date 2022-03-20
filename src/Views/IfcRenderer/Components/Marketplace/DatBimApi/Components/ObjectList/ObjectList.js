@@ -16,13 +16,15 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import TreeItem from "@material-ui/lab/TreeItem";
 import NavigateNextIcon from "@material-ui/icons/NavigateNext";
+import SearchBar from "../../../../../../../Components/SearchBar";
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    flexGrow: 1,
-    "& .MuiTextField-root": {
-      margin: theme.spacing(1),
-      backgroundColor: "white",
+  link: {
+    color: "inherit",
+    "&:hover": {
+      color: "textPrimary",
+      cursor: "pointer",
+      textDecoration: "underline",
     },
   },
   button: {
@@ -36,58 +38,6 @@ const useStyles = makeStyles((theme) => ({
       opacity: 0.8,
       color: "white",
     },
-  },
-  navigationBar: {
-    margin: 0,
-    bottom: 0,
-    width: "100%",
-    backgroundColor: "white",
-    padding: "10px",
-  },
-  modal: {
-    display: "flex",
-    padding: theme.spacing(1),
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  modalDatBim: {
-    width: "50%",
-    height: "70%",
-    backgroundColor: theme.palette.background.paper,
-    border: "2px solid #000",
-    boxShadow: theme.shadows[5],
-    padding: theme.spacing(2, 4, 3),
-    overflow: "hidden scroll",
-    position: "relative",
-  },
-  datBimCard: {
-    backgroundColor: "#E6464D",
-    color: "white",
-    margin: theme.spacing(1),
-    cursor: "pointer",
-    height: "8em",
-  },
-  datBimTitle: {
-    textAlign: "center",
-    textTransform: "none",
-  },
-  datBimCardTitle: {
-    margin: 0,
-    color: "white",
-  },
-  datBimFooterCard: {
-    display: "block",
-    textAlign: "right",
-  },
-  datBimCardButton: {
-    textAlign: "right",
-    color: "white",
-  },
-  accordionDetails: {
-    display: "block",
-  },
-  datBimIcon: {
-    width: "3em",
   },
 }));
 
@@ -104,6 +54,7 @@ const ObjectList = ({
   setEids,
   breadcrumbMap,
   handleShowMarketplace,
+  setActiveStep,
 }) => {
   const classes = useStyles();
 
@@ -252,6 +203,19 @@ const ObjectList = ({
   //   }
   // }
 
+  const handleChangeKeyword = (value) => {
+    console.log(value);
+    setSearchBarInput(value);
+  };
+
+  const resetSelectors = () => {
+    setSearchBarInput("");
+    setSelectorsRequest([]);
+    getSelectorsOfObjectSet();
+    getObjectsOfSelectedObject();
+    setSelectedObject(null);
+  };
+
   const childRenderTree = ([renderedChildren, count], node) => {
     const [renderedChild, newCount] = renderTree(node, count);
     return [renderedChildren.concat(<div>{renderedChild}</div>), newCount];
@@ -262,7 +226,7 @@ const ObjectList = ({
       Array.isArray(nodes.children) && nodes.children.length > 0
         ? nodes.children.reduce(childRenderTree, [[], count])
         : [null, count + 1];
-    // setObjectCounter(newCount);
+
     return [
       <TreeItem
         key={nodes.id}
@@ -286,8 +250,8 @@ const ObjectList = ({
 
     console.log("objectListing", objectListing);
     listing = (
-      <div>
-        <p>Objets trouvés: {count}</p>
+      <Grid item xs={12}>
+        <Typography>Objets trouvés: {count}</Typography>
         <TreeView
           aria-label="rich object"
           defaultCollapseIcon={<ExpandMoreIcon />}
@@ -306,7 +270,7 @@ const ObjectList = ({
         >
           {tree}
         </TreeView>
-      </div>
+      </Grid>
     );
   }
 
@@ -318,7 +282,18 @@ const ObjectList = ({
             separator={<NavigateNextIcon fontSize="small" />}
             aria-label="breadcrumb"
           >
-            <Typography color="inherit">
+            <Typography
+              href="/"
+              className={classes.link}
+              onClick={(e) => setActiveStep(1)}
+            >
+              Portails
+            </Typography>
+            <Typography
+              href="/"
+              className={classes.link}
+              onClick={(e) => setActiveStep(2)}
+            >
               {breadcrumbMap[0].length > 15
                 ? breadcrumbMap[0].slice(0, 15) + "..."
                 : breadcrumbMap[0]}
@@ -329,62 +304,74 @@ const ObjectList = ({
                 : breadcrumbMap[1]}
             </Typography>
             <Typography color={selectedObjectName ? "textPrimary" : "inherit"}>
-              {selectedObject
-                ? selectedObjectName.length > 25
-                  ? selectedObjectName.slice(0, 25) + "..."
-                  : selectedObjectName
-                : "Sélectionnez un objet"}
+              {selectedObject &&
+                (selectedObjectName.length > 20
+                  ? selectedObjectName.slice(0, 20) + "..."
+                  : selectedObjectName)}
             </Typography>
           </Breadcrumbs>
+          {!selectedObject && (
+            <Typography color="inherit">Sélectionnez un objet</Typography>
+          )}
+        </Grid>
+        <Grid item xs={12}>
+          <SearchBar
+            disabled={objectsLoader === true}
+            input={searchBarInput}
+            onChange={handleChangeKeyword}
+            className={classes.searchBar}
+            placeholder="Mot clé"
+            onClickOne={() => getObjectsOfAdvancedSearch(selectorsRequest)}
+            onClickTwo={resetSelectors}
+          />
         </Grid>
         <Divider />
-        <SelectionComponent
-          classes={classes}
-          selectors={selectors}
-          setSelectors={setSelectors}
-          selectorsLoader={selectorsLoader}
-          getObjectsOfAdvancedSearch={getObjectsOfAdvancedSearch}
-          selectorsRequest={selectorsRequest}
-          setSelectorsRequest={setSelectorsRequest}
-          getSelectorsOfObjectSet={getSelectorsOfObjectSet}
-          setSearchBarInput={setSearchBarInput}
-          getObjectsOfSelectedObject={getObjectsOfSelectedObject}
-        />
-        <Grid item xs={12} style={{ display: "flex" }}>
-          <Grid item xs={4}>
-            {objectsLoader ? (
-              <Grid container justify="center">
-                <CircularProgress color="inherit" />
-              </Grid>
-            ) : (
-              <>
-                {listing}
 
-                {/* {objects?.meta && (
+        <Grid item sm={5}>
+          {objectsLoader ? (
+            <Grid container justify="center">
+              <CircularProgress color="inherit" />
+            </Grid>
+          ) : (
+            <>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <SelectionComponent
+                    classes={classes}
+                    selectors={selectors}
+                    selectorsLoader={selectorsLoader}
+                    getObjectsOfAdvancedSearch={getObjectsOfAdvancedSearch}
+                    selectorsRequest={selectorsRequest}
+                    setSelectorsRequest={setSelectorsRequest}
+                  />
+                </Grid>
+                {listing}
+              </Grid>
+
+              {/* {objects?.meta && (
                   <Pagination
                     count={objects.meta.current_items}
                     onChange={(e, value) => getObjects(typeProperties, value)}
                     variant="outlined"
                   />
                 )} */}
-              </>
-            )}
-          </Grid>
+            </>
+          )}
+        </Grid>
 
-          <Grid item xs={8}>
-            <PropertyList
-              classes={classes}
-              projectId={projectId}
-              objSelected={objSelected}
-              selectedObject={selectedObject}
-              viewer={viewer}
-              modelID={modelID}
-              eids={eids}
-              setEids={setEids}
-              addElementsNewProperties={addElementsNewProperties}
-              handleShowMarketplace={handleShowMarketplace}
-            />
-          </Grid>
+        <Grid item sm={7}>
+          <PropertyList
+            classes={classes}
+            projectId={projectId}
+            objSelected={objSelected}
+            selectedObject={selectedObject}
+            viewer={viewer}
+            modelID={modelID}
+            eids={eids}
+            setEids={setEids}
+            addElementsNewProperties={addElementsNewProperties}
+            handleShowMarketplace={handleShowMarketplace}
+          />
         </Grid>
       </Grid>
     </>
