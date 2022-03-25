@@ -329,9 +329,11 @@ const ObjectsSetsList = ({
               : breadcrumbMap[0]}
           </Typography>
         </Breadcrumbs>
-        <Typography color="inherit">
-          {"Sélectionnez une collection d'objets"}
-        </Typography>
+      </Grid>
+      <Grid item xs={12}>
+        <Typography variant="subtitle1" component="h3">
+          Sélectionnez une collection d'objets:
+          </Typography>
       </Grid>
       <Divider />
       <Grid item xs={12}>

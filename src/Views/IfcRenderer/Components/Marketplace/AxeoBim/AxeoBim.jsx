@@ -1,19 +1,43 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { makeStyles } from "@material-ui/core";
 import {
-  Grid,
-  makeStyles,
-  Button,
+  Alert,
+  Checkbox,
+  FormControlLabel,
   Typography,
-  Step,
-  StepLabel,
-  withStyles,
-  Stepper,
-} from "@material-ui/core";
+  Card,
+  CardHeader,
+  CardContent,
+  Avatar,
+  IconButton,
+  Popover,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Box,
+  Tabs,
+  Tab,
+  Chip,
+  ListItemButton,
+  Grid,
+  Button,
+  ButtonGroup,
+  Divider
+} from "@mui/material";
+import AddIcon from '@mui/icons-material/Add';
+import CloseIcon from '@mui/icons-material/Close';
+import LockIcon from '@mui/icons-material/Lock';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
+import KeyboardCapslockIcon from '@mui/icons-material/KeyboardCapslock';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
 import StepConnector from "@material-ui/core/StepConnector";
 import clsx from "clsx";
 import Check from "@material-ui/icons/Check";
 import axios from "axios";
 import OAuth2Login from 'react-simple-oauth2-login';
+import OpenDthxLogo from './img/OpenDthxLogo.png';
+import { UseAxeoBim } from './AxeoBim.hooks';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -103,122 +127,39 @@ const AxeoBim = ({
   eids,
   setEids,
   addElementsNewProperties,
-  handleShowMarketplace
+  handleShowMarketplace,
+  setSelectedApp
 }) => {
-  const [activeStep, setActiveStep] = useState(0);
-  const [accessToken, setAccessToken] = useState(null);
-  const [code, setCode] = useState(null);
-  const [loginComponent, setLoginComponent] = useState(null);
   const classes = useStyles();
 
-  async function handleOauthAuthenticate() {
-    try {
-      const res = await axios({
-        method: "post",
-        url: `${REACT_APP_THIRD_PARTY_API}/axeobim/oauth/authenticate`,
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-      })
-      setAccessToken(res.data.access_token)
-      console.log('axeobim_access_token', res.data.access_token)
-      sessionStorage.setItem("axeobim_access_token", res.data.access_token);
-    } catch (err) {
-      console.log('err', err)
+  const {
+    locked,
+    setLocked,
+    apiInformation,
+    setApiInformation,
+    handleLockProject,
+    handleUnlockProject,
+    handleUpdateProject
+  } = UseAxeoBim({
+    viewer
+  });
+
+  useEffect(() => {
+    async function init() {
+      const lockToken = sessionStorage.getItem("axeobim_lock_token");
+      console.log('lockToekn', lockToken)
+      if (!lockToken || lockToken === "") {
+        setLocked(false);
+      } else {
+        setLocked(true);
+      }
     }
-  }
-
-  async function handleOauthAuthorize() {
-    try {
-      const res = await axios({
-        method: "get",
-        url: `${REACT_APP_THIRD_PARTY_API}/axeobim/oauth/authorize`,
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-      })
-      console.log('res', res)
-      sessionStorage.setItem("axeobim_access_token", res.data.access_token);
-      setLoginComponent(res.data);
-    } catch (err) {
-      console.log('err', err)
-    }
-  }
-
-  const handleOauthGetToken = async (code) => {
-    try {
-      console.log('code', code)
-      const res = await axios({
-        method: "post",
-        url: `${REACT_APP_THIRD_PARTY_API}/axeobim/oauth/gettoken`,
-        headers: {
-          "Content-Type": "application/json"
-        },
-        data: {
-          code
-        }
-      })
-      console.log('res.data', res.data);
-      sessionStorage.setItem("axeobim_access_token", res.data.access_token);
-      sessionStorage.setItem("axeobim_refresh_token", res.data.refresh_token);
-      sessionStorage.setItem("axeobim_token_type", res.data.token_type);
-      setLoginComponent(res.data)
-    } catch (err) {
-      console.log('err', err)
-    }
-  }
-
-  const handleOauthLoginOnSuccess = (response) => {
-    console.log('code', sessionStorage.getItem("axeobim_access_token"))
-    sessionStorage.setItem("axeobim_code", response.code);
-    handleOauthGetToken(response.code);
-  };
-
-  const handleOauthLoginOnFailure = (response) => {
-    console.error(response);
-  };
-
-  const handleAdminProjects = async () => {
-    try {
-      console.log('access_token_3', sessionStorage.getItem("axeobim_access_token"));
-      const res = await axios({
-        method: "get",
-        url: `${REACT_APP_THIRD_PARTY_API}/axeobim/administration/projects`,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        params: {
-          accessToken: `${sessionStorage.getItem("axeobim_access_token")}`
-        }
-      })
-      console.log('res', res)
-      // sessionStorage.setItem("axeobim_access_token", res.data.access_token);
-      // setLoginComponent(res.data);
-    } catch (err) {
-      console.log('err', err)
-    }
-  }
-
+    init();
+  }, []);
 
   return (
-    <Grid container>
-      <Grid item xs={12}>
-        <Button
-          onClick={handleOauthAuthenticate}
-          className={classes.button}
-        >
-          Authenticate
-        </Button>
-      </Grid>
-      <Grid item xs={12}>
-        <Button
-          onClick={handleOauthAuthorize}
-          className={classes.button}
-        >
-          Authorize
-        </Button>
-      </Grid>
-      <OAuth2Login
+    <Grid container spacing={1}>
+      {/* <OAuth2Login
         authorizationUrl="https://app.axxone.fr/system_aplus/api/oauth/authorize"
         // authorizationUrl={`${REACT_APP_THIRD_PARTY_API}/axeobim/oauth/authorize`}
         responseType="code"
@@ -226,14 +167,110 @@ const AxeoBim = ({
         redirectUri="http://localhost:3000"
         scope="workflow files:read projects:read"
         onSuccess={handleOauthLoginOnSuccess}
-        onFailure={handleOauthLoginOnFailure} />
+        onFailure={handleOauthLoginOnFailure} /> */}
       <Grid item xs={12}>
-        <Button
-          onClick={handleAdminProjects}
-          className={classes.button}
-        >
-          Get Projects
-        </Button>
+        <Typography variant="subtitle1" component="h3">
+          Modèle BIM en cours de traitement:
+        </Typography>
+      </Grid>
+      <Grid item xs={12}>
+        <List sx={{ width: "100%", backgroundColor: '#1890ff', color: 'white', borderRadius: '1em' }}>
+          <ListItem
+            key={0}
+            secondaryAction={
+              <>
+                {locked ?
+                  <>
+                    <IconButton
+                      edge="end"
+                      aria-label="comments"
+                      onClick={(e) => setSelectedApp('Open dthX')}
+                    >
+                      <AddIcon sx={{ color: 'white' }} />
+                    </IconButton>
+                    <IconButton
+                      edge="end"
+                      aria-label="comments"
+                      onClick={(e) => {
+                        handleUnlockProject();
+                        // e.stopPropagation();
+                      }}
+                    >
+                      <LockIcon sx={{ color: 'white' }} />
+                    </IconButton>
+                    <IconButton
+                      edge="end"
+                      aria-label="comments"
+                      onClick={handleUpdateProject}
+                    >
+                      <FileUploadIcon sx={{ color: 'white' }} />
+                    </IconButton>
+                  </>
+                  :
+                  <IconButton
+                    edge="end"
+                    aria-label="comments"
+                    onClick={(e) => {
+                      handleLockProject()
+                      // e.stopPropagation();
+                    }}
+                  >
+                    <LockOpenIcon sx={{ color: 'white' }} />
+                  </IconButton>
+                }
+                {/* <IconButton
+                  edge="end"
+                  aria-label="comments"
+                // onClick={() => handleRemoveElement(element)}
+                >
+                  <CloseIcon sx={{ color: 'white' }} />
+                </IconButton> */}
+              </>
+            }
+            disablePadding
+          >
+            <ListItemButton
+              role={undefined}
+              dense
+            >
+              {/* <ListItemIcon>
+                  <Checkbox
+                    edge="start"
+                    checked={checked.indexOf(element) !== -1}
+                    tabIndex={-1}
+                    disableRipple
+                    inputProps={{ 'aria-labelledby': `checkbox-list-label-${index}` }}
+                  />
+                </ListItemIcon> */}
+              <ListItemText
+                id={`checkbox-list-label-${0}`}
+                // primary={`${element.Name ? 'NOM DU MODEL' : 'NO NAME'}`}
+                primary={`Contrôle du modèle: `}
+              // secondary={secondary ? 'Secondary text' : null}
+              />
+            </ListItemButton>
+          </ListItem>
+        </List>
+      </Grid>
+      <Divider />
+      <Grid item xs={12}>
+        <Typography variant="body1" component="div">
+          <strong>Remarque:</strong>
+        </Typography>
+        <Typography variant="body1" component="div">
+          Afin de pouvoir enrichir la maquette BIM, il faut au préalable <strong>bloquer le modèle</strong> afin d'empécher sa modification par d'autres utilisateurs:
+        </Typography>
+      </Grid>
+      <Grid item xs={12}>
+        {(apiInformation.lockProject !== "") &&
+          <Alert severity="error">{`${apiInformation.lockProject}`}</Alert>
+        }
+        {(apiInformation.unlockProject !== "") &&
+          <Alert severity="error">{`${apiInformation.unlockProject}`}</Alert>
+        }
+        {(apiInformation.updateProject !== "") &&
+          <Alert severity="error">{`${apiInformation.updateProject}`}</Alert>
+        }
       </Grid>
     </Grid>
   );

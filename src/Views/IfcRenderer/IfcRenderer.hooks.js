@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import * as WebIFC from 'web-ifc';
 import {
+  IFCBUILDINGSTOREY,
   IFCPROJECT,
   IFCSPACE,
   IFCOPENINGELEMENT,
@@ -226,6 +227,62 @@ function UseIfcRenderer({
     return { type: 2, label: 'IFCTEXT', valueType: 1, value: v }
   }
 
+  const editIfcModel = async ({
+    viewer
+  }) => {
+    const manager = await viewer.IFC.loader.ifcManager;
+    const storeysIDs = await manager.getAllItemsOfType(0, IFCBUILDINGSTOREY, false);
+    const storeyID = storeysIDs[0];
+    const storey = await manager.getItemProperties(0, storeyID);
+    console.log(storey);
+
+    storey.Name.value = "Nivel 1 - Editado";
+    manager.ifcAPI.WriteLine(0, storey);
+
+    const data = await manager.ifcAPI.ExportFileAsIFC(0);
+    const blob = new Blob([data]);
+    const file = new File([blob], "modified.ifc");
+
+    const link = document.createElement('a');
+    link.download = 'modified.ifc';
+    link.href = URL.createObjectURL(file);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
+
+  const addOrModifyDataToIfc = async ({
+    viewer,
+    modelId,
+    expressIDs,
+    properties
+  }) => {
+    const manager = await viewer.IFC.loader.ifcManager;
+    const allLines = await manager.state.api.GetAllLines(modelId);
+    let maxExpressId = 0;
+    await Object.keys(allLines._data).forEach(index => {
+      maxExpressId = Math.max(maxExpressId, allLines._data[index])
+    });
+
+
+    await Promise.all(expressIDs.map(async (expressID) => {
+      const elementProperties = await viewer.IFC.getProperties(0, expressID, true, true);
+      console.log('itemProperties', elementProperties)
+
+    }));
+
+
+    let propertiesEids = [];
+    console.log("properties", properties)
+    properties.forEach((property, index) => {
+
+
+    });
+
+
+  }
+
+
   const addDataToIfc = async ({
     viewer,
     modelId,
@@ -321,7 +378,7 @@ function UseIfcRenderer({
     console.log('ADD PROPERTY')
     if (expressIDs && expressIDs.length > 0) {
       if (properties.length > 0) {
-        addDataToIfc({
+        addOrModifyDataToIfc({
           viewer,
           modelId,
           expressIDs,
@@ -358,7 +415,8 @@ function UseIfcRenderer({
     addTransformControls,
     getElementProperties,
     addElementsNewProperties,
-    addGeometryToIfc
+    addGeometryToIfc,
+    editIfcModel
   }
 };
 

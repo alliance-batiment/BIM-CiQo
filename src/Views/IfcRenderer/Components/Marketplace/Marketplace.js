@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import {
+  Alert
+} from "@mui/material";
+import {
   Typography,
   Grid,
   makeStyles,
@@ -131,13 +134,13 @@ const applications = [
   //   tags: ['Coming Soon'],
   //   description: 'Espace permettant le partage et le stockage de fichier'
   // },
-  // {
-  //   name: 'AxeoBIM',
-  //   img: AxeoBimLogo,
-  //   type: 'storage',
-  //   tags: ['Coming Soon'],
-  //   description: 'Espace permettant le partage et le stockage de fichier'
-  // },
+  {
+    name: 'AxeoBIM',
+    img: AxeoBimLogo,
+    type: 'storage',
+    tags: ['Coming Soon'],
+    description: 'Espace permettant le partage et le stockage de fichier'
+  },
   // {
   //   name: 'bsDD',
   //   img: BsDDLogo,
@@ -165,6 +168,8 @@ const Marketplace = ({
   onDrop,
   addElementsNewProperties,
   specificApplication,
+  apiConnectors,
+  setApiConnectors
 }) => {
   const classes = useStyles();
   const [selectedApp, setSelectedApp] = useState("home");
@@ -172,6 +177,7 @@ const Marketplace = ({
   const [url, setUrl] = useState("");
 
   useEffect(() => {
+    console.log("apiConnectors", apiConnectors)
     if (specificApplication) {
       setSelectedApp(specificApplication);
     } else {
@@ -315,15 +321,22 @@ const Marketplace = ({
             handleShowMarketplace={handleShowMarketplace}
           />
         )}
-        {selectedApp === "AxeoBIM" && (
-          <AxeoBim
-            viewer={viewer}
-            modelID={modelID}
-            eids={eids}
-            setEids={setEids}
-            addElementsNewProperties={addElementsNewProperties}
-            handleShowMarketplace={handleShowMarketplace}
-          />
+        {(selectedApp === "AxeoBIM") && (
+          <>
+            {apiConnectors[selectedApp] ?
+              <AxeoBim
+                viewer={viewer}
+                modelID={modelID}
+                eids={eids}
+                setEids={setEids}
+                addElementsNewProperties={addElementsNewProperties}
+                handleShowMarketplace={handleShowMarketplace}
+                setSelectedApp={setSelectedApp}
+              />
+              :
+              <Alert severity="warning">La maquette doit provenir d'AxeoBIM pour activer cette application</Alert>
+            }
+          </>
         )}
         {selectedApp === "DropBox" && (
           <DropBox viewer={viewer} onDrop={onDrop} />
