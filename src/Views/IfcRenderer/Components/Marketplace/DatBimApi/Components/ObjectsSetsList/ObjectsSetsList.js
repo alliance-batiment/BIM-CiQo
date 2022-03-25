@@ -11,7 +11,7 @@ import {
   Divider,
   CardActions,
   CardActionArea,
-  Chip
+  Chip,
 } from "@material-ui/core";
 import SearchBar from "../../../../../../../Components/SearchBar";
 import Pagination from "@material-ui/lab/Pagination";
@@ -32,10 +32,10 @@ const useStyles = makeStyles((theme) => ({
     margin: theme.spacing(1),
     cursor: "pointer",
     // height: "8em",
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between'
+    height: "100%",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
   },
   datBimCardTitle: {
     fontSize: 12,
@@ -108,13 +108,56 @@ const ObjectsSetsList = ({
   };
 
   const getObjectsSets = async () => {
-    setObjectsSetsListLoader(true);
+    try {
+      setObjectsSetsListLoader(true);
 
-    if (objectsSetsListDefault && objectsSetsListDefault.length > 0) {
-      setObjectsSetsListLoader(false);
-    } else {
-      const organizations = await axios.get(
-        `${process.env.REACT_APP_API_DATBIM}/portals/${selectedPortal}/organizations`,
+      if (objectsSetsListDefault && objectsSetsListDefault.length > 0) {
+        setObjectsSetsListLoader(false);
+      } else {
+        const organizations = await axios.get(
+          `${process.env.REACT_APP_API_DATBIM}/portals/${selectedPortal}/organizations`,
+          {
+            headers: {
+              "X-Auth-Token": sessionStorage.getItem("token"),
+            },
+          }
+        );
+
+        Promise.allSettled(
+          organizations.data.data.map(async (organizationProperty) => {
+            return await axios.get(
+              `${process.env.REACT_APP_API_DATBIM}/organizations/${organizationProperty.organization_id}/object-sets`,
+              {
+                headers: {
+                  "X-Auth-Token": sessionStorage.getItem("token"),
+                },
+              }
+            );
+          })
+        ).then(function (values) {
+          const objectsSets = values.reduce((acc, value) => {
+            if (value.status === "fulfilled") {
+              value.value.data.data.map((value) => acc.push(value));
+            }
+            return acc;
+          }, []);
+          setObjectsSetsListDefault(objectsSets);
+          setObjectsSetsList(objectsSets);
+
+          // console.log("objectsSetsListDefault", objectsSets);
+          setObjectsSetsListLoader(false);
+        });
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const getobjectsSetsBySelectedClass = async (classId) => {
+    try {
+      setObjectsSetsListLoader(true);
+      const objectsSetsBySelectedClass = await axios.get(
+        `${process.env.REACT_APP_API_DATBIM}/classes/${classId}/object-sets`,
         {
           headers: {
             "X-Auth-Token": sessionStorage.getItem("token"),
@@ -122,10 +165,34 @@ const ObjectsSetsList = ({
         }
       );
 
+      setObjectsSetsList(objectsSetsBySelectedClass.data.data);
+      setObjectsSetsListLoader(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const getobjectsSetsBySelectedEids = async () => {
+    try {
+      setObjectsSetsListLoader(true);
+      const ifcClass = await viewer.IFC.loader.ifcManager.getIfcType(
+        0,
+        eids[0]
+      );
+      const treeClassList = await axios.get(
+        `${process.env.REACT_APP_API_DATBIM}/classes/mapping/${ifcClass}`,
+        {
+          headers: {
+            "X-Auth-Token": sessionStorage.getItem("token"),
+          },
+        }
+      );
+      // console.log("treeClassList.data.data", treeClassList.data.data);
+
       Promise.allSettled(
-        organizations.data.data.map(async (organizationProperty) => {
+        treeClassList.data.data.map(async (treeClassListElement) => {
           return await axios.get(
-            `${process.env.REACT_APP_API_DATBIM}/organizations/${organizationProperty.organization_id}/object-sets`,
+            `${process.env.REACT_APP_API_DATBIM}/classes/${treeClassListElement.class_reference_id}/object-sets`,
             {
               headers: {
                 "X-Auth-Token": sessionStorage.getItem("token"),
@@ -140,66 +207,14 @@ const ObjectsSetsList = ({
           }
           return acc;
         }, []);
-        setObjectsSetsListDefault(objectsSets);
+        setObjectsSetsListWithEIDS(objectsSets);
         setObjectsSetsList(objectsSets);
-
-        // console.log("objectsSetsListDefault", objectsSets);
+        // console.log("ObjectsSetsListWithEIDS", objectsSets);
         setObjectsSetsListLoader(false);
       });
+    } catch (error) {
+      console.error(error);
     }
-  };
-
-  const getobjectsSetsBySelectedClass = async (classId) => {
-    setObjectsSetsListLoader(true);
-    const objectsSetsBySelectedClass = await axios.get(
-      `${process.env.REACT_APP_API_DATBIM}/classes/${classId}/object-sets`,
-      {
-        headers: {
-          "X-Auth-Token": sessionStorage.getItem("token"),
-        },
-      }
-    );
-
-    setObjectsSetsList(objectsSetsBySelectedClass.data.data);
-    setObjectsSetsListLoader(false);
-  };
-
-  const getobjectsSetsBySelectedEids = async () => {
-    setObjectsSetsListLoader(true);
-    const ifcClass = await viewer.IFC.loader.ifcManager.getIfcType(0, eids[0]);
-    const treeClassList = await axios.get(
-      `${process.env.REACT_APP_API_DATBIM}/classes/mapping/${ifcClass}`,
-      {
-        headers: {
-          "X-Auth-Token": sessionStorage.getItem("token"),
-        },
-      }
-    );
-    // console.log("treeClassList.data.data", treeClassList.data.data);
-
-    Promise.allSettled(
-      treeClassList.data.data.map(async (treeClassListElement) => {
-        return await axios.get(
-          `${process.env.REACT_APP_API_DATBIM}/classes/${treeClassListElement.class_reference_id}/object-sets`,
-          {
-            headers: {
-              "X-Auth-Token": sessionStorage.getItem("token"),
-            },
-          }
-        );
-      })
-    ).then(function (values) {
-      const objectsSets = values.reduce((acc, value) => {
-        if (value.status === "fulfilled") {
-          value.value.data.data.map((value) => acc.push(value));
-        }
-        return acc;
-      }, []);
-      setObjectsSetsListWithEIDS(objectsSets);
-      setObjectsSetsList(objectsSets);
-      // console.log("ObjectsSetsListWithEIDS", objectsSets);
-      setObjectsSetsListLoader(false);
-    });
   };
 
   const searchObject = (input) => {
@@ -248,42 +263,46 @@ const ObjectsSetsList = ({
   };
 
   const getObjectsSetsByKeyWord = async () => {
-    setObjectsSetsListLoader(true);
+    try {
+      setObjectsSetsListLoader(true);
 
-    const organizations = await axios.get(
-      `${process.env.REACT_APP_API_DATBIM}/portals/${selectedPortal}/organizations`,
-      {
-        headers: {
-          "X-Auth-Token": sessionStorage.getItem("token"),
-        },
-      }
-    );
-
-    Promise.allSettled(
-      organizations.data.data.map(async (organizationProperty) => {
-        return await axios({
-          method: "get",
-          url: `${process.env.REACT_APP_API_DATBIM}/organizations/${organizationProperty.organization_id}/object-sets`,
-          params: { search: `${searchInput}` },
+      const organizations = await axios.get(
+        `${process.env.REACT_APP_API_DATBIM}/portals/${selectedPortal}/organizations`,
+        {
           headers: {
             "X-Auth-Token": sessionStorage.getItem("token"),
           },
-        });
-      })
-    ).then(function (values) {
-      // console.log("values", values);
-      const objectsSets = values.reduce((acc, value) => {
-        if (value.status === "fulfilled") {
-          value.value.data.data.map((value) => acc.push(value));
         }
-        return acc;
-      }, []);
-      // console.log("objectsSets", objectsSets);
-      setObjectsSetsList(objectsSets);
+      );
 
-      // console.log("objectsSetsListDefault", objectsSets);
-      setObjectsSetsListLoader(false);
-    });
+      Promise.allSettled(
+        organizations.data.data.map(async (organizationProperty) => {
+          return await axios({
+            method: "get",
+            url: `${process.env.REACT_APP_API_DATBIM}/organizations/${organizationProperty.organization_id}/object-sets`,
+            params: { search: `${searchInput}` },
+            headers: {
+              "X-Auth-Token": sessionStorage.getItem("token"),
+            },
+          });
+        })
+      ).then(function (values) {
+        // console.log("values", values);
+        const objectsSets = values.reduce((acc, value) => {
+          if (value.status === "fulfilled") {
+            value.value.data.data.map((value) => acc.push(value));
+          }
+          return acc;
+        }, []);
+        // console.log("objectsSets", objectsSets);
+        setObjectsSetsList(objectsSets);
+
+        // console.log("objectsSetsListDefault", objectsSets);
+        setObjectsSetsListLoader(false);
+      });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const resetObjectsSetsList = () => {
@@ -376,7 +395,10 @@ const ObjectsSetsList = ({
                         {/* <Typography className={classes.datBimCardDesc}>
                           {object.organization_name}
                         </Typography> */}
-                        <Chip className={classes.datBimCardDesc} label={`${object.organization_name}`} />
+                        <Chip
+                          className={classes.datBimCardDesc}
+                          label={`${object.organization_name}`}
+                        />
                       </CardActions>
                     </Card>
                   </Grid>
