@@ -240,11 +240,6 @@ const DatBimApi = ({
     setActiveStep(0);
   };
 
-  async function handleDisconnect() {
-    sessionStorage.setItem("token", null);
-    setActiveStep(0);
-  }
-
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
   };
