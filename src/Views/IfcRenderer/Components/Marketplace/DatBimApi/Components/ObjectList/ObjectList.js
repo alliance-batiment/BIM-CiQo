@@ -81,71 +81,83 @@ const ObjectList = ({
     getObjectsOfSelectedObject();
   }, []);
 
-  async function getSelectorsOfObjectSet() {
-    setSelectorsLoader(true);
-    const selectorsOfObjectSet = await axios.get(
-      `${process.env.REACT_APP_API_DATBIM}/objects/${selectedObjectSet}/get-selector`,
-      {
-        headers: {
-          "content-type": "application/json",
-          "X-Auth-Token": sessionStorage.getItem("token"),
-        },
-      }
-    );
-    // console.log("selectorsOfObjectSet.data", selectorsOfObjectSet.data);
-    setSelectors(selectorsOfObjectSet.data);
-    setSelectorsLoader(false);
-  }
-
-  const getObjectsOfAdvancedSearch = async (selectorsRequest) => {
-    setSelectorsLoader(true);
-    setObjectsLoader(true);
-    // console.log("selectorsRequest ==>", selectorsRequest);
-    const objectsOfAdvancedSearch = await axios({
-      method: "post",
-      url: `${process.env.REACT_APP_API_DATBIM}/objects/${selectedObjectSet}/search-on-selector?tree=1`,
-      headers: {
-        "content-type": "application/json",
-        "X-Auth-Token": sessionStorage.getItem("token"),
-      },
-      data: {
-        keyword: searchBarInput,
-        property: selectorsRequest,
-      },
-    });
-
-    setSelectors(objectsOfAdvancedSearch.data.search);
-    // console.log(
-    //   "objectsListOfAdvancedSearch.data.result ==>",
-    //   objectsOfAdvancedSearch.data.result
-    // );
-    setObjectListing({
-      id: "FiltredObjects",
-      name: "Liste des objets filtrés",
-      children: objectsOfAdvancedSearch.data.result,
-    });
-    setSelectorsLoader(false);
-    setObjectsLoader(false);
+  const getSelectorsOfObjectSet = async () => {
+    try {
+      setSelectorsLoader(true);
+      const selectorsOfObjectSet = await axios.get(
+        `${process.env.REACT_APP_API_DATBIM}/objects/${selectedObjectSet}/get-selector`,
+        {
+          headers: {
+            "content-type": "application/json",
+            "X-Auth-Token": sessionStorage.getItem("token"),
+          },
+        }
+      );
+      // console.log("selectorsOfObjectSet.data", selectorsOfObjectSet.data);
+      setSelectors(selectorsOfObjectSet.data);
+      setSelectorsLoader(false);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  async function getObjectsOfSelectedObject() {
-    setObjectsLoader(true);
-
-    const treeOfObjectSet = await axios.get(
-      `${process.env.REACT_APP_API_DATBIM}/objects/${selectedObjectSet}/tree-structure`,
-      {
+  const getObjectsOfAdvancedSearch = async (selectorsRequest) => {
+    try {
+      setSelectorsLoader(true);
+      setObjectsLoader(true);
+      // console.log("selectorsRequest ==>", selectorsRequest);
+      const objectsOfAdvancedSearch = await axios({
+        method: "post",
+        url: `${process.env.REACT_APP_API_DATBIM}/objects/${selectedObjectSet}/search-on-selector?tree=1`,
         headers: {
           "content-type": "application/json",
           "X-Auth-Token": sessionStorage.getItem("token"),
         },
-      }
-    );
+        data: {
+          keyword: searchBarInput,
+          property: selectorsRequest,
+        },
+      });
 
-    setObjectListing(treeOfObjectSet.data);
-    //console.log("objectListing ==>", treeOfObjectSet.data);
+      setSelectors(objectsOfAdvancedSearch.data.search);
+      // console.log(
+      //   "objectsListOfAdvancedSearch.data.result ==>",
+      //   objectsOfAdvancedSearch.data.result
+      // );
+      setObjectListing({
+        id: "FiltredObjects",
+        name: "Liste des objets filtrés",
+        children: objectsOfAdvancedSearch.data.result,
+      });
+      setSelectorsLoader(false);
+      setObjectsLoader(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-    setObjectsLoader(false);
-  }
+  const getObjectsOfSelectedObject = async () => {
+    try {
+      setObjectsLoader(true);
+
+      const treeOfObjectSet = await axios.get(
+        `${process.env.REACT_APP_API_DATBIM}/objects/${selectedObjectSet}/tree-structure`,
+        {
+          headers: {
+            "content-type": "application/json",
+            "X-Auth-Token": sessionStorage.getItem("token"),
+          },
+        }
+      );
+
+      setObjectListing(treeOfObjectSet.data);
+      //console.log("objectListing ==>", treeOfObjectSet.data);
+
+      setObjectsLoader(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   // async function getObjects(typeProperties, selectedPage) {
   //   const classes = await axios.get(

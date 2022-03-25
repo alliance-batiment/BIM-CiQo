@@ -15,7 +15,7 @@ import {
   InputLabel,
   InputAdornment,
   Tooltip,
-  IconButton
+  IconButton,
 } from "@material-ui/core";
 import Add from "@material-ui/icons/Add";
 import { useHistory } from "react-router-dom";
@@ -23,7 +23,7 @@ import axios from "axios";
 import moment from "moment";
 import SearchBar from "../../../../../../../Components/SearchBar/SearchBar.jsx";
 import DefineTypeComponent from "./DefineTypeComponent";
-import InfoIcon from '@mui/icons-material/Info';
+import InfoIcon from "@mui/icons-material/Info";
 
 const useStyles = makeStyles((theme) => ({
   searchBar: {
@@ -148,7 +148,7 @@ const PropertyList = ({
   }
 
   useEffect(() => {
-    async function getPropertiesValues() {
+    const getPropertiesValues = async () => {
       try {
         const { data: dataProp } = await axios.get(
           `${process.env.REACT_APP_API_DATBIM}/objects/${selectedObject}/properties-values`,
@@ -173,11 +173,11 @@ const PropertyList = ({
         });
         setPropertyListDefault(temporaryFixProperties);
         setProperties(temporaryFixProperties);
-        console.log('temporaryFixProperties', temporaryFixProperties)
+        console.log("temporaryFixProperties", temporaryFixProperties);
       } catch (err) {
         console.log("error", err);
       }
-    }
+    };
 
     getPropertiesValues();
   }, [selectedObject]);
@@ -226,13 +226,16 @@ const PropertyList = ({
                 {property.property_name}
               </TableCell>
               <TableCell width="10%" component="th" scope="row">
-                {(property.property_definition) &&
-                  <Tooltip title={`${property.property_definition}`} placement="top-start">
+                {property.property_definition && (
+                  <Tooltip
+                    title={`${property.property_definition}`}
+                    placement="top-start"
+                  >
                     <IconButton>
                       <InfoIcon />
                     </IconButton>
                   </Tooltip>
-                }
+                )}
               </TableCell>
               <TableCell width="35%" align="right">
                 {DefineTypeComponent(
