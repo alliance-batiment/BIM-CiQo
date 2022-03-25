@@ -1,32 +1,62 @@
-import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-// import Input from '@material-ui/core/Input';
-import {
-  Paper,
-  InputBase,
-  IconButton
-} from '@material-ui/core';
-import SearchIcon from '@material-ui/icons/Search';
+import React from "react";
+import { makeStyles } from "@material-ui/core/styles";
 
-const useStyles = makeStyles(theme => ({
+import { Paper, InputBase, ButtonGroup, Button } from "@material-ui/core";
+import SearchIcon from "@material-ui/icons/Search";
+import RotateLeftIcon from "@material-ui/icons/RotateLeft";
+
+const useStyles = makeStyles((theme) => ({
   search: {
-    padding: '2px 4px',
-    display: 'flex',
-    alignItems: 'center',
-    width: '100%',
-    marginBotton: '2em'
+    height: '3em',
+    padding: "2px 4px",
+    display: "flex",
+    alignItems: "center",
+    width: "100%",
+    // marginBotton: "2em",
+    "&:disabled": {
+      cursor: "not-allowed",
+    },
   },
   input: {
     marginLeft: theme.spacing(1),
     flex: 1,
   },
   iconButton: {
-    padding: 10,
+    border: "none",
+    color: "#E6464D",
+    // "&:hover": {
+    //   backgroundColor: "#E6464D",
+    //   color: "white",
+    // },
+    // "&:disabled": {
+    //   border: "none",
+    // },
   },
 }));
 
-const SearchBar = ({ keyword, onChange, placeholder, className }) => {
+const SearchBar = ({
+  keyword,
+  onChange,
+  placeholder,
+  className,
+  onClickOne,
+  onClickTwo,
+  disabled,
+  input,
+}) => {
   const classes = useStyles();
+
+  const onKeyDown = (e) => {
+    if (e.key === "Enter") {
+      if (e.target.value.length === 0) {
+        e.preventDefault();
+      } else {
+        e.preventDefault();
+        onClickOne();
+      }
+    }
+  };
+
   return (
     // <Input
     //     value={keyword}
@@ -36,16 +66,32 @@ const SearchBar = ({ keyword, onChange, placeholder, className }) => {
     // />
     <Paper component="form" className={classes.search}>
       <InputBase
+        disabled={disabled}
+        value={input}
         className={classes.input}
         placeholder={placeholder}
-        inputProps={{ 'aria-label': 'search google maps' }}
+        inputProps={{ "aria-label": "search google maps" }}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={onKeyDown}
       />
-      <IconButton className={classes.iconButton} aria-label="search">
-        <SearchIcon />
-      </IconButton>
+      <ButtonGroup aria-label="search button group">
+        <Button
+          className={classes.iconButton}
+          disabled={disabled}
+          onClick={onClickOne}
+        >
+          <SearchIcon />
+        </Button>
+        <Button
+          className={classes.iconButton}
+          disabled={disabled}
+          onClick={onClickTwo}
+        >
+          <RotateLeftIcon />
+        </Button>
+      </ButtonGroup>
     </Paper>
   );
-}
+};
 
-export default SearchBar
+export default SearchBar;

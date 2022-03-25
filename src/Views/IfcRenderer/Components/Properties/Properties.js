@@ -25,7 +25,9 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import AddIcon from "@material-ui/icons/Add";
 import ClearIcon from "@material-ui/icons/Clear";
+import DownloadIcon from '@mui/icons-material/Download';
 import VisibilityIcon from "@material-ui/icons/Visibility";
+import * as WebIFC from "web-ifc";
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -63,6 +65,7 @@ const Properties = ({
   selectedElementID,
   setSelectedElementID,
   setShowProperties,
+  handleShowMarketplace,
   addElementsNewProperties,
 }) => {
   const classes = useStyles();
@@ -70,22 +73,43 @@ const Properties = ({
   const [anchorEl, setAnchorEl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  function DecodeIFCString(ifcString) {
+    const ifcUnicodeRegEx = /\\X2\\(.*?)\\X0\\/uig;
+    let resultString = ifcString;
+    let match = ifcUnicodeRegEx.exec(ifcString);
+    while (match) {
+      const unicodeChar = String.fromCharCode(parseInt(match[1], 16));
+      resultString = resultString.replace(match[0], unicodeChar);
+      match = ifcUnicodeRegEx.exec(ifcString);
+    }
+    return resultString;
+  }
+
   useEffect(() => {
     async function init() {
       console.log('selectedElementID', selectedElementID);
+
       if (selectedElementID) {
         const elementProperties = await viewer.IFC.getProperties(0, selectedElementID, true, true);
         console.log('elementProperties', elementProperties)
+
+        console.log('viewer', viewer)
+        console.log('ifcClass', viewer.IFC.loader.ifcManager.getIfcType(0, selectedElementID))
+        const ifcClass = viewer.IFC.loader.ifcManager.getIfcType(0, selectedElementID);
         let psets = [];
         if (elementProperties.psets.length > 0) {
           psets = await Promise.all(elementProperties.psets.map(async (pset) => {
             if (pset.HasProperties && pset.HasProperties.length > 0) {
               const newPset = await Promise.all(pset.HasProperties.map(async (property) => {
-                const label = property.Name.value;
-                const value = property.NominalValue ? property.NominalValue.value : null;
+                console.log('property', property)
+                const label = DecodeIFCString(property.Name.value);
+                const value = property.NominalValue ? DecodeIFCString(property.NominalValue.value) : '';
+                const unit = (property.Unit == null) ? '' : (property.Unit.value === 'null' ? '' : property.Unit.value);
+                console.log('unit', unit)
                 return {
                   label,
-                  value
+                  value,
+                  unit
                 }
               }));
 
@@ -96,8 +120,8 @@ const Properties = ({
             }
             if (pset.Quantities && pset.Quantities.length > 0) {
               const newPset = await Promise.all(pset.Quantities.map(async (property) => {
-                const label = property.Name.value;
-                const value = property.NominalValue ? property.NominalValue.value : null;
+                const label = DecodeIFCString(property.Name.value);
+                const value = property.NominalValue ? DecodeIFCString(property.NominalValue.value) : null;
                 return {
                   label,
                   value
@@ -119,7 +143,7 @@ const Properties = ({
         const elem = {
           ...elementProperties,
           name: elementProperties.Name ? elementProperties.Name.value : 'NO NAME',
-          type: 'NO TYPE',
+          type: ifcClass ? ifcClass : 'NO TYPE',
           modelID: 0,
           psets
         };
@@ -152,6 +176,71 @@ const Properties = ({
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  const handleAddProperties = async () => {
+    handleShowMarketplace('Open dthX');
+    setShowProperties(false);
+  }
+
+  const downloadFile = ({ data, fileName, fileType }) => {
+    // Create a blob with the data we want to download as a file
+    const blob = new Blob([data], { type: fileType });
+    // Create an anchor element and dispatch a click event on it
+    // to trigger a download
+    const a = document.createElement('a')
+    a.download = fileName
+    a.href = window.URL.createObjectURL(blob)
+    const clickEvt = new MouseEvent('click', {
+      view: window,
+      bubbles: true,
+      cancelable: true,
+    })
+    a.dispatchEvent(clickEvt)
+    a.remove()
+  }
+
+  // const handleExportToJson = e => {
+  //   e.preventDefault()
+  //   downloadFile({
+  //     data: JSON.stringify(usersData.users),
+  //     fileName: `${ifcElement ? ifcElement.name : "Undefined"}.csv`,
+  //     fileType: 'text/json',
+  //   })
+  // }
+
+  const handleExportToCsv = e => {
+    e.preventDefault()
+    // Headers for each column
+    let propertiesCsv = [];
+    let headers = ['modelId', 'elementName', 'elementClass', 'globalId', 'expressId', 'psetName', 'propertyName', 'propertyValue'].join(',');
+    propertiesCsv.push(headers)
+    // Convert Properties data to a csv
+
+    // let propertiesCsv = ifcElement.psets?.map(pset => pset.HasProperties?.reduce((acc, property) => {
+    //   const { label, value } = property
+    //   acc.push([label, `${value} \n`].join(','))
+    //   console.log(acc[acc.length - 1])
+    //   return acc
+    // }, []));
+
+    console.log('ifcElement', ifcElement)
+    ifcElement.psets?.forEach(pset => pset.HasProperties?.forEach((property) => {
+      const modelID = `${ifcElement.modelID}`;
+      const elementName = `${ifcElement.name}`;
+      const elementClass = `${ifcElement.type}`;
+      const globalID = `${ifcElement.GlobalId.value}`;
+      const expressID = `${ifcElement.expressID}`;
+      const psetName = `${pset.Name.value}`;
+      const { label: propertyName, value: propertyValue } = property;
+      propertiesCsv.push([modelID, elementName, elementClass, globalID, expressID, psetName, propertyName, propertyValue].join(','))
+    }));
+
+    downloadFile({
+      data: [...propertiesCsv].join('\n'),
+      fileName: `${ifcElement ? ifcElement.name : "Undefined"}.csv`,
+      fileType: 'text/csv',
+    })
+  }
 
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
@@ -196,21 +285,28 @@ const Properties = ({
                 </ListItemIcon>
                 <ListItemText primary="Visibility" />
               </ListItem> */}
-              {/* <ListItem
-                button
-                onClick={() => {
-                  addElementsNewProperties({
-                    viewer,
-                    modelID: element.modelID,
-                    expressIDs: [element.expressID],
-                  });
-                }}
-              >
-                <ListItemIcon>
-                  <AddIcon />
-                </ListItemIcon>
-                <ListItemText primary="Ajouter propriété" />
-              </ListItem> */}
+              {ifcElement && (
+                <>
+                  <ListItem
+                    button
+                    onClick={handleExportToCsv}
+                  >
+                    <ListItemIcon>
+                      <DownloadIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Télécharger CSV" />
+                  </ListItem>
+                  <ListItem
+                    button
+                    onClick={handleAddProperties}
+                  >
+                    <ListItemIcon>
+                      <AddIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Ajouter propriété" />
+                  </ListItem>
+                </>
+              )}
               <ListItem button onClick={() => {
                 setShowProperties(false);
                 setSelectedElementID(null);
@@ -223,7 +319,7 @@ const Properties = ({
             </Popover>
           </div>
         }
-        title={`${ifcElement ? ifcElement.name : "Undefined"}`}
+        title={`${ifcElement ? DecodeIFCString(ifcElement.name) : "Undefined"}`}
         subheader={`${ifcElement ? ifcElement.type : "Undefined"}`}
       />
       {isLoading ? (
@@ -273,7 +369,7 @@ const Properties = ({
                     >
                       <Typography
                         className={classes.heading}
-                      >{`${pset.Name.value}`}</Typography>
+                      >{`${DecodeIFCString(pset.Name.value)}`}</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
                       <TableContainer>
@@ -288,6 +384,7 @@ const Properties = ({
                                 <TableRow key={index}>
                                   <TableCell>{`${property.label}`}</TableCell>
                                   <TableCell>{`${property.value}`}</TableCell>
+                                  <TableCell>{`${property.unit}`}</TableCell>
                                 </TableRow>
                               ))}
                           </TableBody>

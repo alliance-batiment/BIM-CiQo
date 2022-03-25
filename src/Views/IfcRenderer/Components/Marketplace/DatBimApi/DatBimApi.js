@@ -1,8 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Grid,
   makeStyles,
-  Button,
   Typography,
   Step,
   StepLabel,
@@ -16,8 +15,9 @@ import Login from "./Components/Login/Login";
 import PortalList from "./Components/PortalList/PortalList";
 import ObjectsSetsList from "./Components/ObjectsSetsList/ObjectsSetsList";
 import ObjectList from "./Components/ObjectList/ObjectList";
-import PropertyList from "./Components/PropertyList/PropertyList";
 import axios from "axios";
+import KeyboardBackspaceIcon from "@material-ui/icons/KeyboardBackspace";
+import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -28,15 +28,28 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   button: {
+    fontSize: 40,
+    borderRadius: "10%",
     backgroundColor: "#E6464D",
     color: "white",
     "&:hover": {
       backgroundColor: "#E6464D",
       color: "white",
+      cursor: "pointer",
     },
     "&:disabled": {
       opacity: 0.8,
       color: "white",
+    },
+  },
+  headerButton: {
+    // fontSize: 30,
+    borderRadius: "50%",
+    color: "#E6464D",
+    "&:hover": {
+      color: "white",
+      backgroundColor: "#E6464D",
+      cursor: "pointer",
     },
   },
   navigationBar: {
@@ -67,10 +80,10 @@ const useStyles = makeStyles((theme) => ({
     color: "white",
     margin: theme.spacing(1),
     cursor: "pointer",
+    height: "8em",
   },
   datBimTitle: {
     textAlign: "center",
-    // color: '#E6464D',
     textTransform: "none",
   },
   datBimCardTitle: {
@@ -140,21 +153,29 @@ const QontoConnector = withStyles({
 })(StepConnector);
 
 const DatBimApi = ({
-  openProperties,
-  projectId,
-  objSelected,
   viewer,
   modelID,
   eids,
   setEids,
   addElementsNewProperties,
-  handleShowMarketplace
+  handleShowMarketplace,
 }) => {
   const [activeStep, setActiveStep] = useState(0);
+  const [breadcrumbMap, setBreadcrumbMap] = useState([]);
   const [selectedPortal, setSelectedPortal] = useState(null);
   const [selectedObjectSet, setSelectedObjectSet] = useState(null);
   const [selectedObjectSetName, setSelectedObjectSetName] = useState(null);
   const [selectedObject, setSelectedObject] = useState(null);
+
+  useEffect(() => {
+    const init = async () => {
+      const token = sessionStorage.getItem("token");
+      if (token) {
+        handleNext();
+      }
+    };
+    init();
+  }, []);
 
   const steps = getSteps();
   const classes = useStyles();
@@ -179,7 +200,7 @@ const DatBimApi = ({
   }
 
   function getSteps() {
-    return ["Connexion", "Portals", "Objects Sets", "Objects"];
+    return ["Connexion", "Portails", "Collections d'objets", "Objets"];
   }
 
   async function handleSubmit(e) {
@@ -214,6 +235,11 @@ const DatBimApi = ({
       });
   }
 
+  async function handleDisconnect() {
+    sessionStorage.setItem("token", null);
+    setActiveStep(0);
+  }
+
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
   };
@@ -229,43 +255,35 @@ const DatBimApi = ({
   function getStepContent(step) {
     switch (step) {
       case 0:
-        return <Login classes={classes} handleSubmit={handleSubmit} />;
+        return <Login handleSubmit={handleSubmit} />;
       case 1:
         return (
           <PortalList
-            classes={classes}
             openObjects={openObjects}
             setSelectedPortal={setSelectedPortal}
             handleNext={handleNext}
+            breadcrumbMap={breadcrumbMap}
+            setBreadcrumbMap={setBreadcrumbMap}
             setActiveStep={setActiveStep}
           />
         );
       case 2:
         return (
           <ObjectsSetsList
-            classes={classes}
             selectedPortal={selectedPortal}
             setSelectedObjectSet={setSelectedObjectSet}
             setSelectedObjectSetName={setSelectedObjectSetName}
+            viewer={viewer}
+            eids={eids}
+            breadcrumbMap={breadcrumbMap}
+            setBreadcrumbMap={setBreadcrumbMap}
             handleNext={handleNext}
+            setActiveStep={setActiveStep}
           />
         );
       case 3:
-        // return <PropertyList
-        //   classes={classes}
-        //   projectId={projectId}
-        //   // setLoader={setLoader}
-        //   objSelected={objSelected}
-        //   selectedObject={selectedObject}
-        //   viewer={viewer}
-        //   modelID={modelID}
-        //   eids={eids}
-        //   setEids={setEids}
-        //   addElementsNewProperties={addElementsNewProperties}
-        // />
         return (
           <ObjectList
-            classes={classes}
             selectedObject={selectedObject}
             selectedObjectSet={selectedObjectSet}
             selectedObjectSetName={selectedObjectSetName}
@@ -280,19 +298,11 @@ const DatBimApi = ({
             setEids={setEids}
             addElementsNewProperties={addElementsNewProperties}
             handleShowMarketplace={handleShowMarketplace}
+            breadcrumbMap={breadcrumbMap}
+            setBreadcrumbMap={setBreadcrumbMap}
+            setActiveStep={setActiveStep}
           />
         );
-      // case 4:
-      //   return (
-      //     <PropertyList
-      //       classes={classes}
-      //       projectId={projectId}
-      //       // setLoader={setLoader}
-      //       objSelected={objSelected}
-      //       selectedObject={selectedObject}
-      //       addElementsNewProperties={addElementsNewProperties}
-      //     />
-      //   );
       default:
         return "Unknown step";
     }
@@ -300,6 +310,25 @@ const DatBimApi = ({
 
   return (
     <>
+      <Grid container>
+        <Grid item xs={6} style={{ textAlign: "left" }}>
+          {activeStep > 0 && (
+            <KeyboardBackspaceIcon
+              disabled={activeStep === 0}
+              onClick={handleBack}
+              className={classes.headerButton}
+            />
+          )}
+        </Grid>
+        <Grid item xs={6} style={{ textAlign: "right" }}>
+          {activeStep > 0 && (
+            <PowerSettingsNewIcon
+              className={classes.headerButton}
+              onClick={handleDisconnect}
+            />
+          )}
+        </Grid>
+      </Grid>
       <Stepper
         alternativeLabel
         activeStep={activeStep}
@@ -311,7 +340,7 @@ const DatBimApi = ({
           </Step>
         ))}
       </Stepper>
-      <div className={classes.navigationBar}>
+      {/* <div className={classes.navigationBar}>
         <Grid container>
           <Grid item xs={6}>
             {activeStep > 0 && (
@@ -325,7 +354,7 @@ const DatBimApi = ({
             )}
           </Grid>
         </Grid>
-      </div>
+      </div> */}
       <Typography className={classes.instructions}>
         {getStepContent(activeStep)}
       </Typography>

@@ -32,6 +32,7 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import ClearIcon from "@material-ui/icons/Clear";
+import DownloadIcon from '@mui/icons-material/Download';
 import SearchBar from '../../../../Components/SearchBar';
 import { IFCSLAB, IFCMEMBER, IFCSTRUCTURALCURVEMEMBER } from "web-ifc";
 import CommentIcon from '@mui/icons-material/Comment';
@@ -43,6 +44,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import MutltiSelectionIcon from '@mui/icons-material/ControlPointDuplicate';
 import OpenDthxLogo from './img/OpenDthxLogo.png';
+import IfcIcons from '../../Utils/ifc-full-icons.json';
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -113,6 +115,7 @@ const SearchData = ({
 
   useEffect(() => {
     async function init() {
+      console.log('IfcIcons', IfcIcons)
       const selectedElements = await Promise.all(eids.map(async (eid) => {
         const elementProperties = await viewer.IFC.getProperties(0, eid, false, false);
         const type = await viewer.IFC.loader.ifcManager.getIfcType(0, eid);
@@ -159,9 +162,60 @@ const SearchData = ({
 
   const handleRemoveElement = async (element) => {
     const newEids = eids.filter(eid => eid !== element.expressID);
+    await viewer.IFC.pickIfcItemsByID(0, newEids);
     setEids(newEids);
   }
 
+  const downloadFile = ({ data, fileName, fileType }) => {
+    // Create a blob with the data we want to download as a file
+    const blob = new Blob([data], { type: fileType });
+    // Create an anchor element and dispatch a click event on it
+    // to trigger a download
+    const a = document.createElement('a')
+    a.download = fileName
+    a.href = window.URL.createObjectURL(blob)
+    const clickEvt = new MouseEvent('click', {
+      view: window,
+      bubbles: true,
+      cancelable: true,
+    })
+    a.dispatchEvent(clickEvt)
+    a.remove()
+  }
+
+  const handleExportToCsv = async (e, eids) => {
+    e.preventDefault()
+    // Headers for each column
+    let propertiesCsv = [];
+    let headers = ['modelId', 'elementName', 'elementClass', 'globalId', 'expressId', 'psetName', 'propertyName', 'propertyValue'].join(',');
+    propertiesCsv.push(headers)
+
+    await Promise.all(eids.map(async eid => {
+      const ifcElement = await viewer.IFC.getProperties(0, eid, true, true);
+      const selectedModelID = await viewer.IFC.getModelID();
+      // const ifcLoader = new IFCLoader();
+      // const ifcClass = ifcClassType[];
+      console.log('ifcClass ', ifcElement)
+      await Promise.all(ifcElement.psets?.map(async pset => pset.HasProperties && await Promise.all(pset.HasProperties?.map(async (property) => {
+        const modelID = 0;
+        const elementName = `${ifcElement.Name?.value}`;
+        const elementClass = `NONE`;
+        const globalID = `${ifcElement.GlobalId.value}`;
+        const expressID = `${ifcElement.expressID}`;
+        const psetName = `${pset.Name.value}`;
+        const propertyName = `${property.Name?.value}`;
+        const propertyValue = `${property.NominalValue?.value}`;
+
+        propertiesCsv.push([modelID, elementName, elementClass, globalID, expressID, psetName, propertyName, propertyValue].join(','))
+      }))))
+    }));
+
+    downloadFile({
+      data: [...propertiesCsv].join('\n'),
+      fileName: `selection.csv`,
+      fileType: 'text/csv',
+    })
+  }
 
   // const open = Boolean(anchorEl);
   // const id = open ? "simple-popover" : undefined;
@@ -228,6 +282,14 @@ const SearchData = ({
           <Button
             edge="end"
             aria-label="comments"
+            className={classes.button}
+            onClick={(e) => handleExportToCsv(e, eids)}
+          >
+            <DownloadIcon />
+          </Button>
+          <Button
+            edge="end"
+            aria-label="comments"
             onClick={() => handleShowMarketplace('Open dthX')}
           >
             {/* <img
@@ -258,13 +320,23 @@ const SearchData = ({
                   >
                     <LibraryAddIcon />
                   </IconButton> */}
-                  {/* <IconButton
+                  <IconButton
                     edge="end"
                     aria-label="comments"
-                    onClick={() => handleRemoveElement(element)}
+                    onClick={(e) => {
+                      handleShowProperties(element.expressID);
+                      e.stopPropagation();
+                    }}
                   >
                     <DescriptionIcon />
-                  </IconButton> */}
+                  </IconButton>
+                  <IconButton
+                    edge="end"
+                    aria-label="comments"
+                    onClick={(e) => handleExportToCsv(e, [element.expressID])}
+                  >
+                    <DownloadIcon />
+                  </IconButton>
                   <IconButton
                     edge="end"
                     aria-label="comments"

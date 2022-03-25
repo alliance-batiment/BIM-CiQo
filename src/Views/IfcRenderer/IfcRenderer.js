@@ -4,6 +4,12 @@ import * as WebIFC from "web-ifc";
 import { IfcViewerAPI } from "web-ifc-viewer";
 import Dropzone from "react-dropzone";
 import {
+  Router,
+  Switch,
+  Route,
+  useLocation
+} from 'react-router-dom';
+import {
   Backdrop,
   makeStyles,
   CircularProgress,
@@ -18,6 +24,10 @@ import DescriptionIcon from '@material-ui/icons/Description';
 import StraightenIcon from '@material-ui/icons/Straighten';
 import AppsIcon from '@material-ui/icons/Apps';
 import GetAppIcon from '@material-ui/icons/GetApp';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import MapIcon from '@mui/icons-material/Map';
+import ControlCameraIcon from '@mui/icons-material/ControlCamera';
+import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import GrainIcon from '@material-ui/icons/Grain';
 import StorageIcon from '@material-ui/icons/Storage';
 import MutltiSelectionIcon from '@mui/icons-material/ControlPointDuplicate';
@@ -26,6 +36,10 @@ import BcfDialog from './Components/BcfDialog/BcfDialog';
 import Marketplace from './Components/Marketplace/Marketplace';
 import SpatialStructure from './Components/SpatialStructure/SpatialStructure';
 import Properties from './Components/Properties/Properties';
+import Camera from './Components/Camera/Camera';
+import Cuts from './Components/Cuts';
+import Drawings from './Components/Drawings/Drawings';
+import Measures from './Components/Measures/Measures';
 import ContextMenu from './Components/ContextMenu';
 import DraggableCard from './Components/DraggableCard/DraggableCard';
 import {
@@ -60,16 +74,17 @@ import {
   EdgesGeometry,
   LineBasicMaterial,
   MeshBasicMaterial,
-  Vector2
-} from 'three';
+  Vector2,
+} from "three";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls";
 import { HorizontalBlurShader } from "three/examples/jsm/shaders/HorizontalBlurShader.js";
 import { VerticalBlurShader } from "three/examples/jsm/shaders/VerticalBlurShader.js";
 
 import { UseIfcRenderer } from "./IfcRenderer.hooks";
-import ToolTipsElem from '../../Components/ToolTipsElem/ToolTipsElem.js';
+import ToolTipsElem from "../../Components/ToolTipsElem/ToolTipsElem.js";
 import animationClippedVue from "./Images/animation-vue-de-coupe.gif";
 import animationMeasureTool from "./Images/animation-outil-de-mesure.gif";
+import axios from "axios";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -106,10 +121,16 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const {
+  REACT_APP_COMPANY,
+  REACT_APP_THIRD_PARTY_API
+} = process.env;
+
 const IfcRenderer = () => {
   const classes = useStyles();
   const dropzoneRef = useRef(null);
   const [viewer, setViewer] = useState(null);
+  const [ifcModels, setIfcModels] = useState([]);
   const [modelID, setModelID] = useState(-1);
   const [transformControls, setTransformControls] = useState(null);
   const [spatialStructures, setSpatialStructures] = useState([]);
@@ -121,6 +142,10 @@ const IfcRenderer = () => {
   const [showSpatialStructure, setShowSpatialStructure] = useState(false);
   const [showProperties, setShowProperties] = useState(false);
   const [showContextMenu, setShowContextMenu] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
+  const [showCuts, setShowCuts] = useState(false);
+  const [showDrawings, setShowDrawings] = useState(false);
+  const [showMeasures, setShowMeasures] = useState(false);
   const [selectedElementID, setSelectedElementID] = useState(null);
   const [specificApplication, setSpecificApplication] = useState(false);
   const [isLoading, setLoading] = useState(false);
@@ -128,6 +153,7 @@ const IfcRenderer = () => {
   const [apiWebIfc, setApiWebIfc] = useState();
   const [selectedElementId, setSelectedElementId] = useState(null);
   const [eids, setEids] = useState([]);
+  const [subsets, setSubsets] = useState([]);
 
   const [state, setState] = useState({
     bcfDialogOpen: false,
@@ -139,13 +165,15 @@ const IfcRenderer = () => {
 
   const {
     initIndexDB,
+    meshMaterials,
     getModels,
     addTransformControls,
     getElementProperties,
-    addElementsNewProperties
+    addElementsNewProperties,
+    addGeometryToIfc,
   } = UseIfcRenderer({
     eids,
-    setEids
+    setEids,
   });
 
   useEffect(() => {
@@ -157,8 +185,6 @@ const IfcRenderer = () => {
       });
       // newViewer.addAxes();
       // newViewer.addGrid();
-      // newViewer.IFC.setWasmPath('../../');
-
       const ifcApi = new WebIFC.IfcAPI();
       setApiWebIfc(ifcApi);
 
@@ -177,122 +203,47 @@ const IfcRenderer = () => {
       // console.log('allModels', allModels)
       // const model = await newViewer.IFC.loadIfcUrl(allModels[0].file, false);
 
-      let dimensionsActive = false;
-      // addTransformControls(newViewer);
-
-      let counter = 0;
-      newViewer.shadowDropper.darkness = 1.5;
-      // const handleKeyDown = async (event) => {
-      //   if (event.code === "KeyF") {
-      //     // viewer.plans.computeAllPlanViews(0);
-      //     console.log("KeyF");
-      //     console.log("VIEWER", newViewer);
-      //     newViewer.plans.computeAllPlanViews(0);
-      //   }
-      //   if (event.code === 'KeyS') {
-      //     const planNames = Object.keys(newViewer.plans.planLists[0]);
-      //     if (!planNames[counter]) return;
-      //     const current = planNames[counter];
-      //     newViewer.plans.goTo(0, current, true);
-      //     newViewer.edges.toggle("0");
-      //   }
-      //   if (event.code === "KeyT") {
-      //     // PDF export
-
-      //     const currentPlans = newViewer.plans.planLists[0];
-      //     const planNames = Object.keys(currentPlans);
-      //     const firstPlan = planNames[0];
-      //     const currentPlan = newViewer.plans.planLists[0][firstPlan];
-
-      //     const documentName = "test";
-      //     const doc = new jsPDF("p", "mm", [1000, 1000]);
-      //     newViewer.pdf.newDocument(documentName, doc, 20);
-
-      //     newViewer.pdf.setLineWidth(documentName, 0.2);
-      //     newViewer.pdf.drawNamedLayer(
-      //       documentName,
-      //       currentPlan,
-      //       "thick",
-      //       200,
-      //       200
-      //     );
-
-      //     newViewer.pdf.setLineWidth(documentName, 0.1);
-      //     newViewer.pdf.setColor(documentName, new Color(100, 100, 100));
-
-      //     const ids = await newViewer.IFC.getAllItemsOfType(
-      //       0,
-      //       IFCWALLSTANDARDCASE,
-      //       false
-      //     );
-      //     const subset = newViewer.IFC.loader.ifcManager.createSubset({
-      //       modelID: 0,
-      //       ids,
-      //       removePrevious: true,
-      //     });
-      //     const edgesGeometry = new EdgesGeometry(subset.geometry);
-      //     const vertices = edgesGeometry.attributes.position.array;
-      //     newViewer.pdf.draw(documentName, vertices, 200, 200);
-
-      //     newViewer.pdf.drawNamedLayer(
-      //       documentName,
-      //       currentPlan,
-      //       "thin",
-      //       200,
-      //       200
-      //     );
-
-      //     newViewer.pdf.exportPDF(documentName, "test.pdf");
-      //   }
-      //   if (event.code === 'KeyB') {
-      //     const currentPlans = newViewer.plans.planLists[0];
-      //     const planNames = Object.keys(currentPlans);
-      //     const firstPlan = planNames[0];
-      //     const currentPlan = newViewer.plans.planLists[0][firstPlan];
-      //     const drawingName = "example";
-
-      //     viewer.dxf.initializeJSDXF(Drawing);
-
-      //     viewer.dxf.newDrawing(drawingName);
-      //     // const polygons = viewer.edgesVectorizer.polygons;
-      //     // viewer.dxf.drawEdges(drawingName, polygons, 'projection', Drawing.ACI.BLUE );
-
-      //     viewer.dxf.drawNamedLayer(drawingName, currentPlan, 'thick', 'section_thick', Drawing.ACI.RED);
-      //     viewer.dxf.drawNamedLayer(drawingName, currentPlan, 'thin', 'section_thin', Drawing.ACI.GREEN);
-
-      //     // const ids = await viewer.IFC.getAllItemsOfType(0, IFCWALLSTANDARDCASE, false);
-      //     // const subset = viewer.IFC.loader.ifcManager.createSubset({ modelID: 0, ids, removePrevious: true });
-      //     // const edgesGeometry = new EdgesGeometry(subset.geometry);
-      //     // const vertices = edgesGeometry.attributes.position.array;
-      //     // viewer.dxf.draw(drawingName, vertices, 'other', Drawing.ACI.BLUE);
-
-      //     viewer.dxf.exportDXF(drawingName);
-
-      //   }
-      //   if (event.code === 'KeyC') {
-      //     // viewer.context.ifcCamera.toggleProjection();
-      //     newViewer.shadowDropper.renderShadow(0);
-      //   }
-      //   if (event.code === "KeyE") {
-      //     newViewer.plans.exitPlanView(true);
-      //     newViewer.edges.toggle("0");
-      //   }
-      // };
-
-      // window.onkeydown = handleKeyDown;
-
-      window.ondblclick = newViewer.clipper.createPlane;
-
       newViewer.shadowDropper.darkness = 1.5;
       setViewer(newViewer);
+
+      // Accès à AxeoBIM
+      const query = new URLSearchParams(window.location.search);
+      // const decodeQuery = decodeURI(query);
+      const code = query.get('code');
+      const state = query.get('state');
+
+      if (code && state) {
+        setLoading(true);
+        const accessToken = sessionStorage.getItem("axeobim_access_token");
+        const refreshToken = sessionStorage.getItem("axeobim_refresh_token");
+        const {
+          idDocument,
+          idEnvironnement,
+          access_token,
+          refresh_token,
+          lock_token,
+          file
+        } = await handleGetAxeoBimModel({ code, state, accessToken, refreshToken });
+        sessionStorage.setItem("axeobim_access_token", access_token);
+        sessionStorage.setItem("axeobim_refresh_token", refresh_token);
+        sessionStorage.setItem("axeobim_lock_token", lock_token);
+        sessionStorage.setItem("axeobim_id_document", idDocument);
+        sessionStorage.setItem("axeobim_id_environnement", idEnvironnement);
+        const ifcBlob = new Blob([file], { type: 'text/plain' });
+        const model = new File([ifcBlob], 'ifcFile');
+        onDrop({ files: [model], viewer: newViewer });
+        setLoading(false);
+      }
+
     }
     init();
   }, []);
 
-  const onDrop = async (files) => {
+  const onDrop = async ({ files, viewer }) => {
     if (files && viewer) {
       setLoading(true);
       // setViewer(null);
+      console.log('MODEL', files[0]);
 
       viewer.IFC.loader.ifcManager.setOnProgress((event) => {
         const percentage = Math.floor((event.loaded * 100) / event.total);
@@ -309,11 +260,12 @@ const IfcRenderer = () => {
       });
 
       const model = await viewer.IFC.loadIfc(files[0], true, ifcOnLoadError);
+
       model.material.forEach((mat) => (mat.side = 2));
       console.log("modelID", model.modelID);
       setModelID(model.modelID);
 
-      await createFill(model.modelID);
+      await createFill({ modelID: model.modelID, viewer });
       const lineMaterial = new LineBasicMaterial({ color: 0x555555 });
       const baseMaterial = new MeshBasicMaterial({ color: 0xffffff, side: 2 });
       viewer.edges.create(
@@ -323,7 +275,10 @@ const IfcRenderer = () => {
         baseMaterial
       );
 
-      await viewer.shadowDropper.renderShadow(model.modelID);
+      const newIfcModels = [...ifcModels, model];
+      setIfcModels(newIfcModels);
+
+      // await viewer.shadowDropper.renderShadow(model.modelID);
 
       const newSpatialStructure = await viewer.IFC.getSpatialStructure(
         model.modelID,
@@ -336,12 +291,13 @@ const IfcRenderer = () => {
       ];
       setSpatialStructures(updateSpatialStructures);
       console.log("updateSpatialStructure", updateSpatialStructures);
+
       setLoading(false);
     }
   };
 
   let fills = [];
-  async function createFill(modelID) {
+  async function createFill({ modelID, viewer }) {
     const wallsStandard = await viewer.IFC.loader.ifcManager.getAllItemsOfType(
       modelID,
       IFCWALLSTANDARDCASE,
@@ -387,6 +343,62 @@ const IfcRenderer = () => {
     fills.push(viewer.filler.create(`${modelID}`, modelID, ids, material));
   }
 
+  const handleGetAxeoBimModel = async ({ code, state, accessToken, refreshToken }) => {
+    try {
+      console.log('code', code)
+      const res = await axios({
+        method: "post",
+        url: `${REACT_APP_THIRD_PARTY_API}/axeobim/getModel`,
+        headers: {
+          "Content-Type": "application/json"
+        },
+        data: {
+          code,
+          state,
+          accessToken,
+          refreshToken
+        }
+      })
+      console.log('res.data', res.data);
+
+      return res.data;
+      // const rawResponse = await fetch(files[0].link);
+      // sessionStorage.setItem("axeobim_access_token", res.data.@);
+      // sessionStorage.setItem("axeobim_refresh_token", res.data.refresh_token);
+      // sessionStorage.setItem("axeobim_token_type", res.data.token_type);
+    } catch (err) {
+      console.log('err', err)
+    }
+  }
+
+  const handleUpdateAxeoBimModel = async () => {
+    try {
+      const accessToken = sessionStorage.getItem("axeobim_access_token");
+      const refreshToken = sessionStorage.getItem("axeobim_refresh_token");
+      const lockToken = sessionStorage.getItem("axeobim_lock_token");
+      const idDocument = sessionStorage.getItem("axeobim_id_document");
+      const idEnvironnement = sessionStorage.getItem("axeobim_id_environnement");
+      const res = await axios({
+        method: "put",
+        url: `${REACT_APP_THIRD_PARTY_API}/axeobim/updateModel`,
+        headers: {
+          "Content-Type": "application/json"
+        },
+        data: {
+          idDocument,
+          idEnvironnement,
+          accessToken,
+          refreshToken,
+          lockToken
+        }
+      })
+      console.log('res.data', res.data);
+    } catch (err) {
+      console.log('err', err)
+    }
+  }
+
+
   const ifcOnLoadError = async (err) => {
     alert(err.toString());
   };
@@ -394,24 +406,36 @@ const IfcRenderer = () => {
   const select = (viewer, setModelID, modelID, expressID, pick = true) => {
     if (pick) viewer.IFC.pickIfcItemsByID(modelID, expressID);
     setModelID(modelID);
-  }
+  };
 
   const handleClick = async () => {
+    console.log(
+      "viewer.IFC.loader.ifcManager.subsets",
+      viewer.IFC.loader.ifcManager.subsets
+    );
     if (showContextMenu) {
       setShowContextMenu(false);
     }
 
-    const found = await viewer.IFC.pickIfcItem(true, 1);
+    const found = await viewer.IFC.pickIfcItem(false, 1);
 
     if (found == null || found == undefined) {
       await viewer.IFC.unpickIfcItems();
-      setEids([]);
-      return
-    };
+      if (eids.length > 0) {
+        setEids([]);
+      }
+
+      return;
+    }
     setModelID(found.modelID);
-    setEids([found.id]);
+
+    console.log("eids ==>", eids);
+    if (eids[0] !== found.id) {
+      setEids([found.id]);
+    }
+
     select(viewer, setModelID, found.modelID, found.id, false);
-    console.log('found.id', found.id)
+    console.log("found.id", found.id);
     setSelectedElementID(found.id);
 
     // await getElementProperties({
@@ -425,8 +449,16 @@ const IfcRenderer = () => {
     dropzoneRef.current.open();
   };
 
-  const handleToggleClipping = () => {
-    viewer.clipper.active = !viewer.clipper.active;
+  const handleShowCuts = () => {
+    setShowCuts(!showCuts);
+  };
+
+  const handleShowDrawings = () => {
+    setShowDrawings(!showDrawings);
+  };
+
+  const handleShowMeasures = () => {
+    setShowMeasures(!showMeasures);
   };
 
   const handleShowModels = () => {
@@ -434,14 +466,18 @@ const IfcRenderer = () => {
   };
 
   const handleCapture = () => {
-    const link = document.createElement('a');
-    link.href = viewer.context.renderer.newScreenshot(false, undefined, new Vector2(4000, 4000));
+    const link = document.createElement("a");
+    link.href = viewer.context.renderer.newScreenshot(
+      false,
+      undefined,
+      new Vector2(4000, 4000)
+    );
     const date = new Date();
     link.download = `capture-${date}.jpeg`;
     document.body.appendChild(link);
     link.click();
     link.remove();
-  }
+  };
 
   const handleMeasure = () => {
     setShowMeasure(!showMeasure);
@@ -489,7 +525,7 @@ const IfcRenderer = () => {
   };
 
   const handleShowProperties = (selectedElemID) => {
-    console.log('selectedElemID', selectedElemID)
+    console.log("selectedElemID", selectedElemID);
     if (selectedElemID) {
       setSelectedElementID(selectedElemID);
     }
@@ -540,8 +576,16 @@ const IfcRenderer = () => {
     // });
   };
 
+  const handleShowCamera = () => {
+    setShowCamera(!showCamera);
+  };
+
   const handleOpenViewpoint = (viewpoint) => {
     viewer.currentViewpoint = viewpoint;
+  };
+
+  const handleRefreshPage = () => {
+    window.location.reload();
   };
 
   return (
@@ -561,7 +605,7 @@ const IfcRenderer = () => {
             />
           </DraggableCard>
         )}
-        {(showSpatialStructure) &&
+        {showSpatialStructure && (
           <DraggableCard width={700} height={600}>
             <SpatialStructure
               viewer={viewer}
@@ -573,9 +617,8 @@ const IfcRenderer = () => {
               setEids={setEids}
             />
           </DraggableCard>
-
-        }
-        {(selectedElementID && showProperties) && (
+        )}
+        {selectedElementID && showProperties && (
           <DraggableCard>
             <Properties
               viewer={viewer}
@@ -583,6 +626,7 @@ const IfcRenderer = () => {
               setShowProperties={setShowProperties}
               selectedElementID={selectedElementID}
               setSelectedElementID={setSelectedElementID}
+              handleShowMarketplace={handleShowMarketplace}
               addElementsNewProperties={addElementsNewProperties}
             />
           </DraggableCard>
@@ -595,9 +639,46 @@ const IfcRenderer = () => {
               handleShowMarketplace={handleShowMarketplace}
               specificApplication={specificApplication}
               setSpecificApplication={setSpecificApplication}
+              onDrop={onDrop}
               eids={eids}
               setEids={setEids}
               addElementsNewProperties={addElementsNewProperties}
+            />
+          </DraggableCard>
+        )}
+        {showCamera && (
+          <DraggableCard>
+            <Camera
+              viewer={viewer}
+              showCamera={showCamera}
+              setShowCamera={setShowCamera}
+            />
+          </DraggableCard>
+        )}
+        {showCuts && (
+          <DraggableCard>
+            <Cuts
+              viewer={viewer}
+              showCuts={showCuts}
+              setShowCuts={setShowCuts}
+            />
+          </DraggableCard>
+        )}
+        {showDrawings && (
+          <DraggableCard>
+            <Drawings
+              viewer={viewer}
+              showDrawings={showDrawings}
+              setShowDrawings={setShowDrawings}
+            />
+          </DraggableCard>
+        )}
+        {showMeasures && (
+          <DraggableCard>
+            <Measures
+              viewer={viewer}
+              showMeasures={showMeasures}
+              setShowMeasures={setShowMeasures}
             />
           </DraggableCard>
         )}
@@ -610,6 +691,16 @@ const IfcRenderer = () => {
               onClick={handleClickOpen}
             >
               <FolderOpenOutlinedIcon />
+            </ToolTipsElem>
+          </Grid>
+          <Grid item xs={12}>
+            <ToolTipsElem
+              title="Reinitialise la page"
+              placement="right"
+              className={classes.fab}
+              onClick={handleRefreshPage}
+            >
+              <RefreshIcon />
             </ToolTipsElem>
           </Grid>
           {/* <Grid item xs={12}>
@@ -632,45 +723,87 @@ const IfcRenderer = () => {
           </Grid> */}
           <Grid item xs={12}>
             <ToolTipsElem
-              title={
-                <div>
-                  <p>
-                    Outil de coupe :
-                    <br />
-                    1. Cliquez sur cet icône
-                    <br />
-                    2. Double-cliquez sur une surface, puis faites glisser les
-                    flèches
-                  </p>
-                  <img src={animationClippedVue} alt="animation" />
-                </div>
-              }
+              // title={
+              //   <div>
+              //     <p>
+              //       Outil de coupe :
+              //       <br />
+              //       1. Cliquez sur cet icône
+              //       <br />
+              //       2. Double-cliquez sur une surface, puis faites glisser les
+              //       flèches
+              //     </p>
+              //     <img src={animationClippedVue} alt="animation" />
+              //   </div>
+              // }
+              title="Coupes"
               placement="right"
               className={classes.fab}
-              onClick={handleToggleClipping}
+              // onClick={() => {
+              //   addGeometryToIfc({
+              //     viewer,
+              //     modelId: 0
+              //   })
+              // }}
+              onClick={handleShowCuts}
             >
               <CropIcon />
             </ToolTipsElem>
           </Grid>
           <Grid item xs={12}>
             <ToolTipsElem
-              title={
-                <div>
-                  <p>
-                    Outil de mesure :
-                    <br />
-                    1. Cliquez sur cet icône
-                    <br />
-                    2. Cliquez sur un point de départ de mesure
-                    <br />
-                    3. Cliquez sur un point d'arrivée
-                  </p>
-                  <img src={animationMeasureTool} alt="animation" />
-                </div>
-              }
+              title="Plans"
+              // title={
+              //   <div>
+              //     <p>
+              //       Outil de coupe :
+              //       <br />
+              //       1. Cliquez sur cet icône
+              //       <br />
+              //       2. Double-cliquez sur une surface, puis faites glisser les
+              //       flèches
+              //     </p>
+              //     <img src={animationClippedVue} alt="animation" />
+              //   </div>
+              // }
               placement="right"
               className={classes.fab}
-              onClick={handleMeasure}
+              onClick={handleShowDrawings}
+            >
+              <MapIcon />
+            </ToolTipsElem>
+          </Grid>
+          <Grid item xs={12}>
+            <ToolTipsElem
+              title="Camera"
+              placement="right"
+              className={classes.fab}
+              onClick={handleShowCamera}
+            >
+              <ControlCameraIcon />
+            </ToolTipsElem>
+          </Grid>
+          <Grid item xs={12}>
+            <ToolTipsElem
+              title="Outils de mesure"
+              // title={
+              //   <div>
+              //     <p>
+              //       Outil de mesure :
+              //       <br />
+              //       1. Cliquez sur cet icône
+              //       <br />
+              //       2. Cliquez sur un point de départ de mesure
+              //       <br />
+              //       3. Cliquez sur un point d'arrivée
+              //     </p>
+              //     <img src={animationMeasureTool} alt="animation" />
+              //   </div>
+              // }
+              placement="right"
+              className={classes.fab}
+              onClick={handleShowMeasures}
+            // onClick={handleMeasure}
             >
               <StraightenIcon />
             </ToolTipsElem>
@@ -740,6 +873,16 @@ const IfcRenderer = () => {
               <GetAppIcon />
             </ToolTipsElem>
           </Grid>
+          <Grid item xs={12}>
+            <ToolTipsElem
+              title="Exporter IFC"
+              placement="bottom"
+              className={classes.fab}
+              onClick={handleUpdateAxeoBimModel}
+            >
+              <ArrowCircleUpIcon />
+            </ToolTipsElem>
+          </Grid>
           {/* <Grid item xs={12}>
             <Fab
               size="small"
@@ -762,7 +905,7 @@ const IfcRenderer = () => {
             }}
             onClick={handleClick}
           />
-          <Dropzone ref={dropzoneRef} onDrop={onDrop}>
+          <Dropzone ref={dropzoneRef} onDrop={files => onDrop({ files, viewer })}>
             {({ getRootProps, getInputProps }) => (
               <div {...getRootProps({ className: "dropzone" })}>
                 <input {...getInputProps()} accept=".ifc" />
@@ -774,12 +917,15 @@ const IfcRenderer = () => {
       <ContextMenu
         viewer={viewer}
         showContextMenu={showContextMenu}
+        meshMaterials={meshMaterials}
         setShowContextMenu={setShowContextMenu}
         setShowProperties={setShowProperties}
         setShowSpatialStructure={setShowSpatialStructure}
         handleShowMarketplace={handleShowMarketplace}
         eids={eids}
         setEids={setEids}
+        subsets={subsets}
+        setSubsets={setSubsets}
       />
       <Backdrop
         style={{

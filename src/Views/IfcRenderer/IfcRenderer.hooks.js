@@ -29,6 +29,8 @@ import {
   MeshBasicMaterial
 } from 'three';
 import { TransformControls } from "three/examples/jsm/controls/TransformControls";
+import { BuildModel } from './Utils/addColumns';
+
 
 function UseIfcRenderer({
   eids,
@@ -50,6 +52,17 @@ function UseIfcRenderer({
 
     return db;
   }
+
+
+  const meshMaterials = {
+    invisibleMaterial: new MeshLambertMaterial({
+      transparent: true,
+      opacity: 0,
+      color: 0x77aaff,
+      depthTest: false,
+      side: DoubleSide,
+    })
+  };
 
   const getModels = async (db) => {
     let allModels = await db.models.toArray();
@@ -111,6 +124,12 @@ function UseIfcRenderer({
     // }
   }
 
+  const handleSelectedElementsIsolation = ({
+    eids
+  }) => {
+
+  }
+
   const select = (viewer, setModelID, modelID, expressID, pick = true) => {
     if (pick) viewer.IFC.pickIfcItemsByID(modelID, expressID);
     setModelID(modelID);
@@ -144,7 +163,7 @@ function UseIfcRenderer({
         if (pset.HasProperties && pset.HasProperties.length > 0) {
           const newPset = await Promise.all(pset.HasProperties.map(async (property) => {
             const label = property.Name.value;
-            const value = property.NominalValue ? property.NominalValue.value : null;
+            const value = property.NominalValue ? (property.NominalValue.value ? property.NominalValue.value : '') : '';
             return {
               label,
               value
@@ -214,6 +233,10 @@ function UseIfcRenderer({
     properties
   }) => {
     const allLines = await viewer.IFC.loader.ifcManager.state.api.GetAllLines(modelId);
+    console.log('allLines', allLines)
+    //const line = await viewer.IFC.loader.ifcManager.state.api.GetLine(modelId, 39116);
+    const line = await viewer.IFC.loader.ifcManager.state.api.GetRawLineData(modelId, 39116);
+    console.log('lines', line)
     let maxExpressId = 0;
     await Object.keys(allLines._data).forEach(index => {
       maxExpressId = Math.max(maxExpressId, allLines._data[index])
@@ -226,10 +249,10 @@ function UseIfcRenderer({
       let ifcPropertySingleValue = new WebIFC.IfcPropertySingleValue(
         propertyEid,
         IFCPROPERTYSINGLEVALUE,
-        str(`${property.property_name}`),
-        str(`${property.property_name}`),
-        ifcText(`${property.text_value}`),
-        empty(),
+        property.property_name ? str(`${property.property_name}`) : empty(),
+        property.property_definition ? str(`${property.property_definition}`) : empty(),
+        property.text_value ? ifcText(`${property.text_value}`) : empty(),
+        property.unit ? str(`${property.unit}`) : empty(),
       );
 
       let rawLineIfcPropertySingleValue = {
@@ -315,13 +338,27 @@ function UseIfcRenderer({
     }
   }
 
+  const addGeometryToIfc = async ({
+    viewer,
+    modelId
+  }) => {
+    const allLines = await viewer.IFC.loader.ifcManager.state.api.GetAllLines(modelId);
+    let maxExpressId = 0;
+    await Object.keys(allLines._data).forEach(index => {
+      maxExpressId = Math.max(maxExpressId, allLines._data[index])
+    });
+    const ifcApi = viewer.IFC.loader.ifcManager.state.api;
+    await BuildModel(modelId, ifcApi);
+  }
   return {
     models,
+    meshMaterials,
     initIndexDB,
     getModels,
     addTransformControls,
     getElementProperties,
-    addElementsNewProperties
+    addElementsNewProperties,
+    addGeometryToIfc
   }
 };
 
