@@ -203,7 +203,7 @@ const DatBimApi = ({
     return ["Connexion", "Portails", "Collections d'objets", "Objets"];
   }
 
-  async function handleSubmit(e) {
+  const handleSubmit = (e) => {
     e.preventDefault();
     const data = new FormData(e.target);
     localStorage.setItem("email", data.get("email"));
@@ -233,12 +233,12 @@ const DatBimApi = ({
       .catch(() => {
         setActiveStep(0);
       });
-  }
+  };
 
-  async function handleDisconnect() {
+  const handleDisconnect = async () => {
     sessionStorage.setItem("token", null);
     setActiveStep(0);
-  }
+  };
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);

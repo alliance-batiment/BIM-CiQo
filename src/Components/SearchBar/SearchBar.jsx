@@ -7,7 +7,7 @@ import RotateLeftIcon from "@material-ui/icons/RotateLeft";
 
 const useStyles = makeStyles((theme) => ({
   search: {
-    height: '3em',
+    height: "3em",
     padding: "2px 4px",
     display: "flex",
     alignItems: "center",
@@ -57,6 +57,13 @@ const SearchBar = ({
     }
   };
 
+  const onClickOneCheck = () => {
+    // console.log("input ==>", input);
+    if (input.length > 0) {
+      onClickOne();
+    }
+  };
+
   return (
     // <Input
     //     value={keyword}
@@ -78,7 +85,7 @@ const SearchBar = ({
         <Button
           className={classes.iconButton}
           disabled={disabled}
-          onClick={onClickOne}
+          onClick={onClickOneCheck}
         >
           <SearchIcon />
         </Button>

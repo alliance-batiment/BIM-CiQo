@@ -14,24 +14,28 @@ const TreeClass = ({ selectedPortal, getobjectsSetsBySelectedClass }) => {
     getTreeClassList();
   }, []);
 
-  async function getTreeClassList() {
-    setTreeClassListLoader(true);
-    const treeClassList = await axios.get(
-      `${process.env.REACT_APP_API_DATBIM}/portals/${selectedPortal}/tree-class`,
-      {
-        headers: {
-          "X-Auth-Token": sessionStorage.getItem("token"),
-        },
-      }
-    );
-    // console.log(treeClassList);
-    setClassListing({
-      id: "ClassList",
-      name: "Liste des classes",
-      children: treeClassList.data,
-    });
-    setTreeClassListLoader(false);
-  }
+  const getTreeClassList = async () => {
+    try {
+      setTreeClassListLoader(true);
+      const treeClassList = await axios.get(
+        `${process.env.REACT_APP_API_DATBIM}/portals/${selectedPortal}/tree-class`,
+        {
+          headers: {
+            "X-Auth-Token": sessionStorage.getItem("token"),
+          },
+        }
+      );
+      // console.log(treeClassList);
+      setClassListing({
+        id: "ClassList",
+        name: "Liste des classes",
+        children: treeClassList.data,
+      });
+      setTreeClassListLoader(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   // async function getObjectsSets() {
   //   setObjectsSetsListLoader(true);
