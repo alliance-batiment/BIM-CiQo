@@ -1,5 +1,24 @@
 import React, { useState } from 'react';
 import { Rnd } from 'react-rnd';
+import {
+  makeStyles
+} from "@material-ui/core";
+
+
+const useStyles = makeStyles((theme) => ({
+  draggableCard: {
+    position: 'absolute',
+    marginTop: '1em',
+    display: "flex",
+    left: '5em',
+    alignItems: "center",
+    justifyContent: "center",
+    // border: "solid 1px #ddd",
+    backgroundColor: "red",
+    zIndex: 100
+  }
+}));
+
 
 const style = {
   position: 'absolute',
@@ -19,6 +38,8 @@ const DraggableCard = ({
   width,
   height
 }) => {
+  const classes = useStyles();
+
   const [state, setState] = useState({
     width: width ? width : 400,
     height: height ? height : 400,
@@ -29,6 +50,7 @@ const DraggableCard = ({
   return (
     <Rnd
       style={style}
+      // className={classes.draggableCard}
       size={{ width: state.width, height: state.height }}
       position={{ x: state.x, y: state.y }}
       onDragStop={(e, d) => {
