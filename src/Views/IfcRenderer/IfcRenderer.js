@@ -893,7 +893,7 @@ const IfcRenderer = () => {
               <GetAppIcon />
             </ToolTipsElem>
           </Grid>
-          <Grid item xs={12}>
+          {/* <Grid item xs={12}>
             <ToolTipsElem
               title="Exporter IFC"
               placement="bottom"
@@ -902,7 +902,7 @@ const IfcRenderer = () => {
             >
               <ArrowCircleUpIcon />
             </ToolTipsElem>
-          </Grid>
+          </Grid> */}
           {/* <Grid item xs={12}>
             <ToolTipsElem
               title="Exporter IFC"
