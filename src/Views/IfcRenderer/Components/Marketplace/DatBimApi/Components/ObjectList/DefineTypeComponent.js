@@ -20,6 +20,7 @@ function DefineTypeComponent({
     selector.value_min,
     selector.value_max,
   ]);
+  const [inputValue, setInputValue] = useState("");
 
   const handleChangeIntervalCommitted = (event, selectorIndex) => {
     const newSelectorRequest = [...selectorsRequest];
@@ -86,6 +87,8 @@ function DefineTypeComponent({
 
   const searchSubmit = (event, selectorIndex) => {
     // console.log("selectorsRequest", selectorsRequest);
+    // console.log("event", event);
+    // console.log("selectorIndex", selectorIndex);
     const newSelectorRequest = [...selectorsRequest];
     let checkExist = false;
 
@@ -95,7 +98,10 @@ function DefineTypeComponent({
         newSelectorRequest.splice(index, 1, {
           id: select.id,
           type: select.type,
-          value: selectorIndex,
+          value:
+            inputValue && inputValue.length > 0
+              ? inputValue
+              : selectorIndex.props.value,
         });
       }
     });
@@ -104,12 +110,15 @@ function DefineTypeComponent({
       newSelectorRequest.push({
         id: selector.id,
         type: selector.type,
-        value: selectorIndex,
+        value:
+          inputValue && inputValue.length > 0
+            ? inputValue
+            : selectorIndex.props.value,
       });
     }
     setSelectorsRequest(newSelectorRequest);
-    console.log("selectorsRequest", newSelectorRequest);
-    console.log("selectorsIndex ==>", selectorIndex);
+    // console.log("selectorsRequest", newSelectorRequest);
+    // console.log("selectorsIndex ==>", selectorIndex);
   };
 
   const marks = [
@@ -143,7 +152,7 @@ function DefineTypeComponent({
           fullWidth
           value={selector.text_value}
           disabled={isStaticSelector(selector.selector_type)}
-          searchSubmit={searchSubmit}
+          onChange={setInputValue}
         />
       );
       break;
@@ -154,7 +163,7 @@ function DefineTypeComponent({
           fullWidth
           value={selector.text_value}
           disabled={isStaticSelector(selector.selector_type)}
-          searchSubmit={searchSubmit}
+          onChange={searchSubmit}
         >
           {selector.list_value.map((value, index) => (
             <MenuItem key={index} value={value}>

@@ -63,7 +63,7 @@ const PortalList = ({
           </Typography>
         </Grid>
         {portals?.map((portal) => (
-          <Grid item sm={4}>
+          <Grid item lg={4}>
             <Card
               key={portal.portal_id}
               className={`${classes.root} ${classes.datBimCard}`}

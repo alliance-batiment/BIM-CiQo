@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import {
   Grid,
   makeStyles,
-  Button,
   Typography,
   Step,
   StepLabel,
@@ -17,6 +16,8 @@ import PortalList from "./Components/PortalList/PortalList";
 import ObjectsSetsList from "./Components/ObjectsSetsList/ObjectsSetsList";
 import ObjectList from "./Components/ObjectList/ObjectList";
 import axios from "axios";
+import KeyboardBackspaceIcon from "@material-ui/icons/KeyboardBackspace";
+import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -27,15 +28,28 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   button: {
+    fontSize: 40,
+    borderRadius: "10%",
     backgroundColor: "#E6464D",
     color: "white",
     "&:hover": {
       backgroundColor: "#E6464D",
       color: "white",
+      cursor: "pointer",
     },
     "&:disabled": {
       opacity: 0.8,
       color: "white",
+    },
+  },
+  headerButton: {
+    // fontSize: 30,
+    borderRadius: "50%",
+    color: "#E6464D",
+    "&:hover": {
+      color: "white",
+      backgroundColor: "#E6464D",
+      cursor: "pointer",
     },
   },
   navigationBar: {
@@ -186,10 +200,10 @@ const DatBimApi = ({
   }
 
   function getSteps() {
-    return ["Connexion", "Portals", "Objects Sets", "Objects"];
+    return ["Connexion", "Portails", "Collections d'objets", "Objets"];
   }
 
-  async function handleSubmit(e) {
+  const handleSubmit = (e) => {
     e.preventDefault();
     const data = new FormData(e.target);
     localStorage.setItem("email", data.get("email"));
@@ -219,7 +233,12 @@ const DatBimApi = ({
       .catch(() => {
         setActiveStep(0);
       });
-  }
+  };
+
+  const handleDisconnect = async () => {
+    sessionStorage.setItem("token", null);
+    setActiveStep(0);
+  };
 
   async function handleDisconnect() {
     sessionStorage.setItem("token", null);
@@ -264,6 +283,7 @@ const DatBimApi = ({
             breadcrumbMap={breadcrumbMap}
             setBreadcrumbMap={setBreadcrumbMap}
             handleNext={handleNext}
+            setActiveStep={setActiveStep}
           />
         );
       case 3:
@@ -285,6 +305,7 @@ const DatBimApi = ({
             handleShowMarketplace={handleShowMarketplace}
             breadcrumbMap={breadcrumbMap}
             setBreadcrumbMap={setBreadcrumbMap}
+            setActiveStep={setActiveStep}
           />
         );
       default:
@@ -297,19 +318,20 @@ const DatBimApi = ({
       <Grid container>
         <Grid item xs={6} style={{ textAlign: "left" }}>
           {activeStep > 0 && (
-            <Button
+            <KeyboardBackspaceIcon
               disabled={activeStep === 0}
               onClick={handleBack}
-              className={classes.button}
-            >
-              Back
-            </Button>
+              className={classes.headerButton}
+            />
           )}
         </Grid>
         <Grid item xs={6} style={{ textAlign: "right" }}>
-          <Button className={classes.button} onClick={handleDisconnect}>
-            Déconnexion
-          </Button>
+          {activeStep > 0 && (
+            <PowerSettingsNewIcon
+              className={classes.headerButton}
+              onClick={handleDisconnect}
+            />
+          )}
         </Grid>
       </Grid>
       <Stepper

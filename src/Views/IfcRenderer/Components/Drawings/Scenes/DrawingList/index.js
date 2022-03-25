@@ -76,6 +76,7 @@ const DrawingList = ({
 
   const handleShowPlane = async (index) => {
     const current = drawings[index];
+    console.log('current', current);
     viewer.plans.goTo(0, current, true);
     //viewer.context.items.ifcModels.forEach(model => viewer.edges.toggle(`${model.modelID}`));
 

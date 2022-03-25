@@ -154,6 +154,9 @@ const IfcRenderer = () => {
   const [selectedElementId, setSelectedElementId] = useState(null);
   const [eids, setEids] = useState([]);
   const [subsets, setSubsets] = useState([]);
+  const [apiConnectors, setApiConnectors] = useState({
+    AxeoBim: false
+  });
 
   const [state, setState] = useState({
     bcfDialogOpen: false,
@@ -171,6 +174,7 @@ const IfcRenderer = () => {
     getElementProperties,
     addElementsNewProperties,
     addGeometryToIfc,
+    editIfcModel
   } = UseIfcRenderer({
     eids,
     setEids,
@@ -206,34 +210,9 @@ const IfcRenderer = () => {
       newViewer.shadowDropper.darkness = 1.5;
       setViewer(newViewer);
 
-      // Accès à AxeoBIM
-      const query = new URLSearchParams(window.location.search);
-      // const decodeQuery = decodeURI(query);
-      const code = query.get('code');
-      const state = query.get('state');
-
-      if (code && state) {
-        setLoading(true);
-        const accessToken = sessionStorage.getItem("axeobim_access_token");
-        const refreshToken = sessionStorage.getItem("axeobim_refresh_token");
-        const {
-          idDocument,
-          idEnvironnement,
-          access_token,
-          refresh_token,
-          lock_token,
-          file
-        } = await handleGetAxeoBimModel({ code, state, accessToken, refreshToken });
-        sessionStorage.setItem("axeobim_access_token", access_token);
-        sessionStorage.setItem("axeobim_refresh_token", refresh_token);
-        sessionStorage.setItem("axeobim_lock_token", lock_token);
-        sessionStorage.setItem("axeobim_id_document", idDocument);
-        sessionStorage.setItem("axeobim_id_environnement", idEnvironnement);
-        const ifcBlob = new Blob([file], { type: 'text/plain' });
-        const model = new File([ifcBlob], 'ifcFile');
-        onDrop({ files: [model], viewer: newViewer });
-        setLoading(false);
-      }
+      await handleInitAxeoBim({
+        viewer: newViewer
+      });
 
     }
     init();
@@ -341,6 +320,43 @@ const IfcRenderer = () => {
     material.polygonOffsetFactor = 10;
     material.polygonOffsetUnits = 1;
     fills.push(viewer.filler.create(`${modelID}`, modelID, ids, material));
+  }
+
+  const handleInitAxeoBim = async ({ viewer }) => {
+    // Accès à AxeoBIM
+    const query = new URLSearchParams(window.location.search);
+    // const decodeQuery = decodeURI(query);
+    const code = query.get('code');
+    const state = query.get('state');
+
+    if (code && state) {
+      setLoading(true);
+      const accessToken = sessionStorage.getItem("axeobim_access_token");
+      const refreshToken = sessionStorage.getItem("axeobim_refresh_token");
+      const {
+        idDocument,
+        idEnvironnement,
+        access_token,
+        refresh_token,
+        // lock_token,
+        file
+      } = await handleGetAxeoBimModel({ code, state, accessToken, refreshToken });
+      sessionStorage.setItem("axeobim_access_token", access_token);
+      sessionStorage.setItem("axeobim_refresh_token", refresh_token);
+      // sessionStorage.setItem("axeobim_lock_token", lock_token);
+      sessionStorage.setItem("axeobim_id_document", idDocument);
+      sessionStorage.setItem("axeobim_id_environnement", idEnvironnement);
+      const ifcBlob = new Blob([file], { type: 'text/plain' });
+      console.log('ifcBlob', ifcBlob)
+      const model = new File([ifcBlob], 'ifcFile');
+      console.log('model', model)
+      onDrop({ files: [model], viewer });
+      setLoading(false);
+      setApiConnectors({
+        ...apiConnectors,
+        AxeoBim: true
+      });
+    }
   }
 
   const handleGetAxeoBimModel = async ({ code, state, accessToken, refreshToken }) => {
@@ -538,12 +554,14 @@ const IfcRenderer = () => {
     // EXPORT FICHIER IFC
     const ifcData =
       await viewer.IFC.loader.ifcManager.state.api.ExportFileAsIFC(modelId);
+    console.log('ifcData', ifcData);
     let ifcDataString = new TextDecoder().decode(ifcData);
     // console.log('IFC STRING', ifcDataString);
     let newIfcDataString = ifcDataString.replace(
       "FILE_NAME('no name', '', (''), (''), 'web-ifc-export');",
       "FILE_NAME('0001','2011-09-07T12:40:02',(''),(''),'Autodesk Revit MEP 2011 - 1.0','20100326_1700 (Solibri IFC Optimizer)','');"
     );
+    console.log('newIfcDataString', newIfcDataString);
     // console.log('IFC STRING', newIfcDataString);
     var element = document.createElement("a");
     element.setAttribute(
@@ -643,6 +661,8 @@ const IfcRenderer = () => {
               eids={eids}
               setEids={setEids}
               addElementsNewProperties={addElementsNewProperties}
+              apiConnectors={apiConnectors}
+              setApiConnectors={setApiConnectors}
             />
           </DraggableCard>
         )}
@@ -750,10 +770,10 @@ const IfcRenderer = () => {
               <CropIcon />
             </ToolTipsElem>
           </Grid>
-          <Grid item xs={12}>
+          {/* <Grid item xs={12}>
             <ToolTipsElem
-              title="Plans"
-              // title={
+              title="Plans" */}
+          {/*// title={
               //   <div>
               //     <p>
               //       Outil de coupe :
@@ -765,14 +785,14 @@ const IfcRenderer = () => {
               //     </p>
               //     <img src={animationClippedVue} alt="animation" />
               //   </div>
-              // }
-              placement="right"
-              className={classes.fab}
-              onClick={handleShowDrawings}
-            >
-              <MapIcon />
-            </ToolTipsElem>
-          </Grid>
+              // } */}
+          {/* placement="right"
+               className={classes.fab}
+               onClick={handleShowDrawings}
+             >
+               <MapIcon />
+             </ToolTipsElem>
+           </Grid> */}
           <Grid item xs={12}>
             <ToolTipsElem
               title="Camera"
@@ -883,6 +903,18 @@ const IfcRenderer = () => {
               <ArrowCircleUpIcon />
             </ToolTipsElem>
           </Grid>
+          {/* <Grid item xs={12}>
+            <ToolTipsElem
+              title="Exporter IFC"
+              placement="bottom"
+              className={classes.fab}
+              onClick={() => editIfcModel({
+                viewer
+              })}
+            >
+              <ArrowCircleUpIcon />
+            </ToolTipsElem>
+          </Grid> */}
           {/* <Grid item xs={12}>
             <Fab
               size="small"

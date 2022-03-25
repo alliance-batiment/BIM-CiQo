@@ -115,7 +115,7 @@ const Cuts = ({
     if (showCuts) {
       await viewer.clipper.deletePlane(cut);
       const newCuts = cuts.splice(index, 1);
-      setCuts([...cuts]);
+      setCuts([...newCuts]);
     }
   }
 
