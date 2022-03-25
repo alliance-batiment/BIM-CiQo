@@ -311,21 +311,24 @@ const ObjectList = ({
                 : breadcrumbMap[0]}
             </Typography>
             <Typography color={selectedObjectName ? "inherit" : "textPrimary"}>
-              {breadcrumbMap[1].length > 15
-                ? breadcrumbMap[1].slice(0, 15) + "..."
-                : breadcrumbMap[1]}
+              {breadcrumbMap[1]}
             </Typography>
-            <Typography color={selectedObjectName ? "textPrimary" : "inherit"}>
+            {/* <Typography color={selectedObjectName ? "textPrimary" : "inherit"}>
               {selectedObject &&
                 (selectedObjectName.length > 20
                   ? selectedObjectName.slice(0, 20) + "..."
                   : selectedObjectName)}
-            </Typography>
+            </Typography> */}
           </Breadcrumbs>
-          {!selectedObject && (
-            <Typography color="inherit">Sélectionnez un objet</Typography>
-          )}
         </Grid>
+
+        <Grid item xs={12}>
+          <Typography variant="subtitle1" component="h3">
+            {`Sélectionnez un objet: ${selectedObjectName}`}
+          </Typography>
+        </Grid>
+
+
         <Grid item xs={12}>
           <SearchBar
             disabled={objectsLoader === true}
