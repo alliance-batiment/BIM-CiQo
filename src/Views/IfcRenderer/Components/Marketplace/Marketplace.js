@@ -323,19 +323,19 @@ const Marketplace = ({
         )}
         {(selectedApp === "AxeoBIM") && (
           <>
-            {apiConnectors[selectedApp] ?
-              <AxeoBim
-                viewer={viewer}
-                modelID={modelID}
-                eids={eids}
-                setEids={setEids}
-                addElementsNewProperties={addElementsNewProperties}
-                handleShowMarketplace={handleShowMarketplace}
-                setSelectedApp={setSelectedApp}
-              />
-              :
+            {/* {apiConnectors[selectedApp] ? */}
+            <AxeoBim
+              viewer={viewer}
+              modelID={modelID}
+              eids={eids}
+              setEids={setEids}
+              addElementsNewProperties={addElementsNewProperties}
+              handleShowMarketplace={handleShowMarketplace}
+              setSelectedApp={setSelectedApp}
+            />
+            {/* :
               <Alert severity="warning">La maquette doit provenir d'AxeoBIM pour activer cette application</Alert>
-            }
+            } */}
           </>
         )}
         {selectedApp === "DropBox" && (
