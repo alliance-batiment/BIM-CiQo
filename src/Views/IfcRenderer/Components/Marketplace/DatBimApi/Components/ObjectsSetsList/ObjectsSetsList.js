@@ -179,6 +179,7 @@ const ObjectsSetsList = ({
         0,
         eids[0]
       );
+      console.log('ifcClass', ifcClass)
       const treeClassList = await axios.get(
         `${process.env.REACT_APP_API_DATBIM}/classes/mapping/${ifcClass}`,
         {

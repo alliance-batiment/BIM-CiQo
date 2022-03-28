@@ -378,7 +378,7 @@ function UseIfcRenderer({
     console.log('ADD PROPERTY')
     if (expressIDs && expressIDs.length > 0) {
       if (properties.length > 0) {
-        addOrModifyDataToIfc({
+        addDataToIfc({
           viewer,
           modelId,
           expressIDs,
