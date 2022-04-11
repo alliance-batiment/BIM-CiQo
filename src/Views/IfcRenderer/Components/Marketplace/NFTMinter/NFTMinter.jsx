@@ -1,24 +1,39 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  Typography,
+  TextField,
+  Button,
   Grid,
   makeStyles,
-  Button,
-  Typography,
-  Step,
-  StepLabel,
-  withStyles,
-  Stepper,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  Card,
+  CardHeader,
+  CardActionArea,
+  CardContent,
+  Avatar,
+  IconButton,
+  Popover,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Badge,
+  Fab,
   CircularProgress
 } from "@material-ui/core";
 import StepConnector from "@material-ui/core/StepConnector";
 import clsx from "clsx";
 import Check from "@material-ui/icons/Check";
 import axios from "axios";
-import OAuth2Login from 'react-simple-oauth2-login';
-import { UseBsDD } from './BsDD.hooks';
-import Home from './Home';
-import Classification from './Classification';
-import Property from './Property';
+import { UseNFTMinter } from "./NFTMinter.hooks";
+import { MoralisProvider } from "react-moralis";
+import Home from './Components/Home';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -97,10 +112,12 @@ const useStyles = makeStyles((theme) => ({
 
 
 const {
-  REACT_APP_THIRD_PARTY_API
+  REACT_APP_THIRD_PARTY_API,
+  REACT_APP_MORALIS_APPLICATION_ID,
+  REACT_APP_MORALIS_SERVER_URL
 } = process.env;
 
-const BsDD = ({
+const NFTMinter = ({
   openProperties,
   projectId,
   objSelected,
@@ -123,52 +140,55 @@ const BsDD = ({
     addElementsNewProperties,
     handleShowMarketplace
   });
+
   const {
     state,
     setState,
-    handleGetCountry,
-    handleGetDomain,
-    handleGetTextSearchListOpen,
-    handleGetClassification,
-    handleGetProperty
-  } = UseBsDD({
+  } = UseNFTMinter({
     bimData
   });
 
+
+
+
+  // useEffect(() => {
+  //   const init = async () => {
+  //     // await handleTokenValidation();
+  //     // await handleListUploads();
+
+  //     try {
+  //       user = await authenticate({ signingMessage: "Hello World!" })
+  //     } catch (error) {
+  //       console.log(error)
+  //     }
+
+
+  //   }
+  //   init();
+  // }, []);
+
   return (
-    <Grid container>
-      {/* <Grid item xs={12}>
-        <Button
-          onClick={handleGetCountry}
-          className={classes.button}
-        >
-          Country
-        </Button>
-      </Grid>
-      <Grid item xs={12}>
-        <Button
-          onClick={handleGetDomain}
-          className={classes.button}
-        >
-          Domain
-        </Button>
-      </Grid> */}
-      {state.loading ?
-        <Grid container justify="center">
-          <CircularProgress color="inherit" />
-        </Grid>
-        :
+    <MoralisProvider
+      appId={REACT_APP_MORALIS_APPLICATION_ID}
+      serverUrl={REACT_APP_MORALIS_SERVER_URL}
+    >
+      <Grid container>
+        {/* {state.loading ?
+          <Grid container justify="center">
+            <CircularProgress color="inherit" />
+          </Grid>
+          : */}
         <>
           {state.views.value === "home" &&
             <Home
               state={state}
               setState={setState}
-              handleGetTextSearchListOpen={handleGetTextSearchListOpen}
-              handleGetClassification={handleGetClassification}
-              handleGetProperty={handleGetProperty}
+            // handleGetTextSearchListOpen={handleGetTextSearchListOpen}
+            // handleGetClassification={handleGetClassification}
+            // handleGetProperty={handleGetProperty}
             />
           }
-          {state.views.value === "classification" &&
+          {/* {state.views.value === "storage" &&
             <Classification
               state={state}
               setState={setState}
@@ -176,19 +196,19 @@ const BsDD = ({
               handleGetProperty={handleGetProperty}
             />
           }
-          {state.views.value === "property" &&
+          {state.views.value === "validation" &&
             <Property
               state={state}
               setState={setState}
               handleGetClassification={handleGetClassification}
               handleGetProperty={handleGetProperty}
             />
-          }
+          } */}
         </>
-      }
-
-    </Grid>
+        {/* } */}
+      </Grid>
+    </MoralisProvider>
   );
 };
 
-export default BsDD;
+export default NFTMinter;

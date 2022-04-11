@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
   },
   iconButton: {
     border: "none",
-    color: "#E6464D",
+    color: "black",
     // "&:hover": {
     //   backgroundColor: "#E6464D",
     //   color: "white",

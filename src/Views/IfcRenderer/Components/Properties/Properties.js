@@ -28,6 +28,7 @@ import ClearIcon from "@material-ui/icons/Clear";
 import DownloadIcon from '@mui/icons-material/Download';
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import * as WebIFC from "web-ifc";
+import { Grid } from "@mui/material";
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -88,7 +89,7 @@ const Properties = ({
   useEffect(() => {
     async function init() {
       console.log('selectedElementID', selectedElementID);
-
+      setIsLoading(true);
       if (selectedElementID) {
         const elementProperties = await viewer.IFC.getProperties(0, selectedElementID, true, true);
         console.log('elementProperties', elementProperties)
@@ -98,46 +99,85 @@ const Properties = ({
         const ifcClass = viewer.IFC.loader.ifcManager.getIfcType(0, selectedElementID);
         let psets = [];
         if (elementProperties.psets.length > 0) {
-          psets = await Promise.all(elementProperties.psets.map(async (pset) => {
+          for (let pset of elementProperties.psets) {
             if (pset.HasProperties && pset.HasProperties.length > 0) {
-              const newPset = await Promise.all(pset.HasProperties.map(async (property) => {
-                console.log('property', property)
+              const newPset = [];
+              for (let property of pset.HasProperties) {
                 const label = DecodeIFCString(property.Name.value);
                 const value = property.NominalValue ? DecodeIFCString(property.NominalValue.value) : '';
                 const unit = (property.Unit == null) ? '' : (property.Unit.value === 'null' ? '' : property.Unit.value);
                 console.log('unit', unit)
-                return {
+                newPset.push({
                   label,
                   value,
                   unit
-                }
-              }));
-
-              return {
+                });
+              }
+              psets.push({
                 ...pset,
                 HasProperties: [...newPset]
-              }
-            }
-            if (pset.Quantities && pset.Quantities.length > 0) {
-              const newPset = await Promise.all(pset.Quantities.map(async (property) => {
+              });
+            } else if (pset.Quantities && pset.Quantities.length > 0) {
+              const newPset = [];
+              for (let property of pset.Quantities) {
                 const label = DecodeIFCString(property.Name.value);
                 const value = property.NominalValue ? DecodeIFCString(property.NominalValue.value) : null;
-                return {
+                newPset.push({
                   label,
                   value
-                }
-              }));
-
-              return {
+                });
+              }
+              psets.push({
                 ...pset,
                 HasProperties: [...newPset]
-              }
+              });
+            } else {
+              psets.push({
+                ...pset,
+                HasProperties: []
+              });
             }
-            return {
-              ...pset,
-              HasProperties: []
-            }
-          }));
+          }
+          // psets = await Promise.all(elementProperties.psets.map(async (pset) => {
+          //   if (pset.HasProperties && pset.HasProperties.length > 0) {
+          //     const newPset = await Promise.all(pset.HasProperties.map(async (property) => {
+          //       console.log('property', property)
+          //       const label = DecodeIFCString(property.Name.value);
+          //       const value = property.NominalValue ? DecodeIFCString(property.NominalValue.value) : '';
+          //       const unit = (property.Unit == null) ? '' : (property.Unit.value === 'null' ? '' : property.Unit.value);
+          //       console.log('unit', unit)
+          //       return {
+          //         label,
+          //         value,
+          //         unit
+          //       }
+          //     }));
+
+          //     return {
+          //       ...pset,
+          //       HasProperties: [...newPset]
+          //     }
+          //   }
+          //   if (pset.Quantities && pset.Quantities.length > 0) {
+          //     const newPset = await Promise.all(pset.Quantities.map(async (property) => {
+          //       const label = DecodeIFCString(property.Name.value);
+          //       const value = property.NominalValue ? DecodeIFCString(property.NominalValue.value) : null;
+          //       return {
+          //         label,
+          //         value
+          //       }
+          //     }));
+
+          //     return {
+          //       ...pset,
+          //       HasProperties: [...newPset]
+          //     }
+          //   }
+          //   return {
+          //     ...pset,
+          //     HasProperties: []
+          //   }
+          // }));
 
         }
         const elem = {
@@ -150,7 +190,7 @@ const Properties = ({
         console.log('elem', elem)
         setIfcElement(elem);
       }
-
+      setIsLoading(false);
       // else {
       //   if (element) {
       //     console.log("elements", element);
@@ -323,7 +363,11 @@ const Properties = ({
         subheader={`${ifcElement ? ifcElement.type : "Undefined"}`}
       />
       {isLoading ? (
-        <CircularProgress color="inherit" />
+        <Grid container>
+          <Grid item xs={12} style={{ textAlign: 'center' }}>
+            <CircularProgress color="inherit" />
+          </Grid>
+        </Grid>
       ) : (
         <CardContent className={classes.cardContent}>
           {ifcElement && (

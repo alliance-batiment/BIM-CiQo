@@ -159,7 +159,9 @@ const PropertyList = ({
           }
         );
         //console.log("data", dataProp);
-        const temporaryFixProperties = dataProp.data.map((property) => {
+        const dataPropFilter = dataProp.data.filter(prop => prop.property_visibility);
+
+        const temporaryFixProperties = dataPropFilter.map((property) => {
           if (
             property.data_type_name === "Entier" &&
             property.text_value === "A saisir"
@@ -171,6 +173,7 @@ const PropertyList = ({
           }
           return property;
         });
+
         setPropertyListDefault(temporaryFixProperties);
         setProperties(temporaryFixProperties);
         console.log("temporaryFixProperties", temporaryFixProperties);
