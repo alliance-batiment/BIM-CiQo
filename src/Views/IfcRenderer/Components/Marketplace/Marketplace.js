@@ -37,6 +37,7 @@ import DropBox from "./DropBox/DropBox";
 import BsDD from "./BsDD";
 import AxeoBim from "./AxeoBim";
 import Web3 from "./Web3";
+import NFTMinter from "./NFTMinter";
 import TriStructure from "./TriStructure";
 import DropboxChooser from "react-dropbox-chooser";
 import OpenDthxLogo from "./img/OpenDthxLogo.png";
@@ -46,6 +47,7 @@ import BsDDLogo from "./img/bsDDLogo.png";
 import AxeoBimLogo from "./img/AxeoBimLogo.jpeg";
 import IpfsLogo from "./img/IpfsLogo.png";
 import TriStructureLogo from "./img/TriStructureLogo.png";
+import SearchBar from "../../../../Components/SearchBar";
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -98,12 +100,12 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: "white",
   },
   button: {
-    color: "#E6464D",
-    "&:hover": {
-      color: "white",
-      backgroundColor: "#E6464D",
-      cursor: "pointer",
-    },
+    color: "black",
+    // "&:hover": {
+    //   color: "white",
+    //   backgroundColor: "black",
+    //   cursor: "pointer",
+    // },
   },
 }));
 
@@ -146,7 +148,7 @@ const applications = [
   //   img: BsDDLogo,
   //   type: 'data',
   //   tags: ['Coming Soon'],
-  //   description: 'Espace permettant le partage et le stockage de fichier'
+  //   description: "The buildingSMART Data Dictionary (bSDD) is an online service that hosts classifications and their properties, allowed values, units and translations"
   // },
   // {
   //   name: 'Web3',
@@ -154,6 +156,20 @@ const applications = [
   //   type: 'Storage & Validation',
   //   tags: ['Coming Soon'],
   //   description: 'Espace permettant le partage et le stockage de fichier de manière décentralisée'
+  // },
+  // {
+  //   name: 'NFT Minter',
+  //   img: IpfsLogo,
+  //   type: 'NFT',
+  //   tags: ['Coming Soon'],
+  //   description: 'Application permettant de minter un NFT de sa maquette'
+  // },
+  // {
+  //   name: 'TriSensors',
+  //   img: TriStructureLogo,
+  //   type: 'iot',
+  //   tags: ['Coming Soon'],
+  //   description: "Gestion de capteurs IOT connectés à la maquette"
   // },
 ];
 
@@ -174,10 +190,13 @@ const Marketplace = ({
   const classes = useStyles();
   const [selectedApp, setSelectedApp] = useState("home");
   const [anchorEl, setAnchorEl] = useState(null);
+  const [filteredData, setFilteredData] = useState([]);
+  const [searchInput, setSearchInput] = useState("");
   const [url, setUrl] = useState("");
 
   useEffect(() => {
-    console.log("apiConnectors", apiConnectors)
+    console.log("apiConnectors", apiConnectors);
+    setFilteredData(applications);
     if (specificApplication) {
       setSelectedApp(specificApplication);
     } else {
@@ -193,15 +212,19 @@ const Marketplace = ({
     setAnchorEl(null);
   };
 
-  async function handleSuccess(files) {
-    // setUrl(files[0].thumbnailLink);
-    const rawResponse = await fetch(files[0].link);
-    const result = await rawResponse.text();
-    const ifcBlob = new Blob([result], { type: "text/plain" });
-    const file = new File([ifcBlob], "ifcFile");
-    onDrop([file]);
-  }
-
+  const handleSearchData = (input) => {
+    const dataList = [...applications];
+    if (dataList && dataList.length > 0) {
+      const newFilteredData = dataList.filter((data) => {
+        const searchResult = `${data.name} ${data.type} ${data.description}`
+          .toLowerCase()
+          .includes(input.toLowerCase());
+        return searchResult;
+      });
+      setSearchInput(input);
+      setFilteredData(newFilteredData);
+    }
+  };
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
 
@@ -267,7 +290,21 @@ const Marketplace = ({
       <CardContent className={classes.cardContent}>
         {selectedApp === "home" && (
           <Grid container spacing={3}>
-            {applications.map((application) => (
+            {(filteredData?.length > 0) &&
+              <>
+                <Grid item xs={12}>
+                  <SearchBar
+                    input={searchInput}
+                    onChange={handleSearchData}
+                    placeholder="Key words"
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography>{`Number of results: ${filteredData.length}`}</Typography>
+                </Grid>
+              </>
+            }
+            {filteredData?.map((application) => (
               <Grid item xs={4}>
                 <Card className={classes.application}>
                   <CardActionArea
@@ -353,6 +390,16 @@ const Marketplace = ({
         )}
         {selectedApp === "Web3" && (
           <Web3
+            viewer={viewer}
+            modelID={modelID}
+            eids={eids}
+            setEids={setEids}
+            addElementsNewProperties={addElementsNewProperties}
+            handleShowMarketplace={handleShowMarketplace}
+          />
+        )}
+        {selectedApp === "NFT Minter" && (
+          <NFTMinter
             viewer={viewer}
             modelID={modelID}
             eids={eids}

@@ -21,14 +21,17 @@ const useStyles = makeStyles((theme) => ({
 
 
 const style = {
-  position: 'absolute',
-  marginTop: '1em',
-  display: "flex",
-  left: '5em',
-  alignItems: "center",
-  justifyContent: "center",
+  // position: 'fixed',
+  // marginTop: '1em',
+  // display: "flex",
+  // left: '-5em',
+  // alignItems: "center",
+  // justifyContent: "center",
   // border: "solid 1px #ddd",
   // background: "#f0f0f0",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
   zIndex: 100
 };
 
@@ -43,8 +46,8 @@ const DraggableCard = ({
   const [state, setState] = useState({
     width: width ? width : 400,
     height: height ? height : 400,
-    x: 50,
-    y: 10
+    x: 80,
+    y: 20
   });
 
   return (
