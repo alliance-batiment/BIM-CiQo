@@ -19,6 +19,7 @@ import {
   IFCPROPERTYSINGLEVALUE
 } from 'web-ifc';
 import Dexie from "dexie";
+import axios from "axios";
 import {
   BoxGeometry,
   MeshLambertMaterial,
@@ -409,7 +410,7 @@ function UseIfcRenderer({
   }
 
   function DecodeIFCString(ifcString) {
-    const resultString = ifcString.replace(/'/g, "''");
+    const resultString = ifcString?.replace(/'/g, "''");
     // const ifcUnicodeRegEx = /\\X2\\(.*?)\\X0\\/uig;
     // let resultString = ifcString;
     // let match = ifcUnicodeRegEx.exec(ifcString);
@@ -450,86 +451,113 @@ function UseIfcRenderer({
       false
     );
     const eidIfcOwnerHistory = (ifcOwnerHistory && ifcOwnerHistory.length > 0) ? ifcOwnerHistory[0] : 1;
-
     const newPsetOpendthXEids = [];
     const newPsetIFCEids = [];
     const rawLineIfcRelDefinesByPropertiesList = [];
     let propertySingleValueExpressId = maxExpressId + 1;
-    for (let property of properties) {
-      propertySingleValueExpressId += 1;
-      console.log('propertySingleValueExpressId', propertySingleValueExpressId)
-      // Add or Edit IfcPropertySingleValue
-      const ifcPropertySingleValueEid = propertySingleValueExpressId;
-      const rawLineIfcPropertySingleValue = await addOrEditIfcPropertySingleValue({
-        expressID: ifcPropertySingleValueEid,
-        type: IFCPROPERTYSINGLEVALUE,
-        name: DecodeIFCString(property.property_name),
-        description: DecodeIFCString(property.property_definition),
-        value: property.text_value,
-        unit: property.unit
-      });
 
-      await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySingleValue);
+    for (let property of properties) {
 
       // Check if corresponding IfcPropertySet exists
       let existingPsetList = [];
+      let existingPropertyList = [];
       for (let expressID of expressIDs) {
         const element = await viewer.IFC.getProperties(0, expressID, true, true);
+
+        await element.psets?.map(pset => {
+          pset.HasProperties?.forEach(prop => {
+            if (prop.Name?.value === property.ifc_property_name || prop.Name?.value === property.property_name) {
+              existingPropertyList.push(prop);
+            }
+          })
+        })
+
         let existingPset = await element.psets?.find(pset => pset.Name?.value === property.ifc_class);
         if (existingPset) {
           existingPsetList.push(existingPset);
         }
       }
+      console.log(' existingPropertyList', existingPropertyList)
       console.log('property', existingPsetList)
-      if (existingPsetList.length > 0) {
-        const existingPset = existingPsetList[0];
-        const existingPsetPropertyEids = existingPset.HasProperties?.map(p => ref(p.expressID));
-        const rawLineIfcPropertySet = await addOrEditIfcPropertySet({
-          expressID: existingPset.expressID,
-          type: existingPset.type,
-          globalId: existingPset.GlobalId,
-          ifcOwnerHistoryExpressID: ref(eidIfcOwnerHistory),
-          name: existingPset.Name,
-          description: existingPset.Description,
-          ifcPropertySingleValueExpressIDs: [...existingPsetPropertyEids, ref(ifcPropertySingleValueEid)]
-        })
 
-        await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySet);
-      } else if (property.ifc_class !== 'Pset_opendthx' && property.ifc_class !== '') {
-        propertySingleValueExpressId += 1;
-        console.log('propertySingleValueExpressId', propertySingleValueExpressId)
-        const ifcPropertySetEid = propertySingleValueExpressId;
-        const rawLineIfcPropertySet = await addOrEditIfcPropertySet({
-          expressID: ifcPropertySetEid,
-          type: IFCPROPERTYSET,
-          globalId: str(Math.random().toString(16).substr(2, 8)),
-          ifcOwnerHistoryExpressID: ref(eidIfcOwnerHistory),
-          name: str(property.ifc_class),
-          ifcPropertySingleValueExpressIDs: [ref(ifcPropertySingleValueEid)]
+      if (existingPropertyList.length > 0) {
+        const existingProperty = existingPropertyList[0];
+        const rawLineIfcPropertySingleValue = await addOrEditIfcPropertySingleValue({
+          expressID: existingProperty.expressID,
+          type: IFCPROPERTYSINGLEVALUE,
+          name: DecodeIFCString(existingProperty.Name.value),
+          description: DecodeIFCString(property.property_definition),
+          value: property.text_value,
+          unit: property.unit
         });
 
-        await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySet);
-
-        newPsetIFCEids.push(ref(ifcPropertySetEid));
-
-        propertySingleValueExpressId += 1;
-        const rawLineIfcRelDefinesByProperties = await addOrEditIfcRelDefinesByProperties({
-          expressID: propertySingleValueExpressId,
-          type: IFCRELDEFINESBYPROPERTIES,
-          globalId: str(Math.random().toString(16).substr(2, 8)),
-          ifcOwnerHistoryExpressID: ref(eidIfcOwnerHistory),
-          name: empty(),
-          description: empty(),
-          elementsList: elementsList,
-          ifcPropertySetExpressID: ref(ifcPropertySetEid)
-        })
-        console.log('rawLineIfcRelDefinesByProperties', rawLineIfcRelDefinesByProperties)
-        // rawLineIfcRelDefinesByPropertiesList.push(rawLineIfcRelDefinesByProperties);
-        await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcRelDefinesByProperties);
-
+        await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySingleValue);
       } else {
-        newPsetOpendthXEids.push(ref(ifcPropertySingleValueEid));
+        propertySingleValueExpressId += 1;
+        console.log('propertySingleValueExpressId', propertySingleValueExpressId)
+        // Add or Edit IfcPropertySingleValue
+        const ifcPropertySingleValueEid = propertySingleValueExpressId;
+        const rawLineIfcPropertySingleValue = await addOrEditIfcPropertySingleValue({
+          expressID: ifcPropertySingleValueEid,
+          type: IFCPROPERTYSINGLEVALUE,
+          name: DecodeIFCString(property.ifc_property_name),
+          description: DecodeIFCString(property.property_definition),
+          value: property.text_value,
+          unit: property.unit
+        });
+
+        await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySingleValue);
+        if (existingPsetList.length > 0) {
+          const existingPset = existingPsetList[0];
+          const existingPsetPropertyEids = existingPset.HasProperties?.map(p => ref(p.expressID));
+          const rawLineIfcPropertySet = await addOrEditIfcPropertySet({
+            expressID: existingPset.expressID,
+            type: existingPset.type,
+            globalId: existingPset.GlobalId,
+            ifcOwnerHistoryExpressID: ref(eidIfcOwnerHistory),
+            name: existingPset.Name,
+            description: existingPset.Description,
+            ifcPropertySingleValueExpressIDs: [...existingPsetPropertyEids, ref(ifcPropertySingleValueEid)]
+          })
+
+          await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySet);
+        } else if (property.ifc_class !== 'Pset_opendthx' && property.ifc_class !== '') {
+          propertySingleValueExpressId += 1;
+          console.log('propertySingleValueExpressId', propertySingleValueExpressId)
+          const ifcPropertySetEid = propertySingleValueExpressId;
+          const rawLineIfcPropertySet = await addOrEditIfcPropertySet({
+            expressID: ifcPropertySetEid,
+            type: IFCPROPERTYSET,
+            globalId: str(Math.random().toString(16).substr(2, 8)),
+            ifcOwnerHistoryExpressID: ref(eidIfcOwnerHistory),
+            name: str(property.ifc_class),
+            ifcPropertySingleValueExpressIDs: [ref(ifcPropertySingleValueEid)]
+          });
+
+          await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySet);
+
+          newPsetIFCEids.push(ref(ifcPropertySetEid));
+
+          propertySingleValueExpressId += 1;
+          const rawLineIfcRelDefinesByProperties = await addOrEditIfcRelDefinesByProperties({
+            expressID: propertySingleValueExpressId,
+            type: IFCRELDEFINESBYPROPERTIES,
+            globalId: str(Math.random().toString(16).substr(2, 8)),
+            ifcOwnerHistoryExpressID: ref(eidIfcOwnerHistory),
+            name: empty(),
+            description: empty(),
+            elementsList: elementsList,
+            ifcPropertySetExpressID: ref(ifcPropertySetEid)
+          })
+          console.log('rawLineIfcRelDefinesByProperties', rawLineIfcRelDefinesByProperties)
+          // rawLineIfcRelDefinesByPropertiesList.push(rawLineIfcRelDefinesByProperties);
+          await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcRelDefinesByProperties);
+
+        } else {
+          newPsetOpendthXEids.push(ref(ifcPropertySingleValueEid));
+        }
       }
+
     }
     if (newPsetOpendthXEids.length > 0) {
       console.log('newPsetOpendthXEids', newPsetOpendthXEids)
@@ -704,9 +732,6 @@ function UseIfcRenderer({
   }
 
 
-
-
-
   const handleCheckNetworkStatus = () => {
     function changeStatus() {
       console.log('navigator.onLine', navigator.onLine)
@@ -724,6 +749,43 @@ function UseIfcRenderer({
     };
   }
 
+  const handleModelValidation = async () => {
+    try {
+      const ifcData = await state.viewer.IFC.loader.ifcManager.state.api.ExportFileAsIFC(0);
+      const blobIfc = new Blob([ifcData], { type: 'text/plain' });
+      const ifcFile = new File([blobIfc], 'ifcFile.png');
+
+
+      const formData = new FormData();
+      formData.append('files', ifcFile);
+
+
+      // const analysis = await axios.post(process.env.REACT_APP_API_URL, formData);
+      // console.log('projectId', analysis.data)
+      // const { projectId } = analysis.data;
+
+      // const logs = await axios.get(`${process.env.REACT_APP_API_URL}/log/${projectId}.json`);
+      // console.log('logs', logs.data);
+
+      // const jsonData = await JSON.parse(logs.data);
+      // console.log('jsonData', jsonData["level"]);
+      axios.post(process.env.REACT_APP_API_URL, formData).then((value) => {
+        console.log('value.data', value.data)
+        return value.data;
+      })
+        .then(async ({ projectId }) => {
+          const logs = await axios.get(`${process.env.REACT_APP_API_URL}/log/${projectId}.json`)
+          console.log('logs', logs)
+        }).catch((error) => {
+          console.log('ERRORRR', error)
+        })
+
+      // res.status(200).send(response.data);
+    } catch (err) {
+      // return res.status(500).json({ error: err });
+    }
+  }
+
   return {
     models,
     meshMaterials,
@@ -735,7 +797,8 @@ function UseIfcRenderer({
     addGeometryToIfc,
     editIfcModel,
     handleCheckNetworkStatus,
-    handleGetJsonData
+    handleGetJsonData,
+    handleModelValidation
   }
 };
 

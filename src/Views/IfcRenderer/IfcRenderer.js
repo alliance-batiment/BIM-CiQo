@@ -33,17 +33,20 @@ import ArrowCircleUpIcon from '@mui/icons-material/ArrowCircleUp';
 import GrainIcon from '@material-ui/icons/Grain';
 import StorageIcon from '@material-ui/icons/Storage';
 import MutltiSelectionIcon from '@mui/icons-material/ControlPointDuplicate';
+import FactCheckIcon from '@mui/icons-material/FactCheck';
 import Models from './Components/Models/Models';
 import BcfDialog from './Components/BcfDialog/BcfDialog';
 import Marketplace from './Components/Marketplace/Marketplace';
 import SpatialStructure from './Components/SpatialStructure/SpatialStructure';
 import Properties from './Components/Properties/Properties';
 import Camera from './Components/Camera/Camera';
+import Validation from './Components/Validation';
 import Cuts from './Components/Cuts';
 import Drawings from './Components/Drawings/Drawings';
 import Measures from './Components/Measures/Measures';
 import ContextMenu from './Components/ContextMenu';
 import DraggableCard from './Components/DraggableCard/DraggableCard';
+import { OrbitControlsGizmo } from "./Utils/OrbitControlsGizmo";
 import {
   IFCPROJECT,
   IFCSPACE,
@@ -148,6 +151,7 @@ const IfcRenderer = () => {
   const [showCuts, setShowCuts] = useState(false);
   const [showDrawings, setShowDrawings] = useState(false);
   const [showMeasures, setShowMeasures] = useState(false);
+  const [showValidation, setShowValidation] = useState(false);
   const [selectedElementID, setSelectedElementID] = useState(null);
   const [specificApplication, setSpecificApplication] = useState(false);
   const [percentageLoading, setPercentageLoading] = useState(0);
@@ -172,7 +176,15 @@ const IfcRenderer = () => {
     models: {
       value: 0,
       list: []
-    }
+    },
+    spatialStructures: {
+      value: {},
+      list: []
+    },
+    subsets: {
+      value: {},
+      list: []
+    },
   });
 
   const {
@@ -185,7 +197,8 @@ const IfcRenderer = () => {
     addGeometryToIfc,
     editIfcModel,
     handleCheckNetworkStatus,
-    handleGetJsonData
+    handleGetJsonData,
+    handleModelValidation
   } = UseIfcRenderer({
     eids,
     setEids,
@@ -220,8 +233,8 @@ const IfcRenderer = () => {
         "../../files/IFCWorker.js"
       );
 
-      const db = await initIndexDB();
-      const allModels = await getModels(db);
+      // const db = await initIndexDB();
+      // const allModels = await getModels(db);
       // console.log('allModels', allModels)
 
       // const model = await newViewer.IFC.loadIfcUrl(allModels[0].file, false);
@@ -231,10 +244,36 @@ const IfcRenderer = () => {
       // const newIfcModels = [...ifcModels, model];
       // setIfcModels(newIfcModels);
 
-      // // await newViewer.IFC.loader.ifcManager.useJSONData(true);
-      // // handleGetJsonData(newViewer, true);
-      // // await viewer.shadowDropper.renderShadow(model.modelID);
+      // const models = newViewer.context.items.ifcModels;
+      // const pickableModels = newViewer.context.items.pickableIfcModels;
 
+      // const ifcModel = models[0];
+      // const scene = ifcModel.parent;
+      // const ids = Array.from(
+      //   new Set(ifcModel.geometry.attributes.expressID.array)
+      // )
+
+      // let subset = newViewer.IFC.loader.ifcManager.createSubset({
+      //   modelID: ifcModel.modelID,
+      //   ids: ids,
+      //   scene,
+      //   applyBH: true,
+      //   removePrevious: true,
+      //   customID: 'ALL MODEL'
+      // });
+
+      // let index = pickableModels.indexOf(ifcModel);
+      // if (index >= 0) pickableModels.splice(index);
+      // index = models.indexOf(ifcModel);
+      // if (index >= 0) models.splice(index)
+
+      // scene.remove(model);
+      // models.push(subset);
+
+      // console.log('model', model);
+      // // pickableModels.push(subset);
+      // model.position.set(10, 10, 10)
+      // // subset.position.set(10, 10, 10)
       // const newSpatialStructure = await newViewer.IFC.getSpatialStructure(
       //   model.modelID,
       //   true
@@ -246,6 +285,7 @@ const IfcRenderer = () => {
       // setSpatialStructures(updateSpatialStructures);
 
       newViewer.shadowDropper.darkness = 1.5;
+      newViewer.clipper.active = true;
       setViewer(newViewer);
 
       await handleInitAxeoBim({
@@ -280,25 +320,33 @@ const IfcRenderer = () => {
         [IFCSTRUCTURALCURVEMEMBER]: true,
       });
 
-      const model = await viewer.IFC.loadIfc(files[0], true, ifcOnLoadError);
+      let model;
+      try {
+        model = await viewer.IFC.loadIfc(files[0], true, ifcOnLoadError);
+      } catch (error) {
+        console.log('error:', error)
+        return
+      }
 
-      model.material.forEach((mat) => (mat.side = 2));
-      console.log("modelID", model.modelID);
+
+      // model.material.forEach((mat) => (mat.side = 2));
+      // console.log("modelID", model.modelID);
       setModelID(model.modelID);
 
-      await createFill({ modelID: model.modelID, viewer });
-      const lineMaterial = new LineBasicMaterial({ color: 0x555555 });
-      const baseMaterial = new MeshBasicMaterial({ color: 0xffffff, side: 2 });
-      viewer.edges.create(
-        `${model.modelID}`,
-        model.modelID,
-        lineMaterial,
-        baseMaterial
-      );
+      // await createFill({ modelID: model.modelID, viewer });
+      // const lineMaterial = new LineBasicMaterial({ color: 0x555555 });
+      // const baseMaterial = new MeshBasicMaterial({ color: 0xffffff, side: 2 });
+      // viewer.edges.create(
+      //   `${model.modelID}`,
+      //   model.modelID,
+      //   lineMaterial,
+      //   baseMaterial
+      // );
 
       const newIfcModels = [...ifcModels, model];
       setIfcModels(newIfcModels);
 
+      // model.position.set(10, 10, 10)
       // await viewer.shadowDropper.renderShadow(model.modelID);
 
       const newSpatialStructure = await viewer.IFC.getSpatialStructure(
@@ -315,7 +363,11 @@ const IfcRenderer = () => {
 
       setState({
         ...state,
-        loading: false
+        loading: false,
+        spatialStructures: {
+          value: { ...newSpatialStructure },
+          list: [...updateSpatialStructures]
+        }
       });
     }
   };
@@ -684,6 +736,10 @@ const IfcRenderer = () => {
     setShowCamera(!showCamera);
   };
 
+  const handleShowValidation = () => {
+    setShowValidation(!showValidation);
+  };
+
   const handleOpenViewpoint = (viewpoint) => {
     viewer.currentViewpoint = viewpoint;
   };
@@ -722,6 +778,8 @@ const IfcRenderer = () => {
           {showSpatialStructure && (
             <DraggableCard width={700} height={600}>
               <SpatialStructure
+                state={state}
+                setState={setState}
                 viewer={viewer}
                 spatialStructures={spatialStructures}
                 handleShowSpatialStructure={handleShowSpatialStructure}
@@ -748,6 +806,8 @@ const IfcRenderer = () => {
           {showMarketplace && (
             <DraggableCard disableDragging={true} width={600} height={600}>
               <Marketplace
+                bimData={state}
+                setBimData={setState}
                 viewer={viewer}
                 modelID={modelID}
                 handleShowMarketplace={handleShowMarketplace}
@@ -789,6 +849,16 @@ const IfcRenderer = () => {
               />
             </DraggableCard>
           )}
+          {showValidation && (
+            <DraggableCard>
+              <Validation
+                bimData={state}
+                setBimData={setState}
+                showValidation={showValidation}
+                setShowValidation={setShowValidation}
+              />
+            </DraggableCard>
+          )}
           <Grid item xs={12}>
             <ToolTipsElem
               title="Importer IFC"
@@ -809,6 +879,16 @@ const IfcRenderer = () => {
               <RefreshIcon />
             </ToolTipsElem>
           </Grid>
+          {/* <Grid item xs={12}>
+            <ToolTipsElem
+              title="Système de validation de l'IFC"
+              placement="right"
+              className={classes.fab}
+              onClick={handleShowValidation}
+            >
+              <FactCheckIcon />
+            </ToolTipsElem>
+          </Grid> */}
           {/* <Grid item xs={12}>
             <Fab
               size="small"
@@ -856,10 +936,10 @@ const IfcRenderer = () => {
               <CropIcon />
             </ToolTipsElem>
           </Grid>
-          {/* <Grid item xs={12}>
+          <Grid item xs={12}>
             <ToolTipsElem
-              title="Plans" */}
-          {/*// title={
+              title="Plans"
+              // title={
               //   <div>
               //     <p>
               //       Outil de coupe :
@@ -871,14 +951,14 @@ const IfcRenderer = () => {
               //     </p>
               //     <img src={animationClippedVue} alt="animation" />
               //   </div>
-              // } */}
-          {/* placement="right"
-               className={classes.fab}
-               onClick={handleShowDrawings}
-             >
-               <MapIcon />
-             </ToolTipsElem>
-           </Grid> */}
+              // }
+              placement="right"
+              className={classes.fab}
+              onClick={handleShowDrawings}
+            >
+              <MapIcon />
+            </ToolTipsElem>
+          </Grid>
           <Grid item xs={12}>
             <ToolTipsElem
               title="Camera"
@@ -992,6 +1072,16 @@ const IfcRenderer = () => {
           </Grid> */}
           {/* <Grid item xs={12}>
             <ToolTipsElem
+              title="Modifications"
+              placement="bottom"
+              className={classes.fab}
+              onClick={handleModelValidation}
+            >
+              <StorageIcon />
+            </ToolTipsElem>
+          </Grid> */}
+          {/* <Grid item xs={12}>
+            <ToolTipsElem
               title="Exporter IFC"
               placement="bottom"
               className={classes.fab}
@@ -1001,1264 +1091,35 @@ const IfcRenderer = () => {
                 expressIDs: [5498],
                 properties: [
                   {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
+                    property_name: 'Existing property',
+                    text_value: 'True',
                     property_definition: 'deeeee',
                     // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
+                    ifc_class: 'Pset_WallCommon',
+                    ifc_property_name: 'LoadBearing',
+                    ifc_factor_multiplicator: '',
+                    ifc_type: ''
                   },
                   {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
+                    property_name: 'Existing Normalized Pset',
+                    text_value: 'value',
+                    property_definition: 'deeeee',
+                    // unit: 'm',
+                    ifc_class: 'Pset_WallCommon',
+                  },
+                  {
+                    property_name: 'New Normalized Pset',
+                    text_value: 'value',
                     property_definition: 'deeeee',
                     // unit: 'm',
                     ifc_class: 'Pset_Stair'
                   },
                   {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
+                    property_name: 'New property',
+                    text_value: 'value',
                     property_definition: 'deeeee1',
                     // unit: 'm',
                     ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 1',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_WallCommon'
-                  },
-                  {
-                    property_name: 'hello 2',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 3',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee1',
-                    // unit: 'm',
-                    ifc_class: ''
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
-                  },
-                  {
-                    property_name: 'hello 4',
-                    text_value: 'guigui',
-                    property_definition: 'deeeee',
-                    // unit: 'm',
-                    ifc_class: 'Pset_Stair'
                   }
                 ]
               })}

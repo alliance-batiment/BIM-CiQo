@@ -12,6 +12,9 @@ import ContentCopy from '@mui/icons-material/ContentCopy';
 import ContentPaste from '@mui/icons-material/ContentPaste';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import DescriptionIcon from '@material-ui/icons/Description';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import ViewInArIcon from '@mui/icons-material/ViewInAr';
 import Cloud from '@mui/icons-material/Cloud';
 import useContextMenu from "./ContextMenu.hooks";
 import OpenDthxLogo from './img/OpenDthxLogo.png';
@@ -118,6 +121,7 @@ const ContextMenu = ({
     // showFill(ifcModel.modelID, ids)
 
     setSubsets([...subsets, subset]);
+    setShowAllModel(true);
   }
 
 
@@ -194,9 +198,11 @@ const ContextMenu = ({
       'HIDE'
     );
 
-    hideFill(ifcModel.modelID, idsHidden)
+    // hideFill(ifcModel.modelID, idsHidden)
 
-    setSubsets([...subsets, { type, material: meshMaterials[type] }]);
+    // setSubsets([...subsets, { type, material: meshMaterials[type] }]);
+    setSubsets([...subsets, subset]);
+    setShowAllModel(false);
   }
 
   const handleIsolateElement = async () => {
@@ -245,9 +251,10 @@ const ContextMenu = ({
       'HIDE'
     );
 
-    hideFill(ifcModel.modelID, idsHidden)
+    // hideFill(ifcModel.modelID, idsHidden)
 
     setSubsets([...subsets, subset]);
+    setShowAllModel(false);
   }
 
   // const handleIsolateElement = async () => {
@@ -281,23 +288,36 @@ const ContextMenu = ({
           </ListItemIcon>
           <ListItemText>Sélection par Classe</ListItemText>
         </MenuItem>
-        {/* <MenuItem
-          onClick={handleIsolateElement}
-        >
-          <ListItemIcon>
-            <ContentCopy fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Isoler</ListItemText>
-        </MenuItem>
-        <MenuItem
-          onClick={handleShowModel}
-        >
-          <ListItemIcon>
-            <ContentPaste fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Cache</ListItemText>
-        </MenuItem>
-        <MenuItem>
+        {showAllModel ?
+          <>
+            <MenuItem
+              onClick={handleIsolateElement}
+            >
+              <ListItemIcon>
+                <VisibilityIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Isoler</ListItemText>
+            </MenuItem>
+            <MenuItem
+              onClick={handleHideElement}
+            >
+              <ListItemIcon>
+                <VisibilityOffIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Cache</ListItemText>
+            </MenuItem>
+          </>
+          :
+          <MenuItem
+            onClick={handleShowModel}
+          >
+            <ListItemIcon>
+              <ViewInArIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Rétablir Modèle</ListItemText>
+          </MenuItem>
+        }
+        {/* <MenuItem>
           <ListItemIcon>
             <ContentPaste fontSize="small" />
           </ListItemIcon>

@@ -38,6 +38,7 @@ import BsDD from "./BsDD";
 import AxeoBim from "./AxeoBim";
 import Web3 from "./Web3";
 import NFTMinter from "./NFTMinter";
+import TriChain from "./TriChain";
 import TriStructure from "./TriStructure";
 import DropboxChooser from "react-dropbox-chooser";
 import OpenDthxLogo from "./img/OpenDthxLogo.png";
@@ -46,6 +47,7 @@ import GoogleDriveLogo from "./img/GoogleDriveLogo.png";
 import BsDDLogo from "./img/bsDDLogo.png";
 import AxeoBimLogo from "./img/AxeoBimLogo.jpeg";
 import IpfsLogo from "./img/IpfsLogo.png";
+import TriChainLogo from "./img/TriChainLogo.png";
 import TriStructureLogo from "./img/TriStructureLogo.png";
 import SearchBar from "../../../../Components/SearchBar";
 
@@ -165,6 +167,13 @@ const applications = [
   //   description: 'Application permettant de minter un NFT de sa maquette'
   // },
   // {
+  //   name: 'TriChain',
+  //   img: TriChainLogo,
+  //   type: 'NFT',
+  //   tags: ['Coming Soon'],
+  //   description: "Marketplace décentralisée permettant de stocker et d'échanger des NFT pour le BIM"
+  // },
+  // {
   //   name: 'TriSensors',
   //   img: TriStructureLogo,
   //   type: 'iot',
@@ -176,6 +185,8 @@ const applications = [
 const { REACT_APP_DROPBOX_APP_KEY } = process.env;
 
 const Marketplace = ({
+  bimData,
+  setBimData,
   viewer,
   modelID,
   handleShowMarketplace,
@@ -400,6 +411,18 @@ const Marketplace = ({
         )}
         {selectedApp === "NFT Minter" && (
           <NFTMinter
+            viewer={viewer}
+            modelID={modelID}
+            eids={eids}
+            setEids={setEids}
+            addElementsNewProperties={addElementsNewProperties}
+            handleShowMarketplace={handleShowMarketplace}
+          />
+        )}
+        {selectedApp === "TriChain" && (
+          <TriChain
+            bimData={bimData}
+            setBimData={setBimData}
             viewer={viewer}
             modelID={modelID}
             eids={eids}

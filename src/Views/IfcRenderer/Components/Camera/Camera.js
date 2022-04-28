@@ -26,7 +26,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ClearIcon from '@mui/icons-material/Clear';
 import ControlCameraIcon from '@mui/icons-material/ControlCamera';
-
+import { FirstPersonControl } from 'web-ifc-viewer/dist/components/context/camera/FirstPersonControl';
+// import { FirstPersonControls } from 'three/examples/jsm/controls/FirstPersonControls';
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -95,8 +96,26 @@ const Camera = ({
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleCamera = (mode) => {
+    console.log('viewer', viewer)
     const ifcCamera = viewer.IFC.context.getIfcCamera();
-    ifcCamera.setNavigationMode(mode);
+    // const camera = viewer.IFC.context.ifcCamera.activeCamera;
+    const scene = viewer.IFC.context.scene.scene;
+    const renderer = viewer.IFC.context.renderer.renderer;
+    const camera = viewer.IFC.context.ifcCamera.activeCamera;
+    console.log('mode', mode)
+    console.log('ifcCamera', ifcCamera)
+    // ifcCamera.setNavigationMode(mode);
+    if (mode === 1) {
+      // const firstPersonControl = new FirstPersonControl(viewer.IFC.context, camera, ifcCamera);
+      // firstPersonControl.toggle(true);
+      // const firstPersonControl = new FirstPersonControls(camera, renderer);
+      // scene.add(firstPersonControl)
+      console.log('HELLO');
+      // window.addEventListener("keydown", this.down.bind(this));
+      // window.addEventListener("keyup", this.up.bind(this));
+      // window.addEventListener("keyright", this.right.bind(this));
+      // window.addEventListener("keyleft", this.left.bind(this));
+    }
   }
 
   const handleClick = (event) => {
