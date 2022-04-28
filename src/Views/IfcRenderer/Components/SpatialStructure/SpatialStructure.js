@@ -101,6 +101,8 @@ function a11yProps(index) {
 }
 
 const SpatialStructure = ({
+  state,
+  setState,
   viewer,
   spatialStructures,
   handleShowSpatialStructure,
@@ -213,9 +215,9 @@ const SpatialStructure = ({
         </TabPanel>
         <TabPanel value={value} index={1}>
           <ProjectTree
+            state={state}
+            setState={setState}
             viewer={viewer}
-            spatialStructures={spatialStructures}
-            handleShowSpatialStructure={handleShowSpatialStructure}
             handleShowMarketplace={handleShowMarketplace}
             handleShowProperties={handleShowProperties}
             eids={eids}

@@ -17,7 +17,13 @@ function UseNFTMinter({
     nft: {
       name: '',
       description: '',
-      file: ''
+      image: '',
+      file: '',
+      metadataHash: '',
+      rarible: {
+        tokenAddress: '',
+        tokenId: ''
+      }
     }
   })
 

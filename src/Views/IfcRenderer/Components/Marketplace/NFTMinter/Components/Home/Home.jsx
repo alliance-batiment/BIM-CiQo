@@ -28,10 +28,14 @@ import {
   Badge,
   Fab,
   TextField,
-  CircularProgress
+  CircularProgress,
+  Button
 } from "@material-ui/core";
 import SearchBar from "../../../../../../../Components/SearchBar";
 import { useMoralis } from 'react-moralis';
+import {
+  Vector2
+} from "three";
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -93,7 +97,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-
+const {
+  REACT_APP_THIRD_PARTY_API,
+  REACT_APP_MORALIS_APPLICATION_ID,
+  REACT_APP_MORALIS_SERVER_URL
+} = process.env;
 
 const Home = ({
   state,
@@ -102,6 +110,44 @@ const Home = ({
   const classes = useStyles();
 
   const { Moralis, authenticate, isAuthenticated, user } = useMoralis();
+  const [ifcImg, setIfcImg] = useState('https://ipfs.moralis.io:2053/ipfs/Qme9vKxXj1ym3BnTJUXwKjbBmUL7Cv9mYHTri6Y3izxVKr');
+
+  useEffect(() => {
+    const init = async () => {
+      await Moralis.start({
+        serverUrl: REACT_APP_MORALIS_SERVER_URL,
+        appId: REACT_APP_MORALIS_APPLICATION_ID
+      });
+      let user = Moralis.User.current();
+      console.log('user', user);
+      console.log('isAuthenticated', isAuthenticated)
+      if (!user) {
+        try {
+          user = await Moralis.authenticate({ signingMessage: 'Hello World' });
+          setState({
+            ...state,
+            loading: false
+          })
+        } catch (error) {
+          console.log(error);
+        }
+      } else {
+        await Moralis.enableWeb3();
+        setState({
+          ...state,
+          loading: false
+        })
+      }
+    }
+    init();
+    // if (isAuthenticated) {
+    //   setState({
+    //     ...state,
+    //     loading: false
+    //   })
+    // }
+  }, []);
+
   // if (!isAuthenticated) {
   //   return (
   //     <div>
@@ -110,23 +156,98 @@ const Home = ({
   //   );
   // }
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      setState({
-        ...state,
-        loading: false
-      })
-    }
-  }, []);
-
-  const handleChangeValue = (e, id) => {
+  const handleChangeValue = (e, key) => {
     setState({
       ...state,
       nft: {
-        [id]: e.target.value
+        ...state.nft,
+        [key]: e.target.value
       }
     })
   }
+
+  const handleCreateNFT = async (e) => {
+    const viewer = state.bimData.viewer;
+    const ifcData = await viewer.IFC.loader.ifcManager.state.api.ExportFileAsIFC(0);
+
+    const imgCapture = state.bimData.viewer.context.renderer.newScreenshot(
+      false,
+      undefined,
+      new Vector2(4000, 4000)
+    );
+
+    var byteString = atob(imgCapture.split(',')[1]);
+    var ab = new ArrayBuffer(byteString.length);
+    var ia = new Uint8Array(ab);
+    for (var i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    console.log('imageHash', imageHash);
+    const blobImg = new Blob([ab], { type: 'image/png' });
+    const data = new File([blobImg], 'ifcImg.png')
+    console.log('data', data);
+    const imageFile = new Moralis.File(data.name, data)
+    await imageFile.saveIPFS();
+    console.log('imageFile IPFS', imageFile.ipfs());
+    let imageHash = imageFile.hash();
+    setIfcImg(`${imageFile.ipfs()}`);
+    console.log('imageHash', imageHash);
+
+    let metadata = {
+      name: state.nft.name,
+      description: state.nft.description,
+      image: `/ipfs/${imageHash}`
+    }
+
+    const jsonFile = new Moralis.File("metadata.json", { base64: btoa(JSON.stringify(metadata)) });
+    await jsonFile.saveIPFS();
+    let metadataHash = jsonFile.hash();
+
+    setState({
+      ...state,
+      nft: {
+        ...state.nft,
+        metadataHash: `/ipfs/${metadataHash}`
+      }
+    })
+  }
+
+  const handleAddInRarible = async (e) => {
+
+    try {
+      let res = await Moralis.Plugins.rarible.lazyMint({
+        chain: 'rinkeby',
+        userAddress: user.get('ethAddress'),
+        tokenType: 'ERC721',
+        tokenUri: `ipfs://${state.nft.metadataHash}`,
+        royaltiesAmount: 5, // 0.05% royalty. Optional
+      });
+
+      let {
+        tokenAddress,
+        tokenId
+      } = res.data.result;
+      setState({
+        ...state,
+        nft: {
+          ...state.nft,
+          rarible: {
+            ...state.nft.rarible,
+            tokenAddress,
+            tokenId
+          }
+        }
+      });
+      e.preventDefault();
+      var a = document.createElement('a');
+      a.target = "_blank";
+      a.href = `https://rinkeby.rarible.com/token/${tokenAddress}:${tokenId}`;
+      a.click();
+    } catch (error) {
+      console.log(error)
+    }
+  };
+
 
   return (
     <Grid container spacing={3}>
@@ -152,12 +273,33 @@ const Home = ({
               onChange={(e) => handleChangeValue(e, 'description')} />
           </Grid>
           <Grid item xs={12}>
-            <TextField
-              type="file"
-              id="input"
-              accept="ifc"
-            // onChange={handleUploadFile}
-            >Import IFC</TextField>
+            <Button
+              className={classes.button}
+              onClick={handleCreateNFT}
+            >
+              Create NFT
+        </Button>
+          </Grid>
+          <Grid item xs={12}>
+            <Button
+              className={classes.button}
+              onClick={handleAddInRarible}
+            >
+              Rarible
+        </Button>
+            <a href={`https://rinkeby.rarible.com/token/${state.nft.rarible.tokenAddress}:${state.nft.rarible.tokenId}`} target="_blank">Rarible</a>
+          </Grid>
+          <Grid item xs={12}>
+            <Card className={classes.file}>
+              <CardActionArea
+              >
+                <CardMedia
+                  component="img"
+                  image={ifcImg}
+                  alt={"hello"}
+                />
+              </CardActionArea>
+            </Card>
           </Grid>
         </>
       }

@@ -98,6 +98,7 @@ const Cuts = ({
   }, []);
 
   const addClippingPlane = async () => {
+    console.log('viewer', viewer);
     viewer.clipper.createPlane();
     console.log('viewer.clipper.planes', viewer.clipper.planes)
     console.log('viewer.plans.planLists', viewer.plans.planLists)

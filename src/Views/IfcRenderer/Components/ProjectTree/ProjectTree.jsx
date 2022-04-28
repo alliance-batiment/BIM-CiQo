@@ -96,9 +96,9 @@ function a11yProps(index) {
 }
 
 const ProjectTree = ({
+  state,
+  setState,
   viewer,
-  spatialStructures,
-  handleShowSpatialStructure,
   handleShowMarketplace,
   handleShowProperties,
   eids,
@@ -109,6 +109,7 @@ const ProjectTree = ({
   const [expanded, setExpanded] = useState([]);
   const [expressIDList, setExpressIDList] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [spatialStructures, setSpatialStructures] = useState([...state.spatialStructures.list]);
 
   useEffect(() => {
     async function init() {

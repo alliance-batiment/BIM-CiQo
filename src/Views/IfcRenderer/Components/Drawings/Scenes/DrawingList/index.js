@@ -16,6 +16,10 @@ import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DownloadIcon from '@mui/icons-material/Download';
 import Drawing from 'dxf-writer';
+import { IFCWINDOW, IFCPLATE, IFCMEMBER, IFCWALL, IFCWALLSTANDARDCASE, IFCSLAB, IFCFURNISHINGELEMENT, IFCDOOR } from 'web-ifc';
+import { ClippingEdges } from 'web-ifc-viewer/dist/components/display/clipping-planes/clipping-edges';
+import { Color, LineBasicMaterial, MeshBasicMaterial } from 'three';
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -57,7 +61,6 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-
 const DrawingList = ({
   viewer
 }) => {
@@ -67,9 +70,13 @@ const DrawingList = ({
 
   useEffect(() => {
     const getDrawings = async () => {
-      await viewer.plans.computeAllPlanViews(0);
-      const planNames = Object.keys(viewer.plans.planLists[0]);
-      setDrawings(planNames)
+      try {
+        await viewer.plans.computeAllPlanViews(0);
+        const planNames = Object.keys(viewer.plans.planLists[0]);
+        setDrawings(planNames)
+      } catch (error) {
+        console.log(error)
+      }
     }
     getDrawings();
   }, []);
@@ -80,8 +87,8 @@ const DrawingList = ({
     viewer.plans.goTo(0, current, true);
     //viewer.context.items.ifcModels.forEach(model => viewer.edges.toggle(`${model.modelID}`));
 
-    viewer.shadowDropper.shadows[0].root.visible = false;
-    viewer.filler.fills[0].visible = false;
+    // viewer.shadowDropper.shadows[0].root.visible = false;
+    // viewer.filler.fills[0].visible = false;
   }
 
 
@@ -167,13 +174,13 @@ const DrawingList = ({
                 key={index}
                 secondaryAction={
                   <>
-                    <IconButton
+                    {/* <IconButton
                       edge="end"
                       aria-label="comments"
                       onClick={() => handleDxfPlane(drawing, index)}
                     >
                       <DownloadIcon />
-                    </IconButton>
+                    </IconButton> */}
                     <IconButton
                       edge="end"
                       aria-label="comments"
