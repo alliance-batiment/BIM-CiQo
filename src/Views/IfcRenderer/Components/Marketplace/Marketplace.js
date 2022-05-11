@@ -169,7 +169,7 @@ const applications = [
   // {
   //   name: 'TriChain',
   //   img: TriChainLogo,
-  //   type: 'NFT',
+  //   type: 'storage & blockchain',
   //   tags: ['Coming Soon'],
   //   description: "Marketplace décentralisée permettant de stocker et d'échanger des NFT pour le BIM"
   // },
@@ -301,7 +301,7 @@ const Marketplace = ({
       <CardContent className={classes.cardContent}>
         {selectedApp === "home" && (
           <Grid container spacing={3}>
-            {(filteredData?.length > 0) &&
+            {(filteredData?.length >= 0) &&
               <>
                 <Grid item xs={12}>
                   <SearchBar

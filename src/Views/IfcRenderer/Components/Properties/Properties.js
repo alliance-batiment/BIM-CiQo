@@ -23,9 +23,10 @@ import {
 } from "@material-ui/core";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
+import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import AddIcon from "@material-ui/icons/Add";
 import ClearIcon from "@material-ui/icons/Clear";
-import DownloadIcon from '@mui/icons-material/Download';
+import DownloadIcon from "@mui/icons-material/Download";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import * as WebIFC from "web-ifc";
 import { Grid } from "@mui/material";
@@ -39,9 +40,15 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
   },
   cardInfo: {
-    zIndex: 100,
-    width: "100%",
-    height: "100%",
+    position: "absolute",
+    top: "0px",
+    zIndex: 1000,
+    left: "0px",
+    right: "0px",
+    width: ({ width }) => width,
+    height: ({ height }) => height,
+    maxWidth: window.innerWidth - 175,
+    maxHeight: window.innerHeight - 175
   },
   cardContent: {
     height: "90%",
@@ -67,15 +74,25 @@ const Properties = ({
   setSelectedElementID,
   setShowProperties,
   handleShowMarketplace,
-  addElementsNewProperties,
+  addElementsNewProperties
 }) => {
-  const classes = useStyles();
   const [ifcElement, setIfcElement] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [expandedView, setExpandedView] = useState(false);
+  const [viewWidth, setViewWidth] = useState("400px");
+  const [viewHeight, setViewHeight] = useState("400px");
+
+  // const props = { width: { viewWidth }, height: { viewHeight } };
+  const props = {
+    width: viewWidth,
+    height: viewHeight,
+  };
+
+  const classes = useStyles(props);
 
   function DecodeIFCString(ifcString) {
-    const ifcUnicodeRegEx = /\\X2\\(.*?)\\X0\\/uig;
+    const ifcUnicodeRegEx = /\\X2\\(.*?)\\X0\\/giu;
     let resultString = ifcString;
     let match = ifcUnicodeRegEx.exec(ifcString);
     while (match) {
@@ -85,18 +102,44 @@ const Properties = ({
     }
     return resultString;
   }
+  useEffect(() => {
+    const getWidth = () => window.innerWidth - 175;
+    const getHeight = () => window.innerHeight - 175;
+    const resizeListener = () => {
+      if (!expandedView) {
+        setViewWidth(getWidth());
+        setViewHeight(getHeight());
+      }
+    }
+    window.addEventListener('resize', resizeListener)
+
+    return () => {
+      window.removeEventListener('resize', resizeListener);
+    }
+  }, []);
 
   useEffect(() => {
     async function init() {
-      console.log('selectedElementID', selectedElementID);
+      console.log("selectedElementID", selectedElementID);
       setIsLoading(true);
       if (selectedElementID) {
-        const elementProperties = await viewer.IFC.getProperties(0, selectedElementID, true, true);
-        console.log('elementProperties', elementProperties)
+        const elementProperties = await viewer.IFC.getProperties(
+          0,
+          selectedElementID,
+          true,
+          true
+        );
+        // console.log("elementProperties", elementProperties);
 
-        console.log('viewer', viewer)
-        console.log('ifcClass', viewer.IFC.loader.ifcManager.getIfcType(0, selectedElementID))
-        const ifcClass = viewer.IFC.loader.ifcManager.getIfcType(0, selectedElementID);
+        // console.log("viewer", viewer);
+        // console.log(
+        //   "ifcClass",
+        //   viewer.IFC.loader.ifcManager.getIfcType(0, selectedElementID)
+        // );
+        const ifcClass = viewer.IFC.loader.ifcManager.getIfcType(
+          0,
+          selectedElementID
+        );
         let psets = [];
         if (elementProperties.psets.length > 0) {
           for (let pset of elementProperties.psets) {
@@ -104,37 +147,46 @@ const Properties = ({
               const newPset = [];
               for (let property of pset.HasProperties) {
                 const label = DecodeIFCString(property.Name.value);
-                const value = property.NominalValue ? DecodeIFCString(property.NominalValue.value) : '';
-                const unit = (property.Unit == null) ? '' : (property.Unit.value === 'null' ? '' : property.Unit.value);
-                console.log('unit', unit)
+                const value = property.NominalValue
+                  ? DecodeIFCString(property.NominalValue.value)
+                  : "";
+                const unit =
+                  property.Unit == null
+                    ? ""
+                    : property.Unit.value === "null"
+                      ? ""
+                      : property.Unit.value;
+                // console.log("unit", unit);
                 newPset.push({
                   label,
                   value,
-                  unit
+                  unit,
                 });
               }
               psets.push({
                 ...pset,
-                HasProperties: [...newPset]
+                HasProperties: [...newPset],
               });
             } else if (pset.Quantities && pset.Quantities.length > 0) {
               const newPset = [];
               for (let property of pset.Quantities) {
                 const label = DecodeIFCString(property.Name.value);
-                const value = property.NominalValue ? DecodeIFCString(property.NominalValue.value) : null;
+                const value = property.NominalValue
+                  ? DecodeIFCString(property.NominalValue.value)
+                  : null;
                 newPset.push({
                   label,
-                  value
+                  value,
                 });
               }
               psets.push({
                 ...pset,
-                HasProperties: [...newPset]
+                HasProperties: [...newPset],
               });
             } else {
               psets.push({
                 ...pset,
-                HasProperties: []
+                HasProperties: [],
               });
             }
           }
@@ -178,16 +230,17 @@ const Properties = ({
           //     HasProperties: []
           //   }
           // }));
-
         }
         const elem = {
           ...elementProperties,
-          name: elementProperties.Name ? elementProperties.Name.value : 'NO NAME',
-          type: ifcClass ? ifcClass : 'NO TYPE',
+          name: elementProperties.Name
+            ? elementProperties.Name.value
+            : "NO NAME",
+          type: ifcClass ? ifcClass : "NO TYPE",
           modelID: 0,
-          psets
+          psets,
         };
-        console.log('elem', elem)
+        // console.log("elem", elem);
         setIfcElement(elem);
       }
       setIsLoading(false);
@@ -205,8 +258,8 @@ const Properties = ({
     const modelID = element.modelID;
     const ids = [element.expressID];
     console.log("viewer", viewer);
-    const mesh = await viewer.IFC.visibility.getMesh(modelID);
-    console.log("mesh", mesh);
+    // const mesh = await viewer.IFC.visibility.getMesh(modelID);
+    // console.log("mesh", mesh);
   };
 
   const handleClick = (event) => {
@@ -218,26 +271,26 @@ const Properties = ({
   };
 
   const handleAddProperties = async () => {
-    handleShowMarketplace('Open dthX');
+    handleShowMarketplace("Open dthX");
     setShowProperties(false);
-  }
+  };
 
   const downloadFile = ({ data, fileName, fileType }) => {
     // Create a blob with the data we want to download as a file
     const blob = new Blob([data], { type: fileType });
     // Create an anchor element and dispatch a click event on it
     // to trigger a download
-    const a = document.createElement('a')
-    a.download = fileName
-    a.href = window.URL.createObjectURL(blob)
-    const clickEvt = new MouseEvent('click', {
+    const a = document.createElement("a");
+    a.download = fileName;
+    a.href = window.URL.createObjectURL(blob);
+    const clickEvt = new MouseEvent("click", {
       view: window,
       bubbles: true,
       cancelable: true,
-    })
-    a.dispatchEvent(clickEvt)
-    a.remove()
-  }
+    });
+    a.dispatchEvent(clickEvt);
+    a.remove();
+  };
 
   // const handleExportToJson = e => {
   //   e.preventDefault()
@@ -248,12 +301,38 @@ const Properties = ({
   //   })
   // }
 
-  const handleExportToCsv = e => {
-    e.preventDefault()
+  const handleExpandView = (e) => {
+    const width = window.innerWidth - 175;
+    const height = window.innerHeight - 175;
+
+    if (!expandedView) {
+      setExpandedView(true);
+      setViewWidth(width);
+      setViewHeight(height);
+      setAnchorEl(null);
+    } else if (expandedView) {
+      setExpandedView(false);
+      setViewWidth("400px");
+      setViewHeight("400px");
+      setAnchorEl(null);
+    }
+  };
+
+  const handleExportToCsv = (e) => {
+    e.preventDefault();
     // Headers for each column
     let propertiesCsv = [];
-    let headers = ['modelId', 'elementName', 'elementClass', 'globalId', 'expressId', 'psetName', 'propertyName', 'propertyValue'].join(',');
-    propertiesCsv.push(headers)
+    let headers = [
+      "modelId",
+      "elementName",
+      "elementClass",
+      "globalId",
+      "expressId",
+      "psetName",
+      "propertyName",
+      "propertyValue",
+    ].join(",");
+    propertiesCsv.push(headers);
     // Convert Properties data to a csv
 
     // let propertiesCsv = ifcElement.psets?.map(pset => pset.HasProperties?.reduce((acc, property) => {
@@ -263,24 +342,37 @@ const Properties = ({
     //   return acc
     // }, []));
 
-    console.log('ifcElement', ifcElement)
-    ifcElement.psets?.forEach(pset => pset.HasProperties?.forEach((property) => {
-      const modelID = `${ifcElement.modelID}`;
-      const elementName = `${ifcElement.name}`;
-      const elementClass = `${ifcElement.type}`;
-      const globalID = `${ifcElement.GlobalId.value}`;
-      const expressID = `${ifcElement.expressID}`;
-      const psetName = `${pset.Name.value}`;
-      const { label: propertyName, value: propertyValue } = property;
-      propertiesCsv.push([modelID, elementName, elementClass, globalID, expressID, psetName, propertyName, propertyValue].join(','))
-    }));
+    // console.log("ifcElement", ifcElement);
+    ifcElement.psets?.forEach((pset) =>
+      pset.HasProperties?.forEach((property) => {
+        const modelID = `${ifcElement.modelID}`;
+        const elementName = `${ifcElement.name}`;
+        const elementClass = `${ifcElement.type}`;
+        const globalID = `${ifcElement.GlobalId.value}`;
+        const expressID = `${ifcElement.expressID}`;
+        const psetName = `${pset.Name.value}`;
+        const { label: propertyName, value: propertyValue } = property;
+        propertiesCsv.push(
+          [
+            modelID,
+            elementName,
+            elementClass,
+            globalID,
+            expressID,
+            psetName,
+            propertyName,
+            propertyValue,
+          ].join(",")
+        );
+      })
+    );
 
     downloadFile({
-      data: [...propertiesCsv].join('\n'),
+      data: [...propertiesCsv].join("\n"),
       fileName: `${ifcElement ? ifcElement.name : "Undefined"}.csv`,
-      fileType: 'text/csv',
-    })
-  }
+      fileType: "text/csv",
+    });
+  };
 
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
@@ -327,19 +419,23 @@ const Properties = ({
               </ListItem> */}
               {ifcElement && (
                 <>
-                  <ListItem
-                    button
-                    onClick={handleExportToCsv}
-                  >
+                  <ListItem button onClick={handleExpandView}>
+                    <ListItemIcon>
+                      <FullscreenIcon />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        expandedView ? "Réduire fenêtre" : "Agrandir fenêtre"
+                      }
+                    />
+                  </ListItem>
+                  <ListItem button onClick={handleExportToCsv}>
                     <ListItemIcon>
                       <DownloadIcon />
                     </ListItemIcon>
                     <ListItemText primary="Télécharger CSV" />
                   </ListItem>
-                  <ListItem
-                    button
-                    onClick={handleAddProperties}
-                  >
+                  <ListItem button onClick={handleAddProperties}>
                     <ListItemIcon>
                       <AddIcon />
                     </ListItemIcon>
@@ -347,10 +443,13 @@ const Properties = ({
                   </ListItem>
                 </>
               )}
-              <ListItem button onClick={() => {
-                setShowProperties(false);
-                setSelectedElementID(null);
-              }}>
+              <ListItem
+                button
+                onClick={() => {
+                  setShowProperties(false);
+                  // setSelectedElementID(null); Empêche réouverture de la view après fermeture
+                }}
+              >
                 <ListItemIcon>
                   <ClearIcon />
                 </ListItemIcon>
@@ -364,7 +463,7 @@ const Properties = ({
       />
       {isLoading ? (
         <Grid container>
-          <Grid item xs={12} style={{ textAlign: 'center' }}>
+          <Grid item xs={12} style={{ textAlign: "center" }}>
             <CircularProgress color="inherit" />
           </Grid>
         </Grid>

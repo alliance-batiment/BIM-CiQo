@@ -8,6 +8,9 @@ import {
   withStyles,
   Stepper,
 } from "@material-ui/core";
+import {
+  Alert
+} from "@mui/material";
 import StepConnector from "@material-ui/core/StepConnector";
 import clsx from "clsx";
 import Check from "@material-ui/icons/Check";
@@ -166,6 +169,10 @@ const DatBimApi = ({
   const [selectedObjectSet, setSelectedObjectSet] = useState(null);
   const [selectedObjectSetName, setSelectedObjectSetName] = useState(null);
   const [selectedObject, setSelectedObject] = useState(null);
+  const [validation, setValidation] = useState({
+    status: true,
+    message: 'Connected',
+  });
 
   useEffect(() => {
     const init = async () => {
@@ -230,7 +237,12 @@ const DatBimApi = ({
         sessionStorage.setItem("token", r.data.token);
         handleNext();
       })
-      .catch(() => {
+      .catch((error) => {
+        console.log('error', error);
+        setValidation({
+          status: false,
+          message: 'Erreur de connection'
+        })
         setActiveStep(0);
       });
   };
@@ -358,6 +370,11 @@ const DatBimApi = ({
       <Typography className={classes.instructions}>
         {getStepContent(activeStep)}
       </Typography>
+      {(!validation.status) &&
+        <Grid item xs={12}>
+          <Alert severity={'error'}>{`${validation.message}`}</Alert>
+        </Grid>
+      }
     </>
   );
 };

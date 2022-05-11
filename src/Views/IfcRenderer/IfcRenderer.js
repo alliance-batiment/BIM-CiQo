@@ -224,10 +224,10 @@ const IfcRenderer = () => {
       setApiWebIfc(ifcApi);
 
       newViewer.IFC.setWasmPath("../../files/");
-      // newViewer.IFC.applyWebIfcConfig({
-      //   COORDINATE_TO_ORIGIN: true,
-      //   USE_FAST_BOOLS: false
-      // });
+      newViewer.IFC.applyWebIfcConfig({
+        COORDINATE_TO_ORIGIN: true,
+        USE_FAST_BOOLS: false
+      });
       newViewer.IFC.loader.ifcManager.useWebWorkers(
         true,
         "../../files/IFCWorker.js"
@@ -240,9 +240,9 @@ const IfcRenderer = () => {
       // const model = await newViewer.IFC.loadIfcUrl(allModels[0].file, false);
 
 
-      // const model = await newViewer.IFC.loadIfcUrl('../../files/Duplex.ifc');
-      // const newIfcModels = [...ifcModels, model];
-      // setIfcModels(newIfcModels);
+      const model = await newViewer.IFC.loadIfcUrl('../../files/Duplex.ifc');
+      const newIfcModels = [...ifcModels, model];
+      setIfcModels(newIfcModels);
 
       // const models = newViewer.context.items.ifcModels;
       // const pickableModels = newViewer.context.items.pickableIfcModels;
@@ -850,7 +850,7 @@ const IfcRenderer = () => {
             </DraggableCard>
           )}
           {showValidation && (
-            <DraggableCard>
+            <DraggableCard >
               <Validation
                 bimData={state}
                 setBimData={setState}
@@ -879,16 +879,17 @@ const IfcRenderer = () => {
               <RefreshIcon />
             </ToolTipsElem>
           </Grid>
-          {/* <Grid item xs={12}>
+          <Grid item xs={12}>
             <ToolTipsElem
               title="Système de validation de l'IFC"
               placement="right"
               className={classes.fab}
+              disabled={!state.alertStatus}
               onClick={handleShowValidation}
             >
               <FactCheckIcon />
             </ToolTipsElem>
-          </Grid> */}
+          </Grid>
           {/* <Grid item xs={12}>
             <Fab
               size="small"

@@ -71,9 +71,11 @@ const DrawingList = ({
   useEffect(() => {
     const getDrawings = async () => {
       try {
+        setLoading(true);
         await viewer.plans.computeAllPlanViews(0);
         const planNames = Object.keys(viewer.plans.planLists[0]);
-        setDrawings(planNames)
+        setDrawings(planNames);
+        setLoading(false);
       } catch (error) {
         console.log(error)
       }

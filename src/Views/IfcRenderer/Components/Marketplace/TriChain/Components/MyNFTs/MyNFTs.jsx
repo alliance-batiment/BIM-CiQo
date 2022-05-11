@@ -140,25 +140,44 @@ export default function MyNFTs({
     // })
     setValidation({
       ...validation,
-      loading: true
+      loading: true,
+      message: 'Connection to the wallet...'
     })
     try {
-      const web3Modal = new Web3Modal()
+      const web3Modal = new Web3Modal({
+        cacheProvider: true,
+      })
 
       const connection = await web3Modal.connect()
       const provider = new ethers.providers.Web3Provider(connection)
       const { chainId } = await provider.getNetwork()
-
+      setValidation({
+        ...validation,
+        loading: true,
+        message: 'Check blockchain availability...'
+      })
       const existingChainId = state.connection.chainIds.find(cId => cId === chainId);
       if (existingChainId) {
         const signer = provider.getSigner()
-
+        setValidation({
+          ...validation,
+          loading: true,
+          message: 'Get contract informations...'
+        })
         const marketplaceContract = new ethers.Contract(marketplaceAddress, NFTMarketplace.abi, signer)
         const data = await marketplaceContract.fetchMyNFTs()
+        setValidation({
+          ...validation,
+          loading: true,
+          message: 'Get NFTs...'
+        })
         const items = await Promise.all(data.map(async i => {
           const tokenURI = await marketplaceContract.tokenURI(i.tokenId)
+          console.log('tokenURI', tokenURI)
           const meta = await axios.get(tokenURI)
+          console.log('meta', meta)
           let price = ethers.utils.formatUnits(i.price.toString(), 'ether')
+          console.log('price', price)
           let item = {
             price,
             tokenId: i.tokenId.toNumber(),
@@ -169,7 +188,6 @@ export default function MyNFTs({
           }
           return item
         }))
-        console.log('items', items)
         setState({
           ...state,
           nfts: {
@@ -244,20 +262,20 @@ export default function MyNFTs({
           <Alert severity={`error`}>{`${validation.message}`}</Alert>
         </Grid>
       }
-      {(validation.loading && !state.nfts.list.length) ?
-        <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
-          {/* <CircularProgress color="inherit" /> */}
-          <Typography gutterBottom variant="h5" component="div">
-            No NFTs owned
-          </Typography>
-        </Grid>
+      {(validation.loading) ?
+        <>
+          <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
+            <CircularProgress color="inherit" />
+          </Grid>
+          <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
+            <Typography gutterBottom variant="h5" component="div">
+              {`${validation.message}`}
+            </Typography>
+          </Grid>
+        </>
         :
         <>
-          {(validation.loading) ?
-            <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
-              <CircularProgress color="inherit" />
-            </Grid>
-            :
+          {(state.nfts.list.length) ?
             <>
               {state.nfts.list.map((nft, i) => (
                 <Grid item xs={4} key={i}>
@@ -294,6 +312,14 @@ export default function MyNFTs({
                   </Card>
                 </Grid>
               ))}
+            </>
+            :
+            <>
+              <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
+                <Typography gutterBottom variant="h5" component="div">
+                  No NFTs owned
+                </Typography>
+              </Grid>
             </>
           }
         </>

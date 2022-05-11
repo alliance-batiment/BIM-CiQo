@@ -177,7 +177,7 @@ const TriChain = ({
                 <Tab label="Home" {...a11yProps(0)} />
                 <Tab label="Sell NFT" {...a11yProps(1)} />
                 <Tab label="My NFTs" {...a11yProps(2)} />
-                <Tab label="Dashboard" {...a11yProps(3)} />
+                {/* <Tab label="Dashboard" {...a11yProps(3)} /> */}
               </Tabs>
             </Box>
             <TabPanel value={state.views.index} index={0}>
@@ -199,12 +199,12 @@ const TriChain = ({
                 setState={setState}
               />
             </TabPanel>
-            <TabPanel value={state.views.index} index={3}>
+            {/* <TabPanel value={state.views.index} index={3}>
               <Dashboard
                 state={state}
                 setState={setState}
               />
-            </TabPanel>
+            </TabPanel> */}
           </Box>
         }
         {state.views.value === "resell-nft" &&
@@ -249,7 +249,6 @@ export default TriChain;
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
-  console.log('index', index);
   return (
     <div
       role="tabpanel"
