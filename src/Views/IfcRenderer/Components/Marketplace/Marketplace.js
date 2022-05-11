@@ -160,7 +160,6 @@ const applications = [
   //   tags: ['Coming Soon'],
   //   description: 'Espace permettant le partage et le stockage de fichier'
   // },
-<<<<<<< HEAD
   {
     name: "AxeoBIM",
     img: AxeoBimLogo,
@@ -168,15 +167,6 @@ const applications = [
     tags: ["Coming Soon"],
     description: "Espace permettant le partage et le stockage de fichier",
   },
-=======
-  // {
-  //   name: 'AxeoBIM',
-  //   img: AxeoBimLogo,
-  //   type: 'storage',
-  //   tags: ['Coming Soon'],
-  //   description: 'Espace permettant le partage et le stockage de fichier'
-  // },
->>>>>>> a2bb4ee9 (save)
   // {
   //   name: 'bsDD',
   //   img: BsDDLogo,
