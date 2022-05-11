@@ -35,7 +35,9 @@ const DropBox = ({
   })
 
   async function handleSuccess(files) {
-    const rawResponse = await fetch(files[0].link);
+    const rawResponse = await fetch(files[0].link, {
+      mode: 'no-cors'
+    });
     const result = await rawResponse.text();
     const ifcBlob = new Blob([result], { type: 'text/plain' });
     const file = new File([ifcBlob], 'ifcFile');
@@ -45,8 +47,8 @@ const DropBox = ({
   return (
     <>
       <Grid container>
-        <Grid item xs={3} />
-        <Grid item xs={6}>
+        {/* <Grid item xs={3} /> */}
+        <Grid item xs={12}>
           <DropboxChooser
             appKey={REACT_APP_DROPBOX_APP_KEY}
             success={handleSuccess}
@@ -82,7 +84,7 @@ const DropBox = ({
               </CardActionArea>
             </Card>
           </DropboxChooser>
-          <Grid item xs={3} />
+          {/* <Grid item xs={3} /> */}
         </Grid>
       </Grid>
     </>

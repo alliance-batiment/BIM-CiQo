@@ -172,6 +172,7 @@ export default function ResellNFT({
       loading: true
     })
     const viewer = state.bimData.viewer;
+    console.log('formInput', formInput.file)
     const model = await viewer.IFC.loadIfcUrl(`${formInput.file}`);
 
     const newSpatialStructure = await viewer.IFC.getSpatialStructure(

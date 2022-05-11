@@ -158,7 +158,8 @@ export default function Home({
   async function loadNFTs() {
     setValidation({
       ...validation,
-      loading: true
+      loading: true,
+      message: 'Connection to the wallet...'
     })
     /* create a generic provider and query for unsold market items */
     // const provider = await new ethers.providers.JsonRpcProvider(state.connection.provider);
@@ -168,14 +169,22 @@ export default function Home({
     const provider = new ethers.providers.Web3Provider(connection)
     const { chainId } = await provider.getNetwork()
     const existingChainId = state.connection.chainIds.find(cId => cId === chainId);
-    console.log('existingChainId', existingChainId)
+    setValidation({
+      ...validation,
+      loading: true,
+      message: 'Check blockchain availability...'
+    })
     if (provider && existingChainId) {
       let contract;
       let data;
       let error;
       try {
         contract = new ethers.Contract(marketplaceAddress, NFTMarketplace.abi, provider)
-        console.log('contract', contract)
+        setValidation({
+          ...validation,
+          loading: true,
+          message: 'Get market items...'
+        })
         data = await contract.fetchMarketItems()
         /*
      *  map over items returned from smart contract and format 
@@ -184,7 +193,7 @@ export default function Home({
 
         const items = await Promise.all(data.map(async i => {
           const tokenUri = await contract.tokenURI(i.tokenId)
-          const meta = await axios.get(tokenUri)
+          const meta = await axios.get(tokenUri);
           let price = ethers.utils.formatUnits(i.price.toString(), 'ether')
           let item = {
             price,
@@ -199,7 +208,7 @@ export default function Home({
         }))
         setValidation({
           ...validation,
-          loading: true
+          loading: false
         })
         setState({
           ...state,
@@ -248,24 +257,52 @@ export default function Home({
       ...validation,
       loading: true
     })
-    /* needs the user to sign the transaction, so will use Web3Provider and sign it */
-    const web3Modal = new Web3Modal()
-    const connection = await web3Modal.connect()
-    const provider = new ethers.providers.Web3Provider(connection)
-    const signer = provider.getSigner()
-    const contract = new ethers.Contract(marketplaceAddress, NFTMarketplace.abi, signer)
-
-    /* user will be prompted to pay the asking proces to complete the transaction */
-    const price = ethers.utils.parseUnits(nft.price.toString(), 'ether')
-    const transaction = await contract.createMarketSale(nft.tokenId, {
-      value: price
-    })
-    await transaction.wait()
-    loadNFTs()
-    setValidation({
-      ...validation,
-      loading: false
-    })
+    try {
+      /* needs the user to sign the transaction, so will use Web3Provider and sign it */
+      const web3Modal = new Web3Modal()
+      const connection = await web3Modal.connect()
+      setValidation({
+        ...validation,
+        loading: true,
+        message: 'Connection to the wallet...'
+      })
+      const provider = new ethers.providers.Web3Provider(connection)
+      const signer = provider.getSigner()
+      const contract = new ethers.Contract(marketplaceAddress, NFTMarketplace.abi, signer)
+      setValidation({
+        ...validation,
+        loading: true,
+        message: 'Get contract informations...'
+      })
+      /* user will be prompted to pay the asking proces to complete the transaction */
+      const price = ethers.utils.parseUnits(nft.price.toString(), 'ether')
+      const transaction = await contract.createMarketSale(nft.tokenId, {
+        value: price
+      })
+      setValidation({
+        ...validation,
+        loading: true,
+        message: 'Transaction pending...'
+      })
+      await transaction.wait()
+      setValidation({
+        ...validation,
+        loading: true,
+        message: 'Transaction validated...'
+      })
+      loadNFTs()
+      setValidation({
+        ...validation,
+        loading: false
+      })
+    } catch (error) {
+      setValidation({
+        ...validation,
+        loading: false,
+        status: false,
+        message: `Transaction canceled`
+      })
+    }
   }
 
   return (
@@ -275,10 +312,15 @@ export default function Home({
           <Alert severity={`${validation.status ? 'success' : 'error'}`}>{`${validation.message}`}</Alert>
         </Grid>
         : <>
-          {(validation.status && validation.loading && !state.nfts.list.length) ?
-            <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
-              <CircularProgress color="inherit" />
-            </Grid>
+          {(validation.status && validation.loading) ?
+            <>
+              <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
+                <CircularProgress color="inherit" />
+              </Grid>
+              <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
+                <Typography gutterBottom variant="h5" component="div">{`${validation.message}`}    </Typography>
+              </Grid>
+            </>
             :
             <>
               {state.nfts?.list?.length === 0 &&
@@ -323,7 +365,7 @@ export default function Home({
                             </Typography>
                           </Grid>
                           <Grid item xs={12}>
-                            <Button onClick={() => buyNft(nft)} className={classes.button}>Buy</Button>
+                            <Button onClick={() => buyNft(nft)} className={classes.button}>Get Model</Button>
                           </Grid>
                         </Grid>
                       </CardActions>

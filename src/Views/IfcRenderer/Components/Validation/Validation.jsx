@@ -1,15 +1,24 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import {
   makeStyles,
-  Fab
+  Fab,
+  Button
 } from "@material-ui/core";
+import { useDropzone } from 'react-dropzone';
 import {
   Card,
   CardHeader,
   CardContent,
   Avatar,
   IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableContainer,
+  TableRow,
   List,
+  Paper,
   ListItem,
   ListItemButton,
   ListItemIcon,
@@ -22,12 +31,15 @@ import {
   Radio,
   Popover,
   Grid,
-  Button
+  LinearProgress,
+  Box,
+  Typography
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ClearIcon from '@mui/icons-material/Clear';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
+import DownloadIcon from '@mui/icons-material/Download';
 import { FirstPersonControl } from 'web-ifc-viewer/dist/components/context/camera/FirstPersonControl';
 // import { FirstPersonControls } from 'three/examples/jsm/controls/FirstPersonControls';
 import axios from 'axios';
@@ -73,9 +85,39 @@ const useStyles = makeStyles((theme) => ({
   button: {
     color: "white",
     backgroundColor: 'black',
-    width: '100%'
+    width: '100%',
+    marginTop: '1em',
+    marginBottom: '1em',
   },
+  linearProgress: {
+    width: '90%',
+    margin: '1em',
+    left: 0,
+    right: 0,
+    //position: 'absolute',
+    // top: '25%',
+    // transform: 'translateY(-25%)'
+  }
 }));
+
+const baseStyle = {
+  flex: 1,
+  display: 'flex',
+  height: '150px',
+  flexDirection: 'column',
+  alignItems: 'center',
+  padding: '20px',
+  borderWidth: 2,
+  borderRadius: 2,
+  width: '100%',
+  borderColor: '#ddddd',
+  borderStyle: 'dashed',
+  backgroundColor: '#fafafa',
+  color: '#bdbdbd',
+  outline: 'none',
+  transition: 'border .24s ease-in-out',
+  cursor: 'pointer'
+};
 
 const Validation = ({
   bimData,
@@ -84,8 +126,26 @@ const Validation = ({
   setShowValidation
 }) => {
   const classes = useStyles();
-  const [anchorEl, setAnchorEl] = useState(null);
+  const style = useMemo(() => ({
+    ...baseStyle
+  }), []);
 
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [logs, setLogs] = useState([]);
+  const [bimModel, setBimModel] = useState(null);
+  const [progress, setProgress] = useState(-1);
+
+  useEffect(() => {
+    console.log('bimData', bimData);
+  }, [])
+
+
+
+  useEffect(() => {
+    // if (progress === 100) {
+    //   window.parent.postMessage({ projectId: projectId }, `${process.env.REACT_APP_TRIDYME}`);
+    // }
+  }, [progress])
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -94,6 +154,8 @@ const Validation = ({
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  let timeoutIdentifier;
 
   const handleModelValidation = async () => {
     try {
@@ -106,27 +168,38 @@ const Validation = ({
       formData.append('files', ifcFile);
 
 
-      // const analysis = await axios.post(process.env.REACT_APP_API_URL, formData);
-      // console.log('projectId', analysis.data)
-      // const { projectId } = analysis.data;
+      const analysis = await axios.post(process.env.REACT_APP_API_URL, formData);
+      const { projectId } = analysis.data;
+      console.log('projectId', projectId)
+      function poll() {
+        axios.get(`${process.env.REACT_APP_API_URL}/pp/${projectId}`).then((r) => {
+          const progressLoading = r.data.progress;
+          if (progressLoading === 100) {
+            clearTimeout(timeoutIdentifier);
+            setProgress(progressLoading);
+            // axios.get(`${process.env.REACT_APP_API_URL}/v/${projectId}`).then((r) => {
+            //   window.MODEL_ID = projectId;
+            //   window.NUM_FILES = r.data.n_files;
+            //   window.SPINNER_CLASS = 'spinner';
 
-      // const logs = await axios.get(`${process.env.REACT_APP_API_URL}/log/${projectId}.json`);
-      // console.log('logs', logs.data);
-
-      // const jsonData = await JSON.parse(logs.data);
-      // console.log('jsonData', jsonData["level"]);
-      axios.post(process.env.REACT_APP_API_URL, formData).then((value) => {
-        console.log('value.data', value.data)
-        return value.data;
-      })
-        .then(async ({ projectId }) => {
-          const logs = await axios.get(`${process.env.REACT_APP_API_URL}/log/${projectId}.json`)
-          console.log('logs', logs)
-        }).catch((error) => {
-          console.log('ERRORRR', error)
-        })
-
-      // res.status(200).send(response.data);
+            //   //TEMP FIX 
+            //   window.hasOwnProperty('launch3D') && window.launch3D();
+            //   if (!window.hasOwnProperty('launch3D')) {
+            //     document.location.reload();
+            //   }
+            // })
+            axios.get(`${process.env.REACT_APP_API_URL}/log/${projectId}.json`).then((logs) => {
+              console.log('logs', logs.data);
+              setLogs(logs.data);
+            });
+          } else {
+            console.log('progress', progressLoading)
+            timeoutIdentifier = setTimeout(poll, 1000);
+            setProgress(progressLoading);
+          }
+        });
+      }
+      await poll();
     } catch (err) {
       // return res.status(500).json({ error: err });
     }
@@ -134,8 +207,87 @@ const Validation = ({
 
 
 
+
+
+  const onDrop = useCallback(async (acceptedFiles) => {
+    const formData = new FormData();
+    formData.append('files', acceptedFiles[0]);
+    if (acceptedFiles.length > 0) {
+      if (acceptedFiles[0].size / 1024 / 1024 > 15) {
+        alert('Version limitée à 15 Mo');
+      } else {
+        const analysis = await axios.post(process.env.REACT_APP_API_URL, formData);
+        const { projectId } = analysis.data;
+        console.log('projectId', projectId)
+        function poll() {
+          axios.get(`${process.env.REACT_APP_API_URL}/pp/${projectId}`).then((r) => {
+            const progressLoading = r.data.progress;
+            if (progressLoading === 100) {
+              clearTimeout(timeoutIdentifier);
+              setProgress(progressLoading);
+
+              axios.get(`${process.env.REACT_APP_API_URL}/log/${projectId}.json`).then((logs) => {
+                console.log('logs', logs.data);
+                setLogs(logs.data);
+              });
+            } else {
+              console.log('progress', progressLoading)
+              timeoutIdentifier = setTimeout(poll, 1000);
+              setProgress(progressLoading);
+            }
+          });
+        }
+        await poll();
+      }
+    }
+  }, [])
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, accept: '.ifc' })
+
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
+
+  const downloadFile = ({ data, fileName, fileType }) => {
+    // Create a blob with the data we want to download as a file
+    const blob = new Blob([data], { type: fileType });
+    // Create an anchor element and dispatch a click event on it
+    // to trigger a download
+    const a = document.createElement('a')
+    a.download = fileName
+    a.href = window.URL.createObjectURL(blob)
+    const clickEvt = new MouseEvent('click', {
+      view: window,
+      bubbles: true,
+      cancelable: true,
+    })
+    a.dispatchEvent(clickEvt)
+    a.remove()
+  }
+
+  const handleExportToCsv = e => {
+    e.preventDefault()
+    // Headers for each column
+    let logsCsv = [];
+    let headers = ['Severity', 'Message', 'Instance', 'Time'].join(',');
+    logsCsv.push(headers)
+
+    logs?.forEach(log => {
+      const {
+        level,
+        message,
+        instance,
+        time
+      } = log;
+      logsCsv.push([level, message, instance, time].join(','))
+    });
+
+    downloadFile({
+      data: [...logsCsv].join('\n'),
+      fileName: `logs.csv`,
+      fileType: 'text/csv',
+    })
+  }
+
   return (
     <Card className={classes.cardInfo}>
       <CardHeader
@@ -173,6 +325,17 @@ const Validation = ({
               horizontal: "center",
             }}
           >
+            {logs.length > 0 && (
+              <ListItem
+                button
+                onClick={handleExportToCsv}
+              >
+                <ListItemIcon>
+                  <DownloadIcon />
+                </ListItemIcon>
+                <ListItemText primary="Télécharger CSV" />
+              </ListItem>
+            )}
             <ListItem button onClick={() => setShowValidation(false)}>
               <ListItemIcon>
                 <ClearIcon />
@@ -182,9 +345,53 @@ const Validation = ({
           </Popover>
         </div>}
       />
-      <CardContent>
+      <CardContent className={classes.cardContent}>
+        <Grid item xs={12} align="center" justify="center" alignItems="center">
+          <div {...getRootProps({ style })}>
+            <input {...getInputProps()} />
+            {
+              isDragActive ?
+                <p>Importer votre fichier ici ou cliquez pour selectionner un fichier</p> :
+                <p>Importer votre fichier ici ou cliquez pour selectionner un fichier</p>
+            }
+          </div>
+        </Grid>
+
+        {(progress >= 0 && progress < 100) ?
+          <Grid item xs={12} align="center" justify="center" alignItems="center">
+            <LinearProgressWithLabel value={progress} />
+          </Grid>
+          :
+          <Grid item xs={12}>
+            <Button variant="contained" className={classes.button} onClick={handleModelValidation}>Audit</Button>
+          </Grid>
+        }
         <Grid item xs={12}>
-          <Button onClick={handleModelValidation} className={classes.button}>Vérificateur</Button>
+          {logs.length > 0 && (
+            <TableContainer component={Paper}>
+              <Table className={classes.table} aria-label="simple table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Severity</TableCell>
+                    <TableCell align="left">Message</TableCell>
+                    <TableCell align="left">Instance</TableCell>
+                    <TableCell align="left">time</TableCell>
+                  </TableRow>
+                </TableHead>
+                {logs.map((log, i) => (
+                  <TableRow
+                    key={i}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  >
+                    <TableCell style={{ color: `${log.level === 'Error' ? 'red' : 'orange'}` }}>{log.level}</TableCell>
+                    <TableCell>{log.message}</TableCell>
+                    <TableCell>{log.instance}</TableCell>
+                    <TableCell>{log.time}</TableCell>
+                  </TableRow>
+                ))}
+              </Table>
+            </TableContainer>
+          )}
         </Grid>
       </CardContent>
     </Card>
@@ -192,3 +399,29 @@ const Validation = ({
 };
 
 export default Validation;
+
+
+
+function LinearProgressWithLabel(props) {
+  const classes = useStyles();
+
+  return (
+    <>
+      <Box display="flex" className={classes.root} alignItems="center">
+        {
+          (props.value === 0) ? <div className={classes.linearProgress}>Vérification en cours...</div> :
+            <>
+              <Box width="100%" mr={1}>
+                <LinearProgress className={classes.linearProgress} variant="determinate" {...props} />
+              </Box>
+              <Box minWidth={35}>
+                <Typography variant="body2" color="textSecondary">{`${Math.round(
+                  props.value,
+                )}%`}</Typography>
+              </Box>
+            </>
+        }
+      </Box>
+    </>
+  );
+}

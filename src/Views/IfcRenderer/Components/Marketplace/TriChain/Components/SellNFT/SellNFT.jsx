@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { ethers } from 'ethers'
 import { create as ipfsHttpClient } from 'ipfs-http-client'
 import Web3Modal from 'web3modal';
@@ -19,7 +19,10 @@ import {
   Tab,
   Box,
   CircularProgress,
-  Divider
+  Divider,
+  Stepper,
+  Step,
+  StepLabel
 } from "@material-ui/core";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
@@ -27,8 +30,12 @@ import {
 } from '../../config'
 import NFTMarketplace from '../../artifacts/contracts/NFTMarketplace.sol/NFTMarketplace.json'
 import {
-  Vector2
+  Vector2,
+  Color
 } from "three";
+import LoadFiles from './Components/LoadFiles';
+import Location from './Components/Location';
+import Attributes from './Components/Attributes';
 
 const client = ipfsHttpClient('https://ipfs.infura.io:5001/api/v0')
 
@@ -97,8 +104,20 @@ const useStyles = makeStyles((theme) => ({
   textField: {
     width: '100%',
     border: '1px'
-  }
+  },
+  backButton: {
+    marginRight: theme.spacing(1),
+  },
+  instructions: {
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(1),
+  },
 }));
+
+
+function getSteps() {
+  return ['Load files', 'Location & Geometry', 'Attributes'];
+}
 
 
 export default function SellNFT({
@@ -106,8 +125,12 @@ export default function SellNFT({
   setState
 }) {
   const classes = useStyles();
+  const maxFileSize = 50;
+  const [view, setView] = useState('main');
+
   const [validation, setValidation] = useState({
     loading: false,
+    creationLoading: false,
     status: true,
     message: 'Connected',
   })
@@ -120,17 +143,61 @@ export default function SellNFT({
     metadataHash: '',
     tokenId: '',
     tokenURI: '',
-    X: 0,
-    Y: 0,
-    Z: 0,
-    scaleX: 1,
-    scaleY: 1,
-    scaleZ: 1,
-    rotX: 0,
-    rotY: 0,
-    rotZ: 0,
+    translateX: 0,
+    translateY: 0,
+    translateZ: 0,
+    // latitude: 148.9819,
+    // longitude: -35.39847,
+    latitude: 48.858093,
+    longitude: 2.294694,
+    altitude: 0,
+    scale: 1,
+    rotateX: 0,
+    rotateY: 0,
+    rotateZ: 0,
     external_url: '',
     attributes: [],
+    domain: 'architecture',
+    domains: [
+      { value: 'architecture', label: 'Architecture' },
+      { value: 'electrical', label: 'Electrical' },
+      { value: 'engineering', label: 'Engineering' },
+      { value: 'structural', label: 'Structural' },
+      { value: 'mep', label: 'MEP' },
+      { value: 'fireAlarm', label: 'Fire Alarm' },
+      { value: 'Plumbing', label: 'Plumbing' },
+      { value: 'Sprinkler', label: 'Sprinkler' },
+      { value: 'HVAC', label: 'HVAC' },
+    ],
+    levelOfDevelopment: 'lod300',
+    levelOfDevelopments: [
+      { value: 'lod100', label: 'LOD100' },
+      { value: 'lod200', label: 'LOD200' },
+      { value: 'lod300', label: 'LOD300' },
+      { value: 'lod400', label: 'LOD400' },
+      { value: 'lod500', label: 'LOD500' },
+    ],
+    phase: 'basicProject',
+    phases: [
+      { value: 'strategy', label: 'PHASE 0 Strategy' },
+      { value: 'previousStudies', label: 'PHASE 1 Previous studies' },
+      { value: 'blueprint', label: 'PHASE 2 Blueprint' },
+      { value: 'basicProject', label: 'PHASE 3 Basic Project' },
+      { value: 'executionProject', label: 'PHASE 4 Execution Project' },
+      { value: 'construction', label: 'PHASE 5 Construction' },
+      { value: 'reception', label: 'PHASE 6 End of Work / Reception' },
+      { value: 'maintenance', label: 'PHASE 7 Operation and Maintenance' },
+      { value: 'recycling', label: 'PHASE 8 Demolition adn Recycling' },
+    ],
+    material: ['concrete', 'steel', 'wood', 'aluminium'],
+    materials: ['concrete', 'steel', 'wood', 'aluminium'],
+
+    // materialsDB: [
+    //   { value: 'concrete', label: 'Concrete' },
+    //   { value: 'steel', label: 'Steel' },
+    //   { value: 'wood', label: 'Wood' },
+    //   { value: 'aluminium', label: 'Aluminium' }
+    // ],
   });
 
   const [value, setValue] = useState(0);
@@ -140,130 +207,123 @@ export default function SellNFT({
   };
 
 
-  const handleIfcFile = async () => {
-    const viewer = state.bimData.viewer;
+  const handleIfcFile = async ({ ifcFile, viewer }) => {
+    try {
+      // Add IFC File
+      const ifcFilePath = await client.add(
+        ifcFile,
+        {
+          progress: (prog) => {
+            setValidation({
+              ...validation,
+              loading: true,
+              message: `Upload IFC in progress...`
+            })
+          }
+        }
+      )
 
-    // Add IFC File
-    const ifcData = await viewer.IFC.loader.ifcManager.state.api.ExportFileAsIFC(0);
-    const blobIfc = new Blob([ifcData], { type: 'text/plain' });
-    const ifcFile = new File([blobIfc], 'ifcFile.png');
-
-    const ifcFilePath = await client.add(
-      ifcFile,
-      {
-        progress: (prog) => console.log(`received: ${prog}`)
+      // Add IFC Img
+      const imgCapture = await viewer.context.renderer.newScreenshot(
+        false,
+        undefined,
+        new Vector2(4000, 4000)
+      );
+      var byteString = atob(imgCapture.split(',')[1]);
+      var ab = new ArrayBuffer(byteString.length);
+      var ia = new Uint8Array(ab);
+      for (var i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
       }
-    )
+      const blobImg = new Blob([ab], { type: 'image/png' });
+      const ifcImg = new File([blobImg], 'ifcImg.png');
 
-    // Add IFC Img
-    const imgCapture = state.bimData.viewer.context.renderer.newScreenshot(
-      false,
-      undefined,
-      new Vector2(4000, 4000)
-    );
-    var byteString = atob(imgCapture.split(',')[1]);
-    var ab = new ArrayBuffer(byteString.length);
-    var ia = new Uint8Array(ab);
-    for (var i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
+
+      const ifcImgPath = await client.add(
+        ifcImg,
+        {
+          progress: (prog) => {
+            setValidation({
+              ...validation,
+              loading: true,
+              message: `Upload generated image in progress...`
+            })
+          }
+        }
+      )
+
+      // Add IFC 3D Model
+      console.log('viewer.GLTF', viewer.GLTF)
+      const ifcGltf = await viewer.GLTF.exportIfcAsGltf(0);
+      const ifcModel = await viewer.GLTF.glTFToFile(ifcGltf, 'ifcModel.gltf');
+
+      const ifcModelPath = await client.add(
+        ifcModel,
+        {
+          progress: (prog) => {
+            setValidation({
+              ...validation,
+              loading: true,
+              message: `Upload generated 3D model in progress...`
+            })
+          }
+        }
+      )
+
+
+      return {
+        file: `https://ipfs.infura.io/ipfs/${ifcFilePath.path}`,
+        image: `https://ipfs.infura.io/ipfs/${ifcImgPath.path}`,
+        model: `https://ipfs.infura.io/ipfs/${ifcModelPath.path}`,
+      };
+
+    } catch (error) {
+      alert(error);
     }
-    const blobImg = new Blob([ab], { type: 'image/png' });
-    const ifcImg = new File([blobImg], 'ifcImg.png');
 
-
-    const ifcImgPath = await client.add(
-      ifcImg,
-      {
-        progress: (prog) => console.log(`received: ${prog}`)
-      }
-    )
-
-    // Add IFC 3D Model
-    console.log('viewer.GLTF', viewer.GLTF)
-    const ifcGltf = await viewer.GLTF.exportIfcAsGltf(0);
-    const ifcModel = await viewer.GLTF.glTFToFile(ifcGltf, 'ifcModel.gltf');
-
-    const ifcModelPath = await client.add(
-      ifcModel,
-      {
-        progress: (prog) => console.log(`received: ${prog}`)
-      }
-    )
-
-
-    return {
-      file: `https://ipfs.infura.io/ipfs/${ifcFilePath.path}`,
-      image: `https://ipfs.infura.io/ipfs/${ifcImgPath.path}`,
-      model: `https://ipfs.infura.io/ipfs/${ifcModelPath.path}`,
-    };
   }
 
   const handleLoadActualModel = async () => {
     try {
       setValidation({
         ...validation,
-        loading: true
+        loading: true,
+        message: 'Connection...'
       })
-      const {
-        file,
-        image,
-        model
-      } = await handleIfcFile();
-
-      console.log('added', {
-        file,
-        image,
-        model
-      })
-      updateFormInput({
-        ...formInput,
-        file,
-        image,
-        model
-      });
-      setValidation({
-        ...validation,
-        loading: false
-      })
+      const viewer = state.bimData.viewer;
+      // Add IFC File
+      const ifcData = await viewer.IFC.loader.ifcManager.state.api.ExportFileAsIFC(0);
+      const blobIfc = new Blob([ifcData], { type: 'text/plain' });
+      const ifcFile = new File([blobIfc], 'ifcFile.ifc');
+      if (ifcFile.size / 1024 / 1024 > maxFileSize) {
+        setValidation({
+          loading: false,
+          status: false,
+          message: `Maximum file size: ${maxFileSize} Mb`
+        })
+      } else {
+        const {
+          file,
+          image,
+          model
+        } = await handleIfcFile({ ifcFile, viewer });
+        console.log('added', {
+          file,
+          image,
+          model
+        })
+        updateFormInput({
+          ...formInput,
+          file,
+          image,
+          model
+        });
+        setValidation({
+          ...validation,
+          loading: false
+        })
+      }
     } catch (error) {
-      console.log('Error uploading file: ', error)
-      setValidation({
-        loading: false,
-        status: false,
-        message: `Error uploading file: ${error}`
-      })
-    }
-  }
-
-  async function handleLoadNewModel(e) {
-    /* upload image to IPFS */
-    const file = e.target.files[0]
-    try {
-
-      // const added = await client.add(
-      //   file,
-      //   {
-      //     progress: (prog) => console.log(`received: ${prog}`)
-      //   }
-      // )
-      const {
-        file,
-        image
-      } = await handleIfcFile();
-      // const url = `https://ipfs.infura.io/ipfs/${added.path}`
-      console.log('added', {
-        file,
-        image
-      })
-      // setFileUrl(url)
-
-      updateFormInput({
-        ...formInput,
-        file,
-        image
-      })
-    } catch (error) {
-      console.log('Error uploading file: ', error)
       setValidation({
         loading: false,
         status: false,
@@ -278,9 +338,10 @@ export default function SellNFT({
       description,
       price,
       image,
-      file
+      file,
+      model
     } = formInput
-    if (!name || !description || !price || !image) {
+    if (!name || !description || !price || !image || !file || !model) {
       setValidation({
         loading: false,
         status: false,
@@ -296,12 +357,9 @@ export default function SellNFT({
       const added = await client.add(data)
       const url = `https://ipfs.infura.io/ipfs/${added.path}`
       /* after metadata is uploaded to IPFS, return the URL to use it in the transaction */
+      console.log("metadata added", added)
       setState({
         ...state,
-        views: {
-          ...state.views,
-          value: 'home'
-        },
         nfts: {
           ...state.nfts,
           value: {
@@ -326,28 +384,42 @@ export default function SellNFT({
       ...validation,
       loading: true
     })
-    const url = await uploadToIPFS()
-    // const web3Modal = new Web3Modal({
-    //   network: 'mainnet',
-    //   cacheProvider: true,
-    // })
-    const web3Modal = new Web3Modal()
-    const connection = await web3Modal.connect()
-    const provider = new ethers.providers.Web3Provider(connection)
-    const signer = provider.getSigner()
-
-    /* create the NFT */
-    const price = ethers.utils.parseUnits(formInput.price, 'ether')
-    let contract = new ethers.Contract(marketplaceAddress, NFTMarketplace.abi, signer)
-    let listingPrice = await contract.getListingPrice()
-    listingPrice = listingPrice.toString()
-
-    console.log('listingPrice', listingPrice)
-    console.log('url', url)
     try {
+      const url = await uploadToIPFS()
+      // const web3Modal = new Web3Modal({
+      //   network: 'mainnet',
+      //   cacheProvider: true,
+      // })
+      console.log('debut')
+      const web3Modal = new Web3Modal()
+      const connection = await web3Modal.connect()
+      const provider = new ethers.providers.Web3Provider(connection)
+      const signer = provider.getSigner()
+      console.log('signer', signer)
+      /* create the NFT */
+      const price = ethers.utils.parseUnits(formInput.price, 'ether')
+      let contract = new ethers.Contract(marketplaceAddress, NFTMarketplace.abi, signer)
+      console.log('contract', contract)
+      let listingPrice = await contract.getListingPrice()
+      listingPrice = listingPrice.toString()
+
+      console.log('listingPrice', listingPrice)
+      console.log('url', url)
+
       let transaction = await contract.createToken(url, price, { value: listingPrice })
       await transaction.wait()
       console.log('transaction', transaction)
+      setValidation({
+        ...validation,
+        loading: false
+      })
+      setState({
+        ...state,
+        views: {
+          ...state.views,
+          index: 0
+        }
+      })
     } catch (error) {
       console.log('error', error)
       setValidation({
@@ -356,189 +428,169 @@ export default function SellNFT({
         message: `Transaction error: ${error}`
       })
     }
-
-    setValidation({
-      ...validation,
-      loading: true
-    })
-    setState({
-      ...state,
-      views: {
-        ...state.views,
-        index: 0
-      }
-    })
   }
 
+
+  const [activeStep, setActiveStep] = useState(0);
+  const steps = getSteps();
+  function getStepContent(step) {
+    switch (step) {
+      case 0:
+        return <LoadFiles
+          state={state}
+          validation={validation}
+          formInput={formInput}
+          updateFormInput={updateFormInput}
+          handleLoadActualModel={handleLoadActualModel}
+          handleIfcFile={handleIfcFile}
+          setValidation={setValidation}
+          maxFileSize={maxFileSize}
+        />;
+      case 1:
+        return <Location
+          formInput={formInput}
+          updateFormInput={updateFormInput}
+          setView={setView}
+        />;
+      case 2:
+        return <Attributes
+          validation={validation}
+          formInput={formInput}
+          updateFormInput={updateFormInput}
+          listNFTForSale={listNFTForSale}
+          setView={setView}
+        />;
+      default:
+        return 'Unknown step';
+    }
+  }
+
+  const handleNext = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+  };
+
+  const handleReset = () => {
+    setActiveStep(0);
+  };
+
   return (
-    <Grid container spacing={3}>
+    <Grid container spacing={2}>
       <Grid item xs={12}>
-        <Typography gutterBottom variant="h6" component="div">
+        <Typography gutterBottom variant="h5" component="div">
           Create NFT:
         </Typography>
       </Grid>
-      { !validation.status &&
+      {!validation.status &&
         <Grid item xs={12}>
           <Alert severity={`error`}>{`${validation.message}`}</Alert>
         </Grid>
       }
-      <Grid item xs={6}>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <TextField
-              type="text"
-              id="name"
-              label="name"
-              className={classes.textField}
-              variant="outlined"
-              onChange={e => updateFormInput({ ...formInput, name: e.target.value })} />
-          </Grid>
-          <Grid item xs={12}>
-            <Accordion>
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel1a-content"
-                id="panel1a-header"
-              >
-                <Typography>Coordinates (Optional)</Typography>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Grid container spacing={2}>
-                  <Grid item xs={4}>
-                    <TextField
-                      type="number"
-                      id="x"
-                      label="x"
-                      className={classes.textField}
-                      variant="outlined"
-                      onChange={e => updateFormInput({ ...formInput, x: e.target.value })} />
+      <Grid item xs={12}>
+        <Stepper activeStep={activeStep} alternativeLabel>
+          {steps.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+      </Grid>
+      {activeStep === steps.length ? (
+        <div>
+          <Typography className={classes.instructions}>All steps completed</Typography>
+          <Button onClick={handleReset}>Reset</Button>
+        </div>
+      ) : (
+        <>
+          {getStepContent(activeStep)}
+          {
+            (!formInput.name || !formInput.description || !formInput.price || !formInput.image || !formInput.file || !formInput.model) ? (
+              <Grid item xs={12}>
+                <Grid container>
+                  <Grid item xs={6} style={{ textAlign: "left" }}>
+                    <Button
+                      disabled={activeStep === 0}
+                      onClick={handleBack}
+                      className={classes.backButton}
+                    >
+                      Back
+                  </Button>
                   </Grid>
-                  <Grid item xs={4}>
-                    <TextField
-                      type="number"
-                      id="y"
-                      label="y"
-                      className={classes.textField}
-                      variant="outlined"
-                      onChange={e => updateFormInput({ ...formInput, y: e.target.value })} />
-                  </Grid>
-                  <Grid item xs={4}>
-                    <TextField
-                      type="number"
-                      id="z"
-                      label="z"
-                      className={classes.textField}
-                      variant="outlined"
-                      onChange={e => updateFormInput({ ...formInput, z: e.target.value })} />
+                  <Grid item xs={6} style={{ textAlign: "right" }}>
+                    <Button variant="contained" color="primary" onClick={handleNext} disabled={true}>
+                      {activeStep === steps.length - 1 ? 'Create NFT' : 'Next'}
+                    </Button>
                   </Grid>
                 </Grid>
-              </AccordionDetails>
-            </Accordion>
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              type="text"
-              id="description"
-              label="description"
-              multiline
-              rows={4}
-              className={classes.textField}
-              variant="outlined"
-              onChange={e => updateFormInput({ ...formInput, description: e.target.value })} />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              type="number"
-              id="price"
-              label="price in ETH"
-              className={classes.textField}
-              variant="outlined"
-              onChange={e => updateFormInput({ ...formInput, price: e.target.value })} />
-          </Grid>
-        </Grid>
-      </Grid>
-      <Grid item xs={6}>
-        <Grid container spacing={2}>
-          {validation.loading ?
+              </Grid>
+            ) : (
+              <Grid item xs={12}>
+                <Grid container>
+                  <Grid item xs={6} style={{ textAlign: "left" }}>
+                    <Button
+                      disabled={activeStep === 0}
+                      onClick={handleBack}
+                      className={classes.backButton}
+                    >
+                      Back
+                  </Button>
+                  </Grid>
+                  <Grid item xs={6} style={{ textAlign: "right" }}>
+                    {activeStep !== steps.length - 1 ?
+                      <Button variant="contained" color="primary" onClick={handleNext} >
+                        {'Next'}
+                      </Button>
+                      :
+                      <>
+                        {validation.creationLoading ?
+                          <>
+                            <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
+                              <CircularProgress color="inherit" />
+                            </Grid>
+                            <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
+                              <Typography gutterBottom variant="h5" component="div">
+                                {`${validation.message}`}
+                              </Typography>
+                            </Grid>
+                          </>
+                          :
+                          <Button onClick={listNFTForSale} className={classes.button}>
+                            Create NFT
+          </Button>
+                        }
+
+                      </>
+                    }
+                  </Grid>
+                </Grid>
+              </Grid>
+            )
+          }
+        </>
+      )
+      }
+      {/* <Grid item xs={12}>
+        {validation.creationLoading ?
+          <>
             <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
               <CircularProgress color="inherit" />
             </Grid>
-            :
-            <Grid item xs={12}>
-              <Button className={classes.button} onClick={handleLoadActualModel}>Load Actual IFC Model</Button>
+            <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
+              <Typography gutterBottom variant="h5" component="div">
+                {`${validation.message}`}
+              </Typography>
             </Grid>
-          }
-          {/* <Box sx={{ width: '100%' }}>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-              <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
-                <Tab label="Item One" {...a11yProps(0)} />
-                <Tab label="Item Two" {...a11yProps(1)} />
-                <Tab label="Item Three" {...a11yProps(2)} />
-              </Tabs>
-            </Box>
-            <TabPanel value={value} index={0}>
-             Item One
-            </TabPanel>
-            <TabPanel value={value} index={1}>
-              Item Two
-              </TabPanel>
-            <TabPanel value={value} index={2}>
-              Item Three
-            </TabPanel>
-          </Box> */}
-          {/* <Divider />
-          <h3>Or</h3>
-          <Grid item xs={12}>
-            <Input
-              type="file"
-              name="Load New Model"
-              className={classes.button}
-              onChange={handleLoadNewModel}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Input
-              type="file"
-              name="Load file of the model"
-              className={classes.button}
-              onChange={handleLoadNewModel}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Input
-              type="file"
-              name="Load png/jpg of the model"
-              className={classes.button}
-              onChange={handleLoadNewModel}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Input
-              type="file"
-              name="Load glb/gltf of the model"
-              className={classes.button}
-              onChange={handleLoadNewModel}
-            />
-          </Grid> */}
-          {
-            formInput.image && (
-              <img className="rounded mt-4" width="350" src={formInput.image} />
-            )
-          }
-        </Grid>
-      </Grid>
-      <Grid item xs={12}>
-        {validation.loading ?
-          <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
-            <CircularProgress color="inherit" />
-          </Grid>
+          </>
           :
           <Button onClick={listNFTForSale} className={classes.button}>
             Create NFT
-        </Button>
+          </Button>
         }
-      </Grid>
-    </Grid>
+      </Grid> */}
+    </Grid >
   )
 }
 
