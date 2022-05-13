@@ -261,9 +261,9 @@ const IfcRenderer = () => {
       // const model = await newViewer.IFC.loadIfcUrl(allModels[0].file, false);
 
 
-      const model = await newViewer.IFC.loadIfcUrl('../../files/Duplex.ifc');
-      const newIfcModels = [...ifcModels, model];
-      setIfcModels(newIfcModels);
+      // const model = await newViewer.IFC.loadIfcUrl('../../files/Duplex.ifc');
+      // const newIfcModels = [...ifcModels, model];
+      // setIfcModels(newIfcModels);
 
       // const models = newViewer.context.items.ifcModels;
       // const pickableModels = newViewer.context.items.pickableIfcModels;
