@@ -25,6 +25,7 @@ import {
   ButtonGroup,
   Divider
 } from "@mui/material";
+import ToolTipsElem from '../../../../../Components/ToolTipsElem/ToolTipsElem';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import LockIcon from '@mui/icons-material/Lock';
@@ -207,16 +208,32 @@ const AxeoBim = ({
                     </IconButton>
                   </>
                   :
-                  <IconButton
-                    edge="end"
-                    aria-label="comments"
+                  <ToolTipsElem
+                    title={
+                      <p>
+                        AxeoBIM:
+                  <br />
+                  cliquez ici pour bloquer la maquette dans AxeoBIM et permettre son enrichissement
+                </p>
+                    }
+                    placement="top"
+                    // className={classes.fab}
                     onClick={(e) => {
                       handleLockProject()
                       // e.stopPropagation();
                     }}
                   >
+                    {/* <IconButton
+                      edge="end"
+                      aria-label="comments"
+                      onClick={(e) => {
+                        handleLockProject()
+                        // e.stopPropagation();
+                      }}
+                    > */}
                     <LockOpenIcon sx={{ color: 'white' }} />
-                  </IconButton>
+                    {/* </IconButton> */}
+                  </ToolTipsElem>
                 }
                 {/* <IconButton
                   edge="end"

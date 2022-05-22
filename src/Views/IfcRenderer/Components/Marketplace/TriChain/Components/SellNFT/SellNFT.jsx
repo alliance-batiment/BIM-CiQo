@@ -189,8 +189,8 @@ export default function SellNFT({
       { value: 'maintenance', label: 'PHASE 7 Operation and Maintenance' },
       { value: 'recycling', label: 'PHASE 8 Demolition adn Recycling' },
     ],
-    material: ['concrete', 'steel', 'wood', 'aluminium'],
-    materials: ['concrete', 'steel', 'wood', 'aluminium'],
+    material: ['concrete', 'steel', 'wood', 'aluminium', 'brick', 'cmu (concrete masonry unit)'],
+    materials: ['concrete', 'steel', 'wood', 'aluminium', 'brick', 'cmu (concrete masonry unit)'],
 
     // materialsDB: [
     //   { value: 'concrete', label: 'Concrete' },
@@ -382,7 +382,8 @@ export default function SellNFT({
   async function listNFTForSale() {
     setValidation({
       ...validation,
-      loading: true
+      loading: true,
+      message: 'Connection to the wallet...'
     })
     try {
       const url = await uploadToIPFS()
@@ -394,6 +395,11 @@ export default function SellNFT({
       const web3Modal = new Web3Modal()
       const connection = await web3Modal.connect()
       const provider = new ethers.providers.Web3Provider(connection)
+      setValidation({
+        ...validation,
+        loading: true,
+        message: 'Get contract informations...'
+      })
       const signer = provider.getSigner()
       console.log('signer', signer)
       /* create the NFT */
@@ -407,6 +413,11 @@ export default function SellNFT({
       console.log('url', url)
 
       let transaction = await contract.createToken(url, price, { value: listingPrice })
+      setValidation({
+        ...validation,
+        loading: true,
+        message: 'Transaction pending...'
+      })
       await transaction.wait()
       console.log('transaction', transaction)
       setValidation({
@@ -507,7 +518,7 @@ export default function SellNFT({
         <>
           {getStepContent(activeStep)}
           {
-            (!formInput.name || !formInput.description || !formInput.price || !formInput.image || !formInput.file || !formInput.model) ? (
+            (!formInput.name || !formInput.price || formInput.price <= 0 || !formInput.image || !formInput.file || !formInput.model) ? (
               <Grid item xs={12}>
                 <Grid container>
                   <Grid item xs={6} style={{ textAlign: "left" }}>
@@ -530,13 +541,15 @@ export default function SellNFT({
               <Grid item xs={12}>
                 <Grid container>
                   <Grid item xs={6} style={{ textAlign: "left" }}>
-                    <Button
-                      disabled={activeStep === 0}
-                      onClick={handleBack}
-                      className={classes.backButton}
-                    >
-                      Back
+                    {(!validation.status || !validation.loading) &&
+                      <Button
+                        disabled={activeStep === 0}
+                        onClick={handleBack}
+                        className={classes.backButton}
+                      >
+                        Back
                   </Button>
+                    }
                   </Grid>
                   <Grid item xs={6} style={{ textAlign: "right" }}>
                     {activeStep !== steps.length - 1 ?
@@ -545,23 +558,11 @@ export default function SellNFT({
                       </Button>
                       :
                       <>
-                        {validation.creationLoading ?
-                          <>
-                            <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
-                              <CircularProgress color="inherit" />
-                            </Grid>
-                            <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
-                              <Typography gutterBottom variant="h5" component="div">
-                                {`${validation.message}`}
-                              </Typography>
-                            </Grid>
-                          </>
-                          :
+                        {(!validation.status || !validation.loading) &&
                           <Button onClick={listNFTForSale} className={classes.button}>
                             Create NFT
           </Button>
                         }
-
                       </>
                     }
                   </Grid>
@@ -572,52 +573,6 @@ export default function SellNFT({
         </>
       )
       }
-      {/* <Grid item xs={12}>
-        {validation.creationLoading ?
-          <>
-            <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
-              <CircularProgress color="inherit" />
-            </Grid>
-            <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
-              <Typography gutterBottom variant="h5" component="div">
-                {`${validation.message}`}
-              </Typography>
-            </Grid>
-          </>
-          :
-          <Button onClick={listNFTForSale} className={classes.button}>
-            Create NFT
-          </Button>
-        }
-      </Grid> */}
     </Grid >
   )
-}
-
-
-function a11yProps(index) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
-  };
-}
-
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
-    </div>
-  );
 }

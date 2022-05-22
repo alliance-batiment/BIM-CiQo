@@ -32,6 +32,8 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import ClearIcon from "@material-ui/icons/Clear";
 import VisibilityIcon from "@material-ui/icons/Visibility";
+import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import DatBimApi from "./DatBimApi/DatBimApi";
 import DropBox from "./DropBox/DropBox";
 import BsDD from "./BsDD";
@@ -59,12 +61,28 @@ const useStyles = makeStyles((theme) => ({
   table: {
     width: "100%",
   },
-  cardInfo: {
+  cardExpanded: {
+    position: "absolute",
+    top: "0px",
+    zIndex: 1000,
+    left: "0px",
+    right: "0px",
+    opacity: '0.95',
+    width: ({ width }) => width,
+    height: ({ height }) => height,
+    maxWidth: window.innerWidth - 175,
+    maxHeight: window.innerHeight - 175
+  },
+  card: {
+    position: "absolute",
+    top: "0px",
     zIndex: 100,
-    width: "100%",
-    height: "100%",
+    left: "0px",
+    right: "0px",
+    opacity: '0.95'
   },
   cardContent: {
+    opacity: '0.95',
     height: "90%",
     overflowY: "auto",
     overflowX: "hidden",
@@ -118,12 +136,12 @@ const applications = [
     type: "data",
     description: "Base de données permettant l'enrichissement de la maquette",
   },
-  {
-    name: "DropBox",
-    img: DropBoxLogo,
-    type: "storage",
-    description: "Espace permettant le partage et le stockage de fichier",
-  },
+  // {
+  //   name: "DropBox",
+  //   img: DropBoxLogo,
+  //   type: "storage",
+  //   description: "Espace permettant le partage et le stockage de fichier",
+  // },
   // {
   //   name: 'TriStructure',
   //   img: TriStructureLogo,
@@ -198,12 +216,14 @@ const Marketplace = ({
   apiConnectors,
   setApiConnectors
 }) => {
-  const classes = useStyles();
   const [selectedApp, setSelectedApp] = useState("home");
   const [anchorEl, setAnchorEl] = useState(null);
   const [filteredData, setFilteredData] = useState([]);
   const [searchInput, setSearchInput] = useState("");
   const [url, setUrl] = useState("");
+  const [expandedView, setExpandedView] = useState(false);
+  const [viewWidth, setViewWidth] = useState("400px");
+  const [viewHeight, setViewHeight] = useState("400px");
 
   useEffect(() => {
     console.log("apiConnectors", apiConnectors);
@@ -214,6 +234,46 @@ const Marketplace = ({
       setSelectedApp("home");
     }
   }, []);
+
+  const props = {
+    width: viewWidth,
+    height: viewHeight,
+  };
+
+  const classes = useStyles(props);
+
+  useEffect(() => {
+    const getWidth = () => window.innerWidth - 175;
+    const getHeight = () => window.innerHeight - 175;
+    const resizeListener = () => {
+      if (!expandedView) {
+        setViewWidth(getWidth());
+        setViewHeight(getHeight());
+      }
+    }
+    window.addEventListener('resize', resizeListener)
+
+    return () => {
+      window.removeEventListener('resize', resizeListener);
+    }
+  }, []);
+
+  const handleExpandView = (e) => {
+    const width = window.innerWidth - 175;
+    const height = window.innerHeight - 175;
+
+    if (!expandedView) {
+      setExpandedView(true);
+      setViewWidth(width);
+      setViewHeight(height);
+      setAnchorEl(null);
+    } else if (expandedView) {
+      setExpandedView(false);
+      setViewWidth("400px");
+      setViewHeight("400px");
+      setAnchorEl(null);
+    }
+  };
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -240,7 +300,7 @@ const Marketplace = ({
   const id = open ? "simple-popover" : undefined;
 
   return (
-    <Card className={classes.cardInfo}>
+    <Card className={expandedView ? classes.cardExpanded : classes.card}>
       <CardHeader
         avatar={
           <Avatar aria-label="recipe" className={classes.avatar}>
@@ -258,8 +318,25 @@ const Marketplace = ({
             <IconButton
               aria-label="settings"
               aria-describedby={id}
+              onClick={handleExpandView}
+              size="small"
+            >
+              {expandedView ? <FullscreenExitIcon /> : <FullscreenIcon />}
+            </IconButton>
+            <IconButton
+              aria-label="settings"
+              aria-describedby={id}
+              onClick={handleShowMarketplace}
+              size="small"
+            >
+              <ClearIcon />
+            </IconButton>
+            <IconButton
+              aria-label="settings"
+              aria-describedby={id}
               className={classes.button}
               onClick={handleClick}
+              size="small"
             >
               <MoreVertIcon />
             </IconButton>

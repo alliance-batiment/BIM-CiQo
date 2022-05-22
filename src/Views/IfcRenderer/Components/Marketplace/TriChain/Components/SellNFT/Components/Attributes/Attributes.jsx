@@ -104,6 +104,17 @@ const useStyles = makeStyles((theme) => ({
   },
   noLabel: {
     marginTop: theme.spacing(3),
+  },
+  map: {
+    padding: theme.spacing(2),
+    display: 'flex',
+    overflow: 'auto',
+    flexDirection: 'column',
+    height: 300,
+  },
+  image: {
+    width: '100%',
+    height: '100%'
   }
 }));
 
@@ -136,78 +147,89 @@ export default function Attributes({
 
   return (
     <>
-      <Grid item xs={6}>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <Typography gutterBottom variant="h6" component="div">
-              {`Domains`}
-            </Typography>
+      {(validation.status && validation.loading) ?
+        <>
+          <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
+            <CircularProgress color="inherit" />
           </Grid>
-          <Grid item xs={12}>
-            <FormControl fullWidth variant="outlined">
-              <InputLabel id="demo-simple-select-label">Domain</InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                value={formInput.domain}
-                label="Domain"
-                onChange={e => updateFormInput({ ...formInput, domain: e.target.value })}
-              >
-                {formInput.domains.map((domain, index) => (
-                  <MenuItem key={index} value={domain.value}>{domain.label}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+          <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
+            <Typography gutterBottom variant="h5" component="div">{`${validation.message}`}    </Typography>
           </Grid>
-          <Grid item xs={12}>
-            <Typography gutterBottom variant="h6" component="div">
-              {`Level of Developments`}
-            </Typography>
-          </Grid>
-          <Grid item xs={12}>
-            <FormControl fullWidth variant="outlined">
-              <InputLabel id="demo-simple-select-label"> {`Level of Developments`}</InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                value={formInput.levelOfDevelopment}
-                label="Level of Developments"
-                onChange={e => updateFormInput({ ...formInput, levelOfDevelopment: e.target.value })}
-              >
-                {formInput.levelOfDevelopments.map((levelOfDevelopment, index) => (
-                  <MenuItem key={index} value={levelOfDevelopment.value}>{levelOfDevelopment.label}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12}>
-            <Typography gutterBottom variant="h6" component="div">
-              {`Phases`}
-            </Typography>
-          </Grid>
-          <Grid item xs={12}>
-            <FormControl fullWidth variant="outlined">
-              <InputLabel id="demo-simple-select-label">Phase</InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                value={formInput.phase}
-                label="Phase"
-                onChange={e => updateFormInput({ ...formInput, phase: e.target.value })}
-              >
-                {formInput.phases.map((phase, index) => (
-                  <MenuItem key={index} value={phase.value}>{phase.label}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          {/* <Grid item xs={12}>
+        </>
+        :
+        <>
+          <Grid item xs={6}>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <Typography gutterBottom variant="h6" component="div">
+                  {`Domains`}
+                </Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <FormControl fullWidth variant="outlined">
+                  <InputLabel id="demo-simple-select-label">Domain</InputLabel>
+                  <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    value={formInput.domain}
+                    label="Domain"
+                    onChange={e => updateFormInput({ ...formInput, domain: e.target.value })}
+                  >
+                    {formInput.domains.map((domain, index) => (
+                      <MenuItem key={index} value={domain.value}>{domain.label}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <Typography gutterBottom variant="h6" component="div">
+                  {`Level of Developments`}
+                </Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <FormControl fullWidth variant="outlined">
+                  <InputLabel id="demo-simple-select-label"> {`Level of Developments`}</InputLabel>
+                  <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    value={formInput.levelOfDevelopment}
+                    label="Level of Developments"
+                    onChange={e => updateFormInput({ ...formInput, levelOfDevelopment: e.target.value })}
+                  >
+                    {formInput.levelOfDevelopments.map((levelOfDevelopment, index) => (
+                      <MenuItem key={index} value={levelOfDevelopment.value}>{levelOfDevelopment.label}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <Typography gutterBottom variant="h6" component="div">
+                  {`Phases`}
+                </Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <FormControl fullWidth variant="outlined">
+                  <InputLabel id="demo-simple-select-label">Phase</InputLabel>
+                  <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    value={formInput.phase}
+                    label="Phase"
+                    onChange={e => updateFormInput({ ...formInput, phase: e.target.value })}
+                  >
+                    {formInput.phases.map((phase, index) => (
+                      <MenuItem key={index} value={phase.value}>{phase.label}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              {/* <Grid item xs={12}>
           <Typography gutterBottom variant="h6" component="div">
             {`Materials`}
           </Typography>
         </Grid> */}
-          <Grid item xs={12}>
-            {/* <FormControl fullWidth variant="outlined">
+              <Grid item xs={12}>
+                {/* <FormControl fullWidth variant="outlined">
                   <InputLabel id="demo-simple-select-label">Materials</InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
@@ -221,7 +243,7 @@ export default function Attributes({
                     ))}
                   </Select>
                 </FormControl> */}
-            {/* <FormControl className={classes.formControl}>
+                {/* <FormControl className={classes.formControl}>
         <InputLabel id="demo-mutiple-chip-label">Materials</InputLabel>
         <Select
           labelId="demo-mutiple-chip-label"
@@ -246,16 +268,18 @@ export default function Attributes({
           ))}
         </Select>
       </FormControl> */}
+              </Grid>
+            </Grid>
           </Grid>
-        </Grid>
-      </Grid>
-      <Grid item xs={6}>
-        {
-          formInput.image && (
-            <img className="rounded mt-4" width="350" src={formInput.image} />
-          )
-        }
-      </Grid>
+          <Grid item xs={6}>
+            {
+              formInput.image && (
+                <img className={classes.image} src={formInput.image} />
+              )
+            }
+          </Grid>
+        </>
+      }
     </>
   )
 }

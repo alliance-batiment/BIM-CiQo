@@ -84,7 +84,9 @@ import {
 import { TransformControls } from "three/examples/jsm/controls/TransformControls";
 import { HorizontalBlurShader } from "three/examples/jsm/shaders/HorizontalBlurShader.js";
 import { VerticalBlurShader } from "three/examples/jsm/shaders/VerticalBlurShader.js";
-
+import BIMLibrePng from './Images/BIM_Libre_site_ADB_transparent.png'
+import ANCTPng from './Images/ANCT_Logo-MC_transparent.png'
+import AgriboisValeurPng from './Images/Logo_AgriboisValeur_transparent.png'
 import { UseIfcRenderer } from "./IfcRenderer.hooks";
 import ToolTipsElem from "../../Components/ToolTipsElem/ToolTipsElem.js";
 import animationClippedVue from "./Images/animation-vue-de-coupe.gif";
@@ -240,9 +242,9 @@ const IfcRenderer = () => {
       // const model = await newViewer.IFC.loadIfcUrl(allModels[0].file, false);
 
 
-      // const model = await newViewer.IFC.loadIfcUrl('../../files/Duplex.ifc');
-      // const newIfcModels = [...ifcModels, model];
-      // setIfcModels(newIfcModels);
+      const model = await newViewer.IFC.loadIfcUrl('../../files/Duplex.ifc');
+      const newIfcModels = [...ifcModels, model];
+      setIfcModels(newIfcModels);
 
       // const models = newViewer.context.items.ifcModels;
       // const pickableModels = newViewer.context.items.pickableIfcModels;
@@ -891,6 +893,16 @@ const IfcRenderer = () => {
             </ToolTipsElem>
           </Grid>
           {/* <Grid item xs={12}>
+            <ToolTipsElem
+              title="Système de validation de l'IFC"
+              placement="right"
+              className={classes.fab}
+              onClick={handleShowValidation}
+            >
+              <FactCheckIcon />
+            </ToolTipsElem>
+          </Grid>
+          {/* <Grid item xs={12}>
             <Fab
               size="small"
               className={classes.fab}
@@ -960,7 +972,7 @@ const IfcRenderer = () => {
               <MapIcon />
             </ToolTipsElem>
           </Grid>
-          <Grid item xs={12}>
+          {/* <Grid item xs={12}>
             <ToolTipsElem
               title="Camera"
               placement="right"
@@ -969,7 +981,7 @@ const IfcRenderer = () => {
             >
               <ControlCameraIcon />
             </ToolTipsElem>
-          </Grid>
+          </Grid> */}
           <Grid item xs={12}>
             <ToolTipsElem
               title="Outils de mesure"
@@ -1160,9 +1172,27 @@ const IfcRenderer = () => {
         </Grid>
       </Grid>
       {state.alertStatus ?
-        <Alert severity="success" sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }}>{`${state.alertMessage}`}</Alert>
+        <Alert severity="success" sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, width: '100%' }}
+          action={REACT_APP_COMPANY === "VBMC" &&
+            <Grid container spacing={1}>
+              <Grid item xs={4} style={{ textAlign: 'right' }}>
+                <img src={BIMLibrePng} style={{ height: '2em', width: 'auto' }} />
+              </Grid>
+              <Grid item xs={4} style={{ textAlign: 'right' }}>
+                <img src={ANCTPng} style={{ height: '2em', width: 'auto' }} />
+              </Grid>
+              <Grid item xs={4} style={{ textAlign: 'right' }}>
+                <img src={AgriboisValeurPng} style={{ height: '2em', width: 'auto' }} />
+              </Grid>
+            </Grid>
+          }
+        >
+          {`${state.alertMessage}`}
+        </Alert>
         :
-        <Alert severity="error" sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }}>{`${state.alertMessage}`}</Alert>
+        <Alert severity="error" sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }}>
+          {`${state.alertMessage}`}
+        </Alert>
       }
       <ContextMenu
         viewer={viewer}

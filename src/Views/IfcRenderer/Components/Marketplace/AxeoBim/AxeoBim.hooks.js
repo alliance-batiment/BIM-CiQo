@@ -39,7 +39,6 @@ function UseAxeoBim({
           refreshToken
         }
       })
-      console.log('res.data', res.data);
       setApiInformation({
         ...apiInformation,
         lockProject: ''
@@ -49,7 +48,7 @@ function UseAxeoBim({
     } catch (err) {
       setApiInformation({
         ...apiInformation,
-        lockProject: err.response.data.error
+        lockProject: 'Non connecté à AxeoBIM' //err.response?.data?.error
       })
     }
   }
@@ -85,7 +84,7 @@ function UseAxeoBim({
     } catch (err) {
       setApiInformation({
         ...apiInformation,
-        unlockProject: err.response.data.error
+        unlockProject: 'Non connecté à AxeoBIM' //err.response.data.error
       })
     }
   }
@@ -127,7 +126,7 @@ function UseAxeoBim({
     } catch (err) {
       setApiInformation({
         ...apiInformation,
-        updateProject: err.response.data.error
+        updateProject: 'Non connecté à AxeoBIM' //err.response.data.error
       })
     }
   }

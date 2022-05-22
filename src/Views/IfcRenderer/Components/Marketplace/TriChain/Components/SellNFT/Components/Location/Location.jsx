@@ -128,6 +128,7 @@ export default function Location({
   const classes = useStyles();
   const [siteList, setSiteList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
   useEffect(() => {
     async function init() {
       setIsLoading(true);
@@ -208,11 +209,22 @@ export default function Location({
           const loader = new GLTFLoader();
           loader.load(
             // 'https://docs.mapbox.com/mapbox-gl-js/assets/34M_17/34M_17.gltf',
-            'https://ipfs.infura.io/ipfs/QmNdQTrLeyZXeoCrJ7qCXx15L8Zk7JU3E2wEeKr4Uu4fce',
+            `${formInput.model}`,
             (gltf) => {
               this.scene.add(gltf.scene);
-            }
-          );
+            }, (onProgress) => {
+              const progression = onProgress.total > 0 ? onProgress.loaded / onProgress.total * 100 : 0;
+              setProgress(progression);
+              if (progression === 100) {
+                setIsLoading(false)
+              } else {
+                setIsLoading(true)
+              }
+              console.log(onProgress);
+            }, (onError) => {
+              console.log(onError);
+            });
+
           this.map = map;
 
           // use the Mapbox GL JS map canvas for three.js
@@ -461,13 +473,23 @@ export default function Location({
       <Grid item xs={6}>
         <Paper className={classes.mapContainer}>
           {/* <div id="viewer-nft" className={classes.gltViewer}></div> */}
-          <div id="map" className={classes.map}></div>
+          <div id="map" className={classes.map}>
+            <>
+              {isLoading &&
+                <Grid container spacing={1}>
+                  <Grid item xs={12}>
+                    <CircularProgress color="inherit" style={{ textAlign: 'center', position: 'absolute', top: '50%', left: '50%' }} />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Typography gutterBottom variant="subtitle1" component="div" style={{ textAlign: 'center', position: 'absolute', top: '60%', left: '50%' }}>
+                      {`${Math.round(progress)} %`}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              }
+            </>
+          </div>
         </Paper>
-        {/* {
-          formInput.image && (
-            <img className="rounded mt-4" width="350" src={formInput.image} />
-          )
-        } */}
       </Grid>
     </>
   )
