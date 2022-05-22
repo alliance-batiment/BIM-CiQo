@@ -141,6 +141,7 @@ export default function LoadFiles({
   const style = useMemo(() => ({
     ...baseStyle
   }), []);
+
   const [models, setModels] = useState(state.bimData.viewer.context.items.ifcModels);
   const ifcOnLoadError = async (err) => {
     alert(err.toString());
@@ -201,7 +202,7 @@ export default function LoadFiles({
         message: `Error uploading file: ${error}`
       })
     }
-  }, [])
+  }, [formInput])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop: handleLoadNewModel, accept: '.ifc' })
 
@@ -216,7 +217,12 @@ export default function LoadFiles({
               label="name"
               className={classes.textField}
               variant="outlined"
-              onChange={e => updateFormInput({ ...formInput, name: e.target.value })} />
+              onChange={e => {
+                updateFormInput({ ...formInput, name: e.target.value })
+                console.log('formInput', { ...formInput, name: e.target.value })
+              }}
+              helperText="Name can not be empty"
+            />
           </Grid>
           <Grid item xs={12}>
             <TextField
@@ -236,7 +242,9 @@ export default function LoadFiles({
               label="price in ETH"
               className={classes.textField}
               variant="outlined"
-              onChange={e => updateFormInput({ ...formInput, price: e.target.value })} />
+              onChange={e => updateFormInput({ ...formInput, price: e.target.value })}
+              helperText="Price can not be empty or equal to 0"
+            />
           </Grid>
         </Grid>
       </Grid>

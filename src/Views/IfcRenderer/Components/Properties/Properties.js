@@ -24,6 +24,8 @@ import {
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+import DescriptionIcon from '@material-ui/icons/Description';
 import AddIcon from "@material-ui/icons/Add";
 import ClearIcon from "@material-ui/icons/Clear";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -39,18 +41,32 @@ const useStyles = makeStyles((theme) => ({
   table: {
     width: "100%",
   },
-  cardInfo: {
+  cardExpanded: {
     position: "absolute",
     top: "0px",
     zIndex: 1000,
     left: "0px",
     right: "0px",
+    opacity: '0.95',
     width: ({ width }) => width,
     height: ({ height }) => height,
     maxWidth: window.innerWidth - 175,
     maxHeight: window.innerHeight - 175
   },
+  card: {
+    position: "absolute",
+    top: "0px",
+    zIndex: 100,
+    left: "0px",
+    right: "0px",
+    opacity: '0.95'
+    // width: ({ width }) => width,
+    // height: ({ height }) => height,
+    // maxWidth: window.innerWidth - 175,
+    // maxHeight: window.innerHeight - 175
+  },
   cardContent: {
+    opacity: '0.95',
     height: "90%",
     overflowY: "auto",
     overflowX: "hidden",
@@ -378,11 +394,11 @@ const Properties = ({
   const id = open ? "simple-popover" : undefined;
 
   return (
-    <Card className={classes.cardInfo}>
+    <Card className={expandedView ? classes.cardExpanded : classes.card}>
       <CardHeader
         avatar={
           <Avatar aria-label="recipe" className={classes.avatar}>
-            P
+            <DescriptionIcon />
           </Avatar>
         }
         action={
@@ -390,7 +406,27 @@ const Properties = ({
             <IconButton
               aria-label="settings"
               aria-describedby={id}
+              onClick={handleExpandView}
+              size="small"
+            >
+              {expandedView ? <FullscreenExitIcon /> : <FullscreenIcon />}
+            </IconButton>
+            <IconButton
+              aria-label="settings"
+              aria-describedby={id}
+              onClick={() => {
+                setShowProperties(false);
+                // setSelectedElementID(null); Empêche réouverture de la view après fermeture
+              }}
+              size="small"
+            >
+              <ClearIcon />
+            </IconButton>
+            <IconButton
+              aria-label="settings"
+              aria-describedby={id}
               onClick={handleClick}
+              size="small"
             >
               <MoreVertIcon />
             </IconButton>
@@ -419,16 +455,6 @@ const Properties = ({
               </ListItem> */}
               {ifcElement && (
                 <>
-                  <ListItem button onClick={handleExpandView}>
-                    <ListItemIcon>
-                      <FullscreenIcon />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        expandedView ? "Réduire fenêtre" : "Agrandir fenêtre"
-                      }
-                    />
-                  </ListItem>
                   <ListItem button onClick={handleExportToCsv}>
                     <ListItemIcon>
                       <DownloadIcon />

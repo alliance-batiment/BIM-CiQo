@@ -304,7 +304,7 @@ export default function MyNFTs({
                             </Typography>
                           </Grid>
                           <Grid item xs={12}>
-                            <Button size="small" onClick={() => listNFT(nft)} className={classes.button}>List</Button>
+                            <Button size="small" onClick={() => listNFT(nft)} className={classes.button}>Get Informations</Button>
                           </Grid>
                         </Grid>
                       </CardActions>

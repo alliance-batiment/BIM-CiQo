@@ -30,6 +30,8 @@ import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import ClearIcon from "@material-ui/icons/Clear";
 import AccountTreeIcon from "@material-ui/icons/AccountTree";
+import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import { IFCSLAB, IFCMEMBER, IFCSTRUCTURALCURVEMEMBER } from "web-ifc";
 import SearchData from '../SearchData';
 import ProjectTree from "../ProjectTree";
@@ -43,12 +45,30 @@ const useStyles = makeStyles((theme) => ({
   table: {
     width: "100%",
   },
-  cardInfo: {
+  cardExpanded: {
+    position: "absolute",
+    top: "0px",
+    zIndex: 1000,
+    left: "0px",
+    right: "0px",
+    opacity: '0.95',
+    width: ({ width }) => width,
+    height: ({ height }) => height,
+    maxWidth: window.innerWidth - 175,
+    maxHeight: window.innerHeight - 175
+  },
+  card: {
+    position: "absolute",
+    top: "0px",
     zIndex: 100,
-    width: "100%",
-    height: "100%",
+    left: "0px",
+    right: "0px",
+    opacity: '0.95',
+    width: ({ width }) => width,
+    height: ({ height }) => height,
   },
   cardContent: {
+    opacity: '0.95',
     height: "90%",
     overflowY: "auto",
     overflowX: "hidden",
@@ -111,11 +131,13 @@ const SpatialStructure = ({
   eids,
   setEids
 }) => {
-  const classes = useStyles();
   const [anchorEl, setAnchorEl] = useState(null);
   const [value, setValue] = useState(0);
   const [ifcElementByType, setIfcElementByType] = useState([]);
   const [expressIDList, setExpressIDList] = useState([]);
+  const [expandedView, setExpandedView] = useState(false);
+  const [viewWidth, setViewWidth] = useState("500px");
+  const [viewHeight, setViewHeight] = useState("600px");
 
   useEffect(() => {
     async function init() {
@@ -125,6 +147,47 @@ const SpatialStructure = ({
     }
     init();
   }, [eids]);
+
+  const props = {
+    width: viewWidth,
+    height: viewHeight,
+  };
+
+  const classes = useStyles(props);
+
+  useEffect(() => {
+    const getWidth = () => window.innerWidth - 175;
+    const getHeight = () => window.innerHeight - 175;
+    const resizeListener = () => {
+      if (!expandedView) {
+        setViewWidth(getWidth());
+        setViewHeight(getHeight());
+      }
+    }
+    window.addEventListener('resize', resizeListener)
+
+    return () => {
+      window.removeEventListener('resize', resizeListener);
+    }
+  }, []);
+
+  const handleExpandView = (e) => {
+    const width = window.innerWidth - 175;
+    const height = window.innerHeight - 175;
+
+    if (!expandedView) {
+      setExpandedView(true);
+      setViewWidth(width);
+      setViewHeight(height);
+      setAnchorEl(null);
+    } else if (expandedView) {
+      setExpandedView(false);
+      setViewWidth("400px");
+      setViewHeight("400px");
+      setAnchorEl(null);
+    }
+  };
+
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -144,7 +207,7 @@ const SpatialStructure = ({
 
 
   return (
-    <Card className={classes.cardInfo}>
+    <Card className={expandedView ? classes.cardExpanded : classes.card}>
       <CardHeader
         avatar={
           <Avatar aria-label="recipe" className={classes.avatar}>
@@ -161,7 +224,24 @@ const SpatialStructure = ({
             <IconButton
               aria-label="settings"
               aria-describedby={id}
+              onClick={handleExpandView}
+              size="small"
+            >
+              {expandedView ? <FullscreenExitIcon /> : <FullscreenIcon />}
+            </IconButton>
+            <IconButton
+              aria-label="settings"
+              aria-describedby={id}
+              onClick={handleShowSpatialStructure}
+              size="small"
+            >
+              <ClearIcon />
+            </IconButton>
+            <IconButton
+              aria-label="settings"
+              aria-describedby={id}
               onClick={handleClick}
+              size="small"
             >
               <MoreVertIcon />
             </IconButton>

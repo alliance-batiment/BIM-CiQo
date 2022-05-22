@@ -278,7 +278,7 @@ const ContextMenu = ({
 
   return (
     showContextMenu &&
-    <Paper sx={{ width: 250, maxWidth: '100%', top: anchorPoint.y, left: anchorPoint.x, position: 'absolute' }}>
+    <Paper sx={{ width: 250, maxWidth: '100%', top: anchorPoint.y, left: anchorPoint.x, position: 'absolute', opacity: '0.95' }}>
       <MenuList>
         <MenuItem
           onClick={handleGetAllItemsOfType}

@@ -34,6 +34,8 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ClearIcon from '@mui/icons-material/Clear';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import ControlCameraIcon from '@mui/icons-material/ControlCamera';
 
 
@@ -45,12 +47,30 @@ const useStyles = makeStyles((theme) => ({
   table: {
     width: "100%",
   },
-  cardInfo: {
+  cardExpanded: {
+    position: "absolute",
+    top: "0px",
+    zIndex: 1000,
+    left: "0px",
+    right: "0px",
+    opacity: '0.95',
+    width: ({ width }) => width,
+    height: ({ height }) => height,
+    maxWidth: window.innerWidth - 175,
+    maxHeight: window.innerHeight - 175
+  },
+  card: {
+    position: "absolute",
+    top: "0px",
     zIndex: 100,
-    width: "100%",
-    height: "100%",
+    left: "0px",
+    right: "0px",
+    opacity: '0.95',
+    width: ({ width }) => width,
+    height: ({ height }) => height,
   },
   cardContent: {
+    opacity: '0.95',
     height: "90%",
     overflowY: "auto",
     overflowX: "hidden",
@@ -83,11 +103,13 @@ const Cuts = ({
   showCuts,
   setShowCuts
 }) => {
-  const classes = useStyles();
   const [anchorEl, setAnchorEl] = useState(null);
   const [cuts, setCuts] = useState([]);
   const [allowCut, setAllowCut] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [expandedView, setExpandedView] = useState(false);
+  const [viewWidth, setViewWidth] = useState("400px");
+  const [viewHeight, setViewHeight] = useState("400px");
 
   useEffect(() => {
     const getCuts = async () => {
@@ -96,6 +118,46 @@ const Cuts = ({
     }
     getCuts();
   }, []);
+
+  const props = {
+    width: viewWidth,
+    height: viewHeight,
+  };
+
+  const classes = useStyles(props);
+
+  useEffect(() => {
+    const getWidth = () => window.innerWidth - 175;
+    const getHeight = () => window.innerHeight - 175;
+    const resizeListener = () => {
+      if (!expandedView) {
+        setViewWidth(getWidth());
+        setViewHeight(getHeight());
+      }
+    }
+    window.addEventListener('resize', resizeListener)
+
+    return () => {
+      window.removeEventListener('resize', resizeListener);
+    }
+  }, []);
+
+  const handleExpandView = (e) => {
+    const width = window.innerWidth - 175;
+    const height = window.innerHeight - 175;
+
+    if (!expandedView) {
+      setExpandedView(true);
+      setViewWidth(width);
+      setViewHeight(height);
+      setAnchorEl(null);
+    } else if (expandedView) {
+      setExpandedView(false);
+      setViewWidth("400px");
+      setViewHeight("400px");
+      setAnchorEl(null);
+    }
+  };
 
   const addClippingPlane = async () => {
     console.log('viewer', viewer);
@@ -150,7 +212,7 @@ const Cuts = ({
   const id = open ? "simple-popover" : undefined;
 
   return (
-    <Card className={classes.cardInfo}>
+    <Card className={expandedView ? classes.cardExpanded : classes.card}>
       <CardHeader
         avatar={
           <Avatar aria-label="recipe" className={classes.avatar}>
@@ -168,7 +230,28 @@ const Cuts = ({
           <IconButton
             aria-label="settings"
             aria-describedby={id}
+            onClick={handleExpandView}
+            size="small"
+          >
+            {expandedView ? <FullscreenExitIcon /> : <FullscreenIcon />}
+          </IconButton>
+          <IconButton
+            aria-label="settings"
+            aria-describedby={id}
+            onClick={() => {
+              viewer.clipper.active = false;
+              window.removeEventListener('dblclick', addClippingPlane, false);
+              setShowCuts(false);
+            }}
+            size="small"
+          >
+            <ClearIcon />
+          </IconButton>
+          <IconButton
+            aria-label="settings"
+            aria-describedby={id}
             onClick={handleClick}
+            size="small"
           >
             <MoreVertIcon />
           </IconButton>
