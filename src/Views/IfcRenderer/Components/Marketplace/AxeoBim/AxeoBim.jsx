@@ -23,7 +23,14 @@ import {
   Grid,
   Button,
   ButtonGroup,
-  Divider
+  Divider,
+  Tooltip,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  Stack
 } from "@mui/material";
 import ToolTipsElem from '../../../../../Components/ToolTipsElem/ToolTipsElem';
 import AddIcon from '@mui/icons-material/Add';
@@ -48,70 +55,12 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: "white",
     },
   },
-  button: {
-    backgroundColor: "#E6464D",
-    color: "white",
-    "&:hover": {
-      backgroundColor: "#E6464D",
-      color: "white",
-    },
-    "&:disabled": {
-      opacity: 0.8,
-      color: "white",
-    },
-  },
-  navigationBar: {
-    margin: 0,
-    bottom: 0,
+  table: {
     width: "100%",
-    backgroundColor: "white",
-    padding: "10px",
   },
-  modal: {
-    display: "flex",
-    padding: theme.spacing(1),
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  modalDatBim: {
-    width: "50%",
-    height: "70%",
-    backgroundColor: theme.palette.background.paper,
-    border: "2px solid #000",
-    boxShadow: theme.shadows[5],
-    padding: theme.spacing(2, 4, 3),
-    overflow: "hidden scroll",
-    position: "relative",
-  },
-  datBimCard: {
-    backgroundColor: "#E6464D",
-    color: "white",
-    margin: theme.spacing(1),
-    cursor: "pointer",
-  },
-  datBimTitle: {
-    textAlign: "center",
-    // color: '#E6464D',
-    textTransform: "none",
-  },
-  datBimCardTitle: {
-    margin: 0,
-    color: "white",
-  },
-  datBimFooterCard: {
-    display: "block",
-    textAlign: "right",
-  },
-  datBimCardButton: {
-    textAlign: "right",
-    color: "white",
-  },
-  accordionDetails: {
-    display: "block",
-  },
-  datBimIcon: {
-    width: "3em",
-  },
+  iconButton: {
+    backgroundColor: 'red'
+  }
 }));
 
 
@@ -182,33 +131,69 @@ const AxeoBim = ({
               <>
                 {locked ?
                   <>
-                    <IconButton
-                      edge="end"
-                      aria-label="comments"
-                      onClick={(e) => setSelectedApp('Open dthX')}
+                    <Tooltip
+                      title={
+                        <p>
+                          Accès référentiel:
+                  <br />
+                  Permet l'enrichissement de la maquette avec de la donnée issue d'un référentiel
+                </p>
+                      }
+                      placement="top"
                     >
-                      <AddIcon sx={{ color: 'white' }} />
-                    </IconButton>
-                    <IconButton
-                      edge="end"
-                      aria-label="comments"
-                      onClick={(e) => {
-                        handleUnlockProject();
-                        // e.stopPropagation();
-                      }}
+                      <IconButton
+                        edge="end"
+                        aria-label="comments"
+                        onClick={(e) => setSelectedApp('Open dthX')}
+                        className={classes.iconButton}
+                      >
+                        <AddIcon sx={{ color: 'white' }} />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip
+                      title={
+                        <p>
+                          AxeoBIM:
+                  <br />
+                  Débloque la maquette dans AxeoBIM afin de permettre son utilisation par un autre utilisateur
+                </p>
+                      }
+                      placement="top"
                     >
-                      <LockIcon sx={{ color: 'white' }} />
-                    </IconButton>
-                    <IconButton
-                      edge="end"
-                      aria-label="comments"
-                      onClick={handleUpdateProject}
+                      <IconButton
+                        edge="end"
+                        aria-label="comments"
+                        onClick={(e) => {
+                          handleUnlockProject();
+                          // e.stopPropagation();
+                        }}
+                        className={classes.iconButton}
+                      >
+                        <LockIcon style={{ color: 'white' }} />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip
+                      title={
+                        <p>
+                          AxeoBIM:
+                  <br />
+                  Mise à jour et déblocage la maquette dans AxeoBIM pour les autres utilisateurs
+                </p>
+                      }
+                      placement="top"
                     >
-                      <FileUploadIcon sx={{ color: 'white' }} />
-                    </IconButton>
+                      <IconButton
+                        edge="end"
+                        aria-label="comments"
+                        onClick={handleUpdateProject}
+                        className={classes.icons}
+                      >
+                        <FileUploadIcon sx={{ color: 'white' }} />
+                      </IconButton>
+                    </Tooltip>
                   </>
                   :
-                  <ToolTipsElem
+                  <Tooltip
                     title={
                       <p>
                         AxeoBIM:
@@ -217,23 +202,18 @@ const AxeoBim = ({
                 </p>
                     }
                     placement="top"
-                    // className={classes.fab}
-                    onClick={(e) => {
-                      handleLockProject()
-                      // e.stopPropagation();
-                    }}
                   >
-                    {/* <IconButton
+                    <IconButton
                       edge="end"
                       aria-label="comments"
                       onClick={(e) => {
                         handleLockProject()
                         // e.stopPropagation();
                       }}
-                    > */}
-                    <LockOpenIcon sx={{ color: 'white' }} />
-                    {/* </IconButton> */}
-                  </ToolTipsElem>
+                    >
+                      <LockOpenIcon sx={{ color: 'white' }} />
+                    </IconButton>
+                  </Tooltip>
                 }
                 {/* <IconButton
                   edge="end"
@@ -268,14 +248,43 @@ const AxeoBim = ({
             </ListItemButton>
           </ListItem>
         </List>
+      </Grid >
+      {/* <Grid item xs={12}>
+        <Typography variant="body1" component="div">
+          <strong>Etat de la maquette dans AxeoBIM:</strong>
+        </Typography>
+        <Divider />
+      </Grid> */}
+      <Grid item xs={12}>
+        <Table size="small" aria-label="a dense table" className={classes.table}>
+          <TableBody>
+            <TableRow
+              key={0}
+              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+            >
+              <TableCell component="th" scope="row" sx={{ width: '30%', border: "none" }}>
+                {`Etat de la maquette : `}
+              </TableCell>
+              <TableCell align="left" sx={{ border: "none" }}>
+                <Typography variant="body1" component="div">
+                  {locked ?
+                    <strong style={{ color: 'red' }}>Bloquée</strong>
+                    :
+                    <strong style={{ color: 'green' }}>Débloquée</strong>
+                  }
+                </Typography>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+        <Divider />
       </Grid>
-      <Divider />
       <Grid item xs={12}>
         <Typography variant="body1" component="div">
           <strong>Remarque:</strong>
         </Typography>
         <Typography variant="body1" component="div">
-          Afin de pouvoir enrichir la maquette BIM, il faut au préalable <strong>bloquer le modèle</strong> afin d'empécher sa modification par d'autres utilisateurs:
+          Afin de pouvoir enrichir la maquette BIM, il est nécessaire au préalable de <strong>bloquer le modèle</strong> afin d'empécher sa modification par d'autres utilisateurs.
         </Typography>
       </Grid>
       <Grid item xs={12}>
@@ -289,7 +298,7 @@ const AxeoBim = ({
           <Alert severity="error">{`${apiInformation.updateProject}`}</Alert>
         }
       </Grid>
-    </Grid>
+    </Grid >
   );
 };
 

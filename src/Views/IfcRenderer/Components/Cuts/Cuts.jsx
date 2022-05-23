@@ -65,9 +65,7 @@ const useStyles = makeStyles((theme) => ({
     zIndex: 100,
     left: "0px",
     right: "0px",
-    opacity: '0.95',
-    width: ({ width }) => width,
-    height: ({ height }) => height,
+    opacity: '0.95'
   },
   cardContent: {
     opacity: '0.95',

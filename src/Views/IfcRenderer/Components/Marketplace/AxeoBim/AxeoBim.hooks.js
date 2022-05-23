@@ -41,7 +41,7 @@ function UseAxeoBim({
       })
       setApiInformation({
         ...apiInformation,
-        lockProject: ''
+        lockProject: 'Maquette bloquée'
       })
       sessionStorage.setItem("axeobim_lock_token", res.data.lock_token);
       setLocked(true);
@@ -77,7 +77,7 @@ function UseAxeoBim({
       })
       setApiInformation({
         ...apiInformation,
-        unlockProject: ''
+        unlockProject: 'Maquette débloquée'
       })
       sessionStorage.setItem("axeobim_lock_token", res.data.lock_token);
       setLocked(false);
@@ -121,7 +121,7 @@ function UseAxeoBim({
       setLocked(false);
       setApiInformation({
         ...apiInformation,
-        updateProject: ''
+        updateProject: 'Maquette mise à jour'
       })
     } catch (err) {
       setApiInformation({

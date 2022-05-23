@@ -222,8 +222,8 @@ const Marketplace = ({
   const [searchInput, setSearchInput] = useState("");
   const [url, setUrl] = useState("");
   const [expandedView, setExpandedView] = useState(false);
-  const [viewWidth, setViewWidth] = useState("400px");
-  const [viewHeight, setViewHeight] = useState("400px");
+  const [viewWidth, setViewWidth] = useState("600px");
+  const [viewHeight, setViewHeight] = useState("600px");
 
   useEffect(() => {
     console.log("apiConnectors", apiConnectors);
