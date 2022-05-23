@@ -242,9 +242,9 @@ const IfcRenderer = () => {
       // const model = await newViewer.IFC.loadIfcUrl(allModels[0].file, false);
 
 
-      const model = await newViewer.IFC.loadIfcUrl('../../files/Duplex.ifc');
-      const newIfcModels = [...ifcModels, model];
-      setIfcModels(newIfcModels);
+      // const model = await newViewer.IFC.loadIfcUrl('../../files/Duplex.ifc');
+      // const newIfcModels = [...ifcModels, model];
+      // setIfcModels(newIfcModels);
 
       // const models = newViewer.context.items.ifcModels;
       // const pickableModels = newViewer.context.items.pickableIfcModels;
@@ -276,23 +276,23 @@ const IfcRenderer = () => {
       // // pickableModels.push(subset);
       // model.position.set(10, 10, 10)
       // // subset.position.set(10, 10, 10)
-      const newSpatialStructure = await newViewer.IFC.getSpatialStructure(
-        0,
-        true
-      );
-      const updateSpatialStructures = [
-        ...spatialStructures,
-        newSpatialStructure,
-      ];
-      setSpatialStructures(updateSpatialStructures);
-      setState({
-        ...state,
-        loading: false,
-        spatialStructures: {
-          value: { ...newSpatialStructure },
-          list: [...updateSpatialStructures]
-        }
-      });
+      // const newSpatialStructure = await newViewer.IFC.getSpatialStructure(
+      //   0,
+      //   true
+      // );
+      // const updateSpatialStructures = [
+      //   ...spatialStructures,
+      //   newSpatialStructure,
+      // ];
+      // setSpatialStructures(updateSpatialStructures);
+      // setState({
+      //   ...state,
+      //   loading: false,
+      //   spatialStructures: {
+      //     value: { ...newSpatialStructure },
+      //     list: [...updateSpatialStructures]
+      //   }
+      // });
 
       newViewer.shadowDropper.darkness = 1.5;
       newViewer.clipper.active = true;
