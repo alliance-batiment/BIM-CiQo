@@ -289,13 +289,13 @@ const AxeoBim = ({
       </Grid>
       <Grid item xs={12}>
         {(apiInformation.lockProject !== "") &&
-          <Alert severity="error">{`${apiInformation.lockProject}`}</Alert>
+          <Alert severity="info">{`${apiInformation.lockProject}`}</Alert>
         }
         {(apiInformation.unlockProject !== "") &&
-          <Alert severity="error">{`${apiInformation.unlockProject}`}</Alert>
+          <Alert severity="info">{`${apiInformation.unlockProject}`}</Alert>
         }
         {(apiInformation.updateProject !== "") &&
-          <Alert severity="error">{`${apiInformation.updateProject}`}</Alert>
+          <Alert severity="info">{`${apiInformation.updateProject}`}</Alert>
         }
       </Grid>
     </Grid >
