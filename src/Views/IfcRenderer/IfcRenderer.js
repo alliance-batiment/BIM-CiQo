@@ -1136,7 +1136,7 @@ const IfcRenderer = () => {
               <ArrowCircleUpIcon />
             </ToolTipsElem>
           </Grid> */}
-          <Grid item xs={12}>
+          {/* <Grid item xs={12}>
             <ToolTipsElem
               title="Modifications"
               placement="bottom"
