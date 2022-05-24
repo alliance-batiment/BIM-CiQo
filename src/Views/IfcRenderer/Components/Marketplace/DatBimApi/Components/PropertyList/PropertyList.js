@@ -327,7 +327,6 @@ const PropertyList = ({
     handleShowMarketplace("home");
   };
 
-  console.log("properties", properties);
   return (
     <TableContainer component={Paper}>
       {/* <SearchBar
