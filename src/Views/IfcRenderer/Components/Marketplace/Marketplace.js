@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Alert
-} from "@mui/material";
+import { Alert } from "@mui/material";
 import {
   Typography,
   Grid,
@@ -33,7 +31,7 @@ import MoreVertIcon from "@material-ui/icons/MoreVert";
 import ClearIcon from "@material-ui/icons/Clear";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
-import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import DatBimApi from "./DatBimApi/DatBimApi";
 import DropBox from "./DropBox/DropBox";
 import BsDD from "./BsDD";
@@ -67,11 +65,11 @@ const useStyles = makeStyles((theme) => ({
     zIndex: 1000,
     left: "0px",
     right: "0px",
-    opacity: '0.95',
+    opacity: "0.95",
     width: ({ width }) => width,
     height: ({ height }) => height,
     maxWidth: window.innerWidth - 175,
-    maxHeight: window.innerHeight - 175
+    maxHeight: window.innerHeight - 175,
   },
   card: {
     position: "absolute",
@@ -79,10 +77,14 @@ const useStyles = makeStyles((theme) => ({
     zIndex: 100,
     left: "0px",
     right: "0px",
-    opacity: '0.95'
+    opacity: "0.95",
+    width: ({ width }) => width,
+    height: ({ height }) => height,
+    maxWidth: window.innerWidth - 175,
+    maxHeight: window.innerHeight - 175,
   },
   cardContent: {
-    opacity: '0.95',
+    opacity: "0.95",
     height: "90%",
     overflowY: "auto",
     overflowX: "hidden",
@@ -157,11 +159,11 @@ const applications = [
   //   description: 'Espace permettant le partage et le stockage de fichier'
   // },
   {
-    name: 'AxeoBIM',
+    name: "AxeoBIM",
     img: AxeoBimLogo,
-    type: 'storage',
-    tags: ['Coming Soon'],
-    description: 'Espace permettant le partage et le stockage de fichier'
+    type: "storage",
+    tags: ["Coming Soon"],
+    description: "Espace permettant le partage et le stockage de fichier",
   },
   // {
   //   name: 'bsDD',
@@ -192,6 +194,20 @@ const applications = [
   //   description: "Marketplace décentralisée permettant de stocker et d'échanger des NFT pour le BIM"
   // },
   // {
+  //   name: 'TriChain',
+  //   img: TriChainLogo,
+  //   type: 'storage & blockchain',
+  //   tags: ['Coming Soon'],
+  //   description: "Marketplace décentralisée permettant de stocker et d'échanger des NFT pour le BIM"
+  // },
+  // {
+  //   name: 'TriChain',
+  //   img: TriChainLogo,
+  //   type: 'NFT',
+  //   tags: ['Coming Soon'],
+  //   description: "Marketplace décentralisée permettant de stocker et d'échanger des NFT pour le BIM"
+  // },
+  // {
   //   name: 'TriSensors',
   //   img: TriStructureLogo,
   //   type: 'iot',
@@ -214,7 +230,7 @@ const Marketplace = ({
   addElementsNewProperties,
   specificApplication,
   apiConnectors,
-  setApiConnectors
+  setApiConnectors,
 }) => {
   const [selectedApp, setSelectedApp] = useState("home");
   const [anchorEl, setAnchorEl] = useState(null);
@@ -222,8 +238,8 @@ const Marketplace = ({
   const [searchInput, setSearchInput] = useState("");
   const [url, setUrl] = useState("");
   const [expandedView, setExpandedView] = useState(false);
-  const [viewWidth, setViewWidth] = useState("600px");
-  const [viewHeight, setViewHeight] = useState("600px");
+  const [viewWidth, setViewWidth] = useState("100%");
+  const [viewHeight, setViewHeight] = useState("100%");
 
   useEffect(() => {
     console.log("apiConnectors", apiConnectors);
@@ -250,12 +266,12 @@ const Marketplace = ({
         setViewWidth(getWidth());
         setViewHeight(getHeight());
       }
-    }
-    window.addEventListener('resize', resizeListener)
+    };
+    window.addEventListener("resize", resizeListener);
 
     return () => {
-      window.removeEventListener('resize', resizeListener);
-    }
+      window.removeEventListener("resize", resizeListener);
+    };
   }, []);
 
   const handleExpandView = (e) => {
@@ -269,8 +285,8 @@ const Marketplace = ({
       setAnchorEl(null);
     } else if (expandedView) {
       setExpandedView(false);
-      setViewWidth("400px");
-      setViewHeight("400px");
+      setViewWidth("100%");
+      setViewHeight("100%");
       setAnchorEl(null);
     }
   };
@@ -378,7 +394,7 @@ const Marketplace = ({
       <CardContent className={classes.cardContent}>
         {selectedApp === "home" && (
           <Grid container spacing={3}>
-            {(filteredData?.length >= 0) &&
+            {filteredData?.length >= 0 && (
               <>
                 <Grid item xs={12}>
                   <SearchBar
@@ -391,7 +407,7 @@ const Marketplace = ({
                   <Typography>{`Number of results: ${filteredData.length}`}</Typography>
                 </Grid>
               </>
-            }
+            )}
             {filteredData?.map((application) => (
               <Grid item xs={4}>
                 <Card className={classes.application}>
@@ -446,7 +462,7 @@ const Marketplace = ({
             handleShowMarketplace={handleShowMarketplace}
           />
         )}
-        {(selectedApp === "AxeoBIM") && (
+        {selectedApp === "AxeoBIM" && (
           <>
             {/* {apiConnectors[selectedApp] ? */}
             <AxeoBim

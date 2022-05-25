@@ -45,7 +45,7 @@ const NavBarElem = ({ title, classes, handleDrawerOpen, open }) => {
               style={{ color: "inherit", margin: "0 20px" }}
               target="_blank"
             >
-              v0.9.0
+              v0.10.0
          </a>
             <a
               href="https://boxboisbim.mydatbim.com/mydatbimCom/mentions-legales"

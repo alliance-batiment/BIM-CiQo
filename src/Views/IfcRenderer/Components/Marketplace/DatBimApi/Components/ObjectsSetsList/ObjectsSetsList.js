@@ -86,6 +86,8 @@ const ObjectsSetsList = ({
   const [objectsSetsList, setObjectsSetsList] = useState([]);
   const [objectsSetsListDefault, setObjectsSetsListDefault] = useState([]);
   const [objectsSetsListWithEIDS, setObjectsSetsListWithEIDS] = useState([]);
+  const [objectsSetsListBySelectedClass, setObjectsSetsListBySelectedClass] =
+    useState([]);
   const [searchInput, setSearchInput] = useState("");
   const [objectsSetsListLoader, setObjectsSetsListLoader] = useState(false);
 
@@ -94,14 +96,14 @@ const ObjectsSetsList = ({
   }, [eids]);
 
   const getObjectsSetsList = () => {
+    setSearchInput("");
+    setObjectsSetsListBySelectedClass([]);
+
     if ((eids.length > 0) & (searchInput.length > 0)) {
-      setSearchInput("");
       getobjectsSetsBySelectedEids();
     } else if (eids.length > 0) {
-      setSearchInput("");
       getobjectsSetsBySelectedEids();
     } else {
-      setSearchInput("");
       setObjectsSetsList(objectsSetsListDefault);
       getObjectsSets();
     }
@@ -114,8 +116,8 @@ const ObjectsSetsList = ({
       if (objectsSetsListDefault && objectsSetsListDefault.length > 0) {
         setObjectsSetsListLoader(false);
       } else {
-        const organizations = await axios.get(
-          `${process.env.REACT_APP_API_DATBIM}/portals/${selectedPortal}/organizations`,
+        const getObjectsSetsList = await axios.get(
+          `${process.env.REACT_APP_API_DATBIM}/portals/${selectedPortal}/object-sets`,
           {
             headers: {
               "X-Auth-Token": sessionStorage.getItem("token"),
@@ -123,30 +125,17 @@ const ObjectsSetsList = ({
           }
         );
 
-        Promise.allSettled(
-          organizations.data.data.map(async (organizationProperty) => {
-            return await axios.get(
-              `${process.env.REACT_APP_API_DATBIM}/organizations/${organizationProperty.organization_id}/object-sets`,
-              {
-                headers: {
-                  "X-Auth-Token": sessionStorage.getItem("token"),
-                },
-              }
-            );
-          })
-        ).then(function (values) {
-          const objectsSets = values.reduce((acc, value) => {
-            if (value.status === "fulfilled") {
-              value.value.data.data.map((value) => acc.push(value));
-            }
-            return acc;
-          }, []);
-          setObjectsSetsListDefault(objectsSets);
-          setObjectsSetsList(objectsSets);
+        console.log("objectsSetsList", objectsSetsList);
 
-          // console.log("objectsSetsListDefault", objectsSets);
-          setObjectsSetsListLoader(false);
-        });
+        const objectsSets = getObjectsSetsList.data.data;
+
+        console.log("objectsSetsList", objectsSets);
+
+        setObjectsSetsListDefault(objectsSets);
+        setObjectsSetsList(objectsSets);
+
+        console.log("objectsSetsListDefault", objectsSets);
+        setObjectsSetsListLoader(false);
       }
     } catch (error) {
       console.error(error);
@@ -157,7 +146,7 @@ const ObjectsSetsList = ({
     try {
       setObjectsSetsListLoader(true);
       const objectsSetsBySelectedClass = await axios.get(
-        `${process.env.REACT_APP_API_DATBIM}/classes/${classId}/object-sets`,
+        `${process.env.REACT_APP_API_DATBIM}/portals/${selectedPortal}/object-sets/classes/${classId}`,
         {
           headers: {
             "X-Auth-Token": sessionStorage.getItem("token"),
@@ -166,6 +155,7 @@ const ObjectsSetsList = ({
       );
 
       setObjectsSetsList(objectsSetsBySelectedClass.data.data);
+      setObjectsSetsListBySelectedClass(objectsSetsBySelectedClass.data.data);
       setObjectsSetsListLoader(false);
     } catch (error) {
       console.error(error);
@@ -179,7 +169,7 @@ const ObjectsSetsList = ({
         0,
         eids[0]
       );
-      console.log('ifcClass', ifcClass)
+      console.log("ifcClass", ifcClass);
       const treeClassList = await axios.get(
         `${process.env.REACT_APP_API_DATBIM}/classes/mapping/${ifcClass}`,
         {
@@ -309,6 +299,7 @@ const ObjectsSetsList = ({
   const resetObjectsSetsList = () => {
     setSearchInput("");
     setObjectsSetsList(objectsSetsListDefault);
+    setObjectsSetsListBySelectedClass([]);
   };
 
   return (
@@ -368,7 +359,9 @@ const ObjectsSetsList = ({
             ) : (
               <Grid container spacing={1}>
                 {((eids.length > 0) & (searchInput.length === 0)
-                  ? objectsSetsListWithEIDS
+                  ? objectsSetsListBySelectedClass.length > 0
+                    ? objectsSetsListBySelectedClass
+                    : objectsSetsListWithEIDS
                   : objectsSetsList
                 )?.map((object, index) => (
                   <Grid item sm={4}>

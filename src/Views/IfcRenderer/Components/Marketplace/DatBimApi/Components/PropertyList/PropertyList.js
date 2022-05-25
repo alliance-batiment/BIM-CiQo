@@ -92,60 +92,60 @@ const PropertyList = ({
     setProperties(filtered);
   }
 
-  function addProperties(properties, objSelected) {
-    setLoader(true);
+  // function addProperties(properties, objSelected) {
+  //   setLoader(true);
 
-    const formatedProperties = properties.map((property) => {
-      if (property.data_type_name === "Date") {
-        return {
-          ...property,
-          text_value: moment(property.text_value).format("DD/MM/YYYY"),
-        };
-      }
-      return property;
-    });
-    axios
-      .post(
-        `${process.env.REACT_APP_API_URL}/createPset/${projectId}`,
-        {
-          products: formatedProperties,
-          target: objSelected,
-        },
-        {
-          headers: {
-            "X-Auth-Token": sessionStorage.getItem("token"),
-          },
-        }
-      )
-      .then(({ data }) => {
-        const formData = new FormData();
-        formData.append("files", data);
-        axios
-          .post(process.env.REACT_APP_API_URL, formData)
-          .then((value) => {
-            return value.data;
-          })
-          .then(({ projectId }) => {
-            axios
-              .get(`${process.env.REACT_APP_API_URL}/p/${projectId}`)
-              .then(() => {
-                history.push(`/temp`);
-                history.goBack();
-                setLoader(false);
-              });
-          })
-          .catch((error) => {
-            console.log("ERRORRR", error);
-            alert("Echec de l'enrichissement");
-            setLoader(false);
-          });
-      })
-      .catch((error) => {
-        console.log("ERRORRR", error);
-        alert("Echec de l'enrichissement");
-        setLoader(false);
-      });
-  }
+  //   const formatedProperties = properties.map((property) => {
+  //     if (property.data_type_name === "Date") {
+  //       return {
+  //         ...property,
+  //         text_value: moment(property.text_value).format("DD/MM/YYYY"),
+  //       };
+  //     }
+  //     return property;
+  //   });
+  //   axios
+  //     .post(
+  //       `${process.env.REACT_APP_API_URL}/createPset/${projectId}`,
+  //       {
+  //         products: formatedProperties,
+  //         target: objSelected,
+  //       },
+  //       {
+  //         headers: {
+  //           "X-Auth-Token": sessionStorage.getItem("token"),
+  //         },
+  //       }
+  //     )
+  //     .then(({ data }) => {
+  //       const formData = new FormData();
+  //       formData.append("files", data);
+  //       axios
+  //         .post(process.env.REACT_APP_API_URL, formData)
+  //         .then((value) => {
+  //           return value.data;
+  //         })
+  //         .then(({ projectId }) => {
+  //           axios
+  //             .get(`${process.env.REACT_APP_API_URL}/p/${projectId}`)
+  //             .then(() => {
+  //               history.push(`/temp`);
+  //               history.goBack();
+  //               setLoader(false);
+  //             });
+  //         })
+  //         .catch((error) => {
+  //           console.log("ERRORRR", error);
+  //           alert("Echec de l'enrichissement");
+  //           setLoader(false);
+  //         });
+  //     })
+  //     .catch((error) => {
+  //       console.log("ERRORRR", error);
+  //       alert("Echec de l'enrichissement");
+  //       setLoader(false);
+  //     });
+  // }
 
   useEffect(() => {
     const getPropertiesValues = async () => {
@@ -222,7 +222,7 @@ const PropertyList = ({
         <TableBody>
           {properties?.map((property, propertyIndex) => (
             <TableRow
-              key={property.property_id}
+              key={propertyIndex}
               className={`${classes.root} ${classes.datBimList}`}
             >
               <TableCell width="35%" component="th" scope="row">
