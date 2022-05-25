@@ -198,7 +198,7 @@ const applications = [
   // {
   //   name: 'TriChain',
   //   img: TriChainLogo,
-  //   type: 'NFT',
+  //   type: 'storage & blockchain',
   //   tags: ['Coming Soon'],
   //   description: "Marketplace décentralisée permettant de stocker et d'échanger des NFT pour le BIM"
   // },
