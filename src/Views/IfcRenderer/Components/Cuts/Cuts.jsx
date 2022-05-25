@@ -1,8 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import {
-  makeStyles,
-  Fab
-} from "@material-ui/core";
+import React, { useCallback, useEffect, useState } from "react";
+import { makeStyles, Fab } from "@material-ui/core";
 import {
   Grid,
   Button,
@@ -24,20 +21,19 @@ import {
   FormControlLabel,
   Radio,
   Popover,
-  CircularProgress
-} from '@mui/material';
-import CropIcon from '@mui/icons-material/Crop';
-import CloseIcon from '@mui/icons-material/Close';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import ClearIcon from '@mui/icons-material/Clear';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+  CircularProgress,
+} from "@mui/material";
+import CropIcon from "@mui/icons-material/Crop";
+import CloseIcon from "@mui/icons-material/Close";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import ClearIcon from "@mui/icons-material/Clear";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
-import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
-import ControlCameraIcon from '@mui/icons-material/ControlCamera';
-
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
+import ControlCameraIcon from "@mui/icons-material/ControlCamera";
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -53,11 +49,11 @@ const useStyles = makeStyles((theme) => ({
     zIndex: 1000,
     left: "0px",
     right: "0px",
-    opacity: '0.95',
+    opacity: "0.95",
     width: ({ width }) => width,
     height: ({ height }) => height,
     maxWidth: window.innerWidth - 175,
-    maxHeight: window.innerHeight - 175
+    maxHeight: window.innerHeight - 175,
   },
   card: {
     position: "absolute",
@@ -65,10 +61,14 @@ const useStyles = makeStyles((theme) => ({
     zIndex: 100,
     left: "0px",
     right: "0px",
-    opacity: '0.95'
+    opacity: "0.95",
+    width: ({ width }) => width,
+    height: ({ height }) => height,
+    maxWidth: window.innerWidth - 175,
+    maxHeight: window.innerHeight - 175,
   },
   cardContent: {
-    opacity: '0.95',
+    opacity: "0.95",
     height: "90%",
     overflowY: "auto",
     overflowX: "hidden",
@@ -84,36 +84,31 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   avatar: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     width: theme.spacing(7),
     height: theme.spacing(7),
     // padding: '5px',
-    borderRadius: '0px'
+    borderRadius: "0px",
   },
   fab: {
-    backgroundColor: 'white'
-  }
+    backgroundColor: "white",
+  },
 }));
 
-
-const Cuts = ({
-  viewer,
-  showCuts,
-  setShowCuts
-}) => {
+const Cuts = ({ viewer, showCuts, setShowCuts }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [cuts, setCuts] = useState([]);
   const [allowCut, setAllowCut] = useState(false);
   const [loading, setLoading] = useState(false);
   const [expandedView, setExpandedView] = useState(false);
-  const [viewWidth, setViewWidth] = useState("400px");
-  const [viewHeight, setViewHeight] = useState("400px");
+  const [viewWidth, setViewWidth] = useState("100%");
+  const [viewHeight, setViewHeight] = useState("100%");
 
   useEffect(() => {
     const getCuts = async () => {
       viewer.clipper.active = true;
       setCuts(viewer.clipper.planes);
-    }
+    };
     getCuts();
   }, []);
 
@@ -132,12 +127,12 @@ const Cuts = ({
         setViewWidth(getWidth());
         setViewHeight(getHeight());
       }
-    }
-    window.addEventListener('resize', resizeListener)
+    };
+    window.addEventListener("resize", resizeListener);
 
     return () => {
-      window.removeEventListener('resize', resizeListener);
-    }
+      window.removeEventListener("resize", resizeListener);
+    };
   }, []);
 
   const handleExpandView = (e) => {
@@ -151,26 +146,26 @@ const Cuts = ({
       setAnchorEl(null);
     } else if (expandedView) {
       setExpandedView(false);
-      setViewWidth("400px");
-      setViewHeight("400px");
+      setViewWidth("100%");
+      setViewHeight("100%");
       setAnchorEl(null);
     }
   };
 
   const addClippingPlane = async () => {
-    console.log('viewer', viewer);
+    console.log("viewer", viewer);
     viewer.clipper.createPlane();
-    console.log('viewer.clipper.planes', viewer.clipper.planes)
-    console.log('viewer.plans.planLists', viewer.plans.planLists)
+    console.log("viewer.clipper.planes", viewer.clipper.planes);
+    console.log("viewer.plans.planLists", viewer.plans.planLists);
     setCuts(viewer.clipper.planes);
   };
 
   const handleAddClippingPlane = () => {
     if (showCuts) {
       viewer.clipper.active = true;
-      window.addEventListener('dblclick', addClippingPlane, false);
+      window.addEventListener("dblclick", addClippingPlane, false);
     }
-  }
+  };
 
   const handleDeleteClippingPlane = async (cut, index) => {
     if (showCuts) {
@@ -178,14 +173,14 @@ const Cuts = ({
       const newCuts = cuts.splice(index, 1);
       setCuts([...newCuts]);
     }
-  }
+  };
 
   const handleHideAllClippingPlane = () => {
     viewer.clipper.active = !viewer.clipper.active;
     if (!viewer.clipper.active) {
       viewer.removeClippingPlane();
     }
-  }
+  };
 
   const handleRemoveAllClippingPlane = () => {
     viewer.clipper.active = false;
@@ -195,8 +190,7 @@ const Cuts = ({
     // }
     viewer.clipper.planes = [];
     setCuts([]);
-  }
-
+  };
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -214,78 +208,82 @@ const Cuts = ({
       <CardHeader
         avatar={
           <Avatar aria-label="recipe" className={classes.avatar}>
-            <Fab
-              size="small"
-              className={classes.fab}
-            >
+            <Fab size="small" className={classes.fab}>
               <CropIcon />
             </Fab>
           </Avatar>
         }
         title={`Coupes`}
         subheader={`Liste des coupes`}
-        action={<div>
-          <IconButton
-            aria-label="settings"
-            aria-describedby={id}
-            onClick={handleExpandView}
-            size="small"
-          >
-            {expandedView ? <FullscreenExitIcon /> : <FullscreenIcon />}
-          </IconButton>
-          <IconButton
-            aria-label="settings"
-            aria-describedby={id}
-            onClick={() => {
-              viewer.clipper.active = false;
-              window.removeEventListener('dblclick', addClippingPlane, false);
-              setShowCuts(false);
-            }}
-            size="small"
-          >
-            <ClearIcon />
-          </IconButton>
-          <IconButton
-            aria-label="settings"
-            aria-describedby={id}
-            onClick={handleClick}
-            size="small"
-          >
-            <MoreVertIcon />
-          </IconButton>
-          <Popover
-            id={id}
-            open={open}
-            anchorEl={anchorEl}
-            onClose={handleClose}
-            anchorOrigin={{
-              vertical: "bottom",
-              horizontal: "center",
-            }}
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "center",
-            }}
-          >
-            <ListItem button onClick={() => {
-              viewer.clipper.active = false;
-              window.removeEventListener('dblclick', addClippingPlane, false);
-              setShowCuts(false);
-            }}>
-              <ListItemIcon>
-                <ClearIcon />
-              </ListItemIcon>
-              <ListItemText primary="Fermer" />
-            </ListItem>
-          </Popover>
-        </div>}
+        action={
+          <div>
+            <IconButton
+              aria-label="settings"
+              aria-describedby={id}
+              onClick={handleExpandView}
+              size="small"
+            >
+              {expandedView ? <FullscreenExitIcon /> : <FullscreenIcon />}
+            </IconButton>
+            <IconButton
+              aria-label="settings"
+              aria-describedby={id}
+              onClick={() => {
+                viewer.clipper.active = false;
+                window.removeEventListener("dblclick", addClippingPlane, false);
+                setShowCuts(false);
+              }}
+              size="small"
+            >
+              <ClearIcon />
+            </IconButton>
+            <IconButton
+              aria-label="settings"
+              aria-describedby={id}
+              onClick={handleClick}
+              size="small"
+            >
+              <MoreVertIcon />
+            </IconButton>
+            <Popover
+              id={id}
+              open={open}
+              anchorEl={anchorEl}
+              onClose={handleClose}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "center",
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "center",
+              }}
+            >
+              <ListItem
+                button
+                onClick={() => {
+                  viewer.clipper.active = false;
+                  window.removeEventListener(
+                    "dblclick",
+                    addClippingPlane,
+                    false
+                  );
+                  setShowCuts(false);
+                }}
+              >
+                <ListItemIcon>
+                  <ClearIcon />
+                </ListItemIcon>
+                <ListItemText primary="Fermer" />
+              </ListItem>
+            </Popover>
+          </div>
+        }
       />
       <CardContent>
         <Grid container>
-          <Grid item xs={6} style={{ textAlign: 'left' }}>
-            <ButtonGroup
-              className={classes.buttonGroup}
-            >
+          <Grid item xs={6} style={{ textAlign: "left" }}>
+            <ButtonGroup className={classes.buttonGroup}>
               <Button
                 edge="end"
                 aria-label="comments"
@@ -295,10 +293,8 @@ const Cuts = ({
               </Button>
             </ButtonGroup>
           </Grid>
-          <Grid item xs={6} style={{ textAlign: 'right' }}>
-            <ButtonGroup
-              className={classes.buttonGroup}
-            >
+          <Grid item xs={6} style={{ textAlign: "right" }}>
+            <ButtonGroup className={classes.buttonGroup}>
               <Button
                 edge="end"
                 aria-label="comments"
@@ -316,47 +312,50 @@ const Cuts = ({
             </ButtonGroup>
           </Grid>
           <Grid item xs={12}>
-            {loading ?
+            {loading ? (
               <CircularProgress color="inherit" />
-              :
+            ) : (
               <List sx={{ width: "100%" }}>
-                {cuts.length > 0 && cuts.map((cut, index) => (
-                  <ListItem
-                    key={index}
-                    secondaryAction={
-                      <>
-                        <IconButton
-                          edge="end"
-                          aria-label="comments"
-                          onClick={() => handleDeleteClippingPlane(cut, index)}
-                        >
-                          <CloseIcon />
-                        </IconButton>
-                      </>
-                    }
-                    disablePadding
-                  >
-                    <ListItemButton
-                      role={undefined}
-                      dense
-                    //  onClick={() => handleShowElement(ifcClass.eids)}
+                {cuts.length > 0 &&
+                  cuts.map((cut, index) => (
+                    <ListItem
+                      key={index}
+                      secondaryAction={
+                        <>
+                          <IconButton
+                            edge="end"
+                            aria-label="comments"
+                            onClick={() =>
+                              handleDeleteClippingPlane(cut, index)
+                            }
+                          >
+                            <CloseIcon />
+                          </IconButton>
+                        </>
+                      }
+                      disablePadding
                     >
-                      {/* <ListItemIcon>
+                      <ListItemButton
+                        role={undefined}
+                        dense
+                        //  onClick={() => handleShowElement(ifcClass.eids)}
+                      >
+                        {/* <ListItemIcon>
                     </ListItemIcon> */}
-                      <ListItemText
-                        id={`checkbox-list-label-${index}`}
-                        primary={`${cut.arrowBoundingBox.uuid}`}
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
+                        <ListItemText
+                          id={`checkbox-list-label-${index}`}
+                          primary={`${cut.arrowBoundingBox.uuid}`}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
               </List>
-            }
+            )}
           </Grid>
         </Grid>
       </CardContent>
     </Card>
-  )
+  );
 };
 
 export default Cuts;

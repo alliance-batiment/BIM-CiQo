@@ -21,7 +21,7 @@ import {
   ListItemButton,
   Grid,
   Button,
-  Fab
+  Fab,
 } from "@mui/material";
 import TreeView from "@material-ui/lab/TreeView";
 import TreeItem from "@material-ui/lab/TreeItem";
@@ -31,9 +31,9 @@ import MoreVertIcon from "@material-ui/icons/MoreVert";
 import ClearIcon from "@material-ui/icons/Clear";
 import AccountTreeIcon from "@material-ui/icons/AccountTree";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
-import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import { IFCSLAB, IFCMEMBER, IFCSTRUCTURALCURVEMEMBER } from "web-ifc";
-import SearchData from '../SearchData';
+import SearchData from "../SearchData";
 import ProjectTree from "../ProjectTree";
 import Settings from "../Settings";
 
@@ -51,11 +51,11 @@ const useStyles = makeStyles((theme) => ({
     zIndex: 1000,
     left: "0px",
     right: "0px",
-    opacity: '0.95',
+    opacity: "0.95",
     width: ({ width }) => width,
     height: ({ height }) => height,
     maxWidth: window.innerWidth - 175,
-    maxHeight: window.innerHeight - 175
+    maxHeight: window.innerHeight - 175,
   },
   card: {
     position: "absolute",
@@ -63,10 +63,14 @@ const useStyles = makeStyles((theme) => ({
     zIndex: 100,
     left: "0px",
     right: "0px",
-    opacity: '0.95'
+    opacity: "0.95",
+    width: ({ width }) => width,
+    height: ({ height }) => height,
+    maxWidth: window.innerWidth - 175,
+    maxHeight: window.innerHeight - 175,
   },
   cardContent: {
-    opacity: '0.95',
+    opacity: "0.95",
     height: "90%",
     overflowY: "auto",
     overflowX: "hidden",
@@ -100,15 +104,15 @@ const useStyles = makeStyles((theme) => ({
     // maxWidth: 400,
   },
   avatar: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     // width: theme.spacing(7),
     // height: theme.spacing(7),
     // padding: '5px',
     // borderRadius: '0px'
   },
   fab: {
-    backgroundColor: 'white'
-  }
+    backgroundColor: "white",
+  },
 }));
 
 function a11yProps(index) {
@@ -127,21 +131,21 @@ const SpatialStructure = ({
   handleShowMarketplace,
   handleShowProperties,
   eids,
-  setEids
+  setEids,
 }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [value, setValue] = useState(0);
   const [ifcElementByType, setIfcElementByType] = useState([]);
   const [expressIDList, setExpressIDList] = useState([]);
   const [expandedView, setExpandedView] = useState(false);
-  const [viewWidth, setViewWidth] = useState("500px");
-  const [viewHeight, setViewHeight] = useState("600px");
+  const [viewWidth, setViewWidth] = useState("100%");
+  const [viewHeight, setViewHeight] = useState("100%");
 
   useEffect(() => {
     async function init() {
       const modelID = await viewer.IFC.getModelID();
       setExpressIDList(eids);
-      console.log('EIDS', eids)
+      console.log("EIDS", eids);
     }
     init();
   }, [eids]);
@@ -161,12 +165,12 @@ const SpatialStructure = ({
         setViewWidth(getWidth());
         setViewHeight(getHeight());
       }
-    }
-    window.addEventListener('resize', resizeListener)
+    };
+    window.addEventListener("resize", resizeListener);
 
     return () => {
-      window.removeEventListener('resize', resizeListener);
-    }
+      window.removeEventListener("resize", resizeListener);
+    };
   }, []);
 
   const handleExpandView = (e) => {
@@ -180,12 +184,11 @@ const SpatialStructure = ({
       setAnchorEl(null);
     } else if (expandedView) {
       setExpandedView(false);
-      setViewWidth("400px");
-      setViewHeight("400px");
+      setViewWidth("100%");
+      setViewHeight("100%");
       setAnchorEl(null);
     }
   };
-
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -202,17 +205,12 @@ const SpatialStructure = ({
   const open = Boolean(anchorEl);
   const id = open ? "simple-popover" : undefined;
 
-
-
   return (
     <Card className={expandedView ? classes.cardExpanded : classes.card}>
       <CardHeader
         avatar={
           <Avatar aria-label="recipe" className={classes.avatar}>
-            <Fab
-              size="small"
-              className={classes.fab}
-            >
+            <Fab size="small" className={classes.fab}>
               <AccountTreeIcon />
             </Fab>
           </Avatar>

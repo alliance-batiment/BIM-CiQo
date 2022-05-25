@@ -1100,7 +1100,7 @@ const IfcRenderer = () => {
             >
               <StorageIcon />
             </ToolTipsElem>
-          </Grid> */}
+          </Grid>  */}
           {/* <Grid item xs={12}>
             <ToolTipsElem
               title="Exporter IFC"
@@ -1147,7 +1147,7 @@ const IfcRenderer = () => {
             >
               <ArrowCircleUpIcon />
             </ToolTipsElem>
-          </Grid> */}
+          </Grid>
           {/* <Grid item xs={12}>
             <Fab
               size="small"
@@ -1184,13 +1184,13 @@ const IfcRenderer = () => {
           action={REACT_APP_COMPANY === "VBMC" &&
             <Grid container spacing={1}>
               <Grid item xs={4} style={{ textAlign: 'right' }}>
-                <img src={BIMLibrePng} style={{ height: '2em', width: 'auto' }} />
-              </Grid>
-              <Grid item xs={4} style={{ textAlign: 'right' }}>
                 <img src={ANCTPng} style={{ height: '2em', width: 'auto' }} />
               </Grid>
               <Grid item xs={4} style={{ textAlign: 'right' }}>
                 <img src={AgriboisValeurPng} style={{ height: '2em', width: 'auto' }} />
+              </Grid>
+              <Grid item xs={4} style={{ textAlign: 'right' }}>
+                <img src={BIMLibrePng} style={{ height: '2em', width: 'auto' }} />
               </Grid>
             </Grid>
           }

@@ -24,8 +24,8 @@ import {
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
-import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
-import DescriptionIcon from '@material-ui/icons/Description';
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
+import DescriptionIcon from "@material-ui/icons/Description";
 import AddIcon from "@material-ui/icons/Add";
 import ClearIcon from "@material-ui/icons/Clear";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -47,11 +47,11 @@ const useStyles = makeStyles((theme) => ({
     zIndex: 1000,
     left: "0px",
     right: "0px",
-    opacity: '0.95',
+    opacity: "0.95",
     width: ({ width }) => width,
     height: ({ height }) => height,
     maxWidth: window.innerWidth - 175,
-    maxHeight: window.innerHeight - 175
+    maxHeight: window.innerHeight - 175,
   },
   card: {
     position: "absolute",
@@ -59,14 +59,14 @@ const useStyles = makeStyles((theme) => ({
     zIndex: 100,
     left: "0px",
     right: "0px",
-    opacity: '0.95'
-    // width: ({ width }) => width,
-    // height: ({ height }) => height,
-    // maxWidth: window.innerWidth - 175,
-    // maxHeight: window.innerHeight - 175
+    opacity: "0.95",
+    width: ({ width }) => width,
+    height: ({ height }) => height,
+    maxWidth: window.innerWidth - 175,
+    maxHeight: window.innerHeight - 175,
   },
   cardContent: {
-    opacity: '0.95',
+    opacity: "0.95",
     height: "90%",
     overflowY: "auto",
     overflowX: "hidden",
@@ -96,8 +96,8 @@ const Properties = ({
   const [anchorEl, setAnchorEl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [expandedView, setExpandedView] = useState(false);
-  const [viewWidth, setViewWidth] = useState("400px");
-  const [viewHeight, setViewHeight] = useState("400px");
+  const [viewWidth, setViewWidth] = useState("100%");
+  const [viewHeight, setViewHeight] = useState("100%");
 
   // const props = { width: { viewWidth }, height: { viewHeight } };
   const props = {
@@ -126,12 +126,12 @@ const Properties = ({
         setViewWidth(getWidth());
         setViewHeight(getHeight());
       }
-    }
-    window.addEventListener('resize', resizeListener)
+    };
+    window.addEventListener("resize", resizeListener);
 
     return () => {
-      window.removeEventListener('resize', resizeListener);
-    }
+      window.removeEventListener("resize", resizeListener);
+    };
   }, []);
 
   useEffect(() => {
@@ -170,8 +170,8 @@ const Properties = ({
                   property.Unit == null
                     ? ""
                     : property.Unit.value === "null"
-                      ? ""
-                      : property.Unit.value;
+                    ? ""
+                    : property.Unit.value;
                 // console.log("unit", unit);
                 newPset.push({
                   label,
@@ -328,8 +328,8 @@ const Properties = ({
       setAnchorEl(null);
     } else if (expandedView) {
       setExpandedView(false);
-      setViewWidth("400px");
-      setViewHeight("400px");
+      setViewWidth("100%");
+      setViewHeight("100%");
       setAnchorEl(null);
     }
   };
