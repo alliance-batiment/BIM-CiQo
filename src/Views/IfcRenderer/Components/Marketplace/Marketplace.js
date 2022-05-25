@@ -161,11 +161,11 @@ const applications = [
   //   description: 'Espace permettant le partage et le stockage de fichier'
   // },
   {
-    name: 'AxeoBIM',
+    name: "AxeoBIM",
     img: AxeoBimLogo,
-    type: 'storage',
-    tags: ['Coming Soon'],
-    description: 'Espace permettant le partage et le stockage de fichier'
+    type: "storage",
+    tags: ["Coming Soon"],
+    description: "Espace permettant le partage et le stockage de fichier",
   },
   // {
   //   name: 'bsDD',
