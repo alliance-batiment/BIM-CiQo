@@ -90,7 +90,7 @@ const Properties = ({
   setSelectedElementID,
   setShowProperties,
   handleShowMarketplace,
-  addElementsNewProperties
+  addElementsNewProperties,
 }) => {
   const [ifcElement, setIfcElement] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -552,7 +552,17 @@ const Properties = ({
                               pset.HasProperties.map((property, index) => (
                                 <TableRow key={index}>
                                   <TableCell>{`${property.label}`}</TableCell>
-                                  <TableCell>{`${property.value}`}</TableCell>
+                                  {RegExp(`^https`).test(property.value) ? (
+                                    <TableCell>
+                                      <a
+                                        href={`${property.value}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                      >{`${property.value}`}</a>
+                                    </TableCell>
+                                  ) : (
+                                    <TableCell>{`${property.value}`}</TableCell>
+                                  )}
                                   <TableCell>{`${property.unit}`}</TableCell>
                                 </TableRow>
                               ))}

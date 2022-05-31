@@ -235,6 +235,10 @@ const DatBimApi = ({
       .then((r) => {
         console.log("TOKEN", r.data);
         sessionStorage.setItem("token", r.data.token);
+        setValidation({
+          status: true,
+          message: 'Connecté'
+        })
         handleNext();
       })
       .catch((error) => {
@@ -370,7 +374,7 @@ const DatBimApi = ({
       <Typography className={classes.instructions}>
         {getStepContent(activeStep)}
       </Typography>
-      {(!validation.status) &&
+      {(!validation.status && activeStep === 0) &&
         <Grid item xs={12}>
           <Alert severity={'error'}>{`${validation.message}`}</Alert>
         </Grid>

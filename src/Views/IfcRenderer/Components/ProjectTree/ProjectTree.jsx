@@ -111,20 +111,33 @@ const ProjectTree = ({
   const [loading, setLoading] = useState(false);
   const [spatialStructures, setSpatialStructures] = useState([...state.spatialStructures.list]);
 
+
   useEffect(() => {
     async function init() {
       setLoading(true);
+      console.log('eids proej', eids)
       const modelID = await viewer.IFC.getModelID();
       // const expandedNode = await eids.map(eid => String(eid))
       // setExpanded(expandedNode);
       if (spatialStructures && spatialStructures.length > 0) {
         const expandedNodes = [];
-        const getExpandedNodes = (node, count) => {
-          // console.log('node', node[0]);
-          if (node.children && node.children.length > 0 && count < 3) {
-            expandedNodes.push(`${node.expressID}`);
+
+        const getExpandedNodes = async (node, count) => {
+          let findEid = eids.find(eid => eid === node.expressID);
+          if (findEid && node.parents?.length > 0) {
+            node.parents.forEach(parent => expandedNodes.push(`${parent}`));
+          }
+
+          if (node.children && node.children.length > 0) {
+            // if (node.children && node.children.length > 0 && count < 3) {
+            // expandedNodes.push(`${node.expressID}`);
             count++;
             node.children.forEach((child) => {
+              if (node['parents']) {
+                child['parents'] = [...node['parents'], node.expressID, child.expressID];
+              } else {
+                child['parents'] = [node.expressID, child.expressID];
+              }
               getExpandedNodes(child, count);
             });
           }
@@ -138,7 +151,7 @@ const ProjectTree = ({
       setLoading(false);
     }
     init();
-  }, []);
+  }, [eids]);
 
   const resetSelection = async () => {
     setEids([]);
@@ -174,9 +187,14 @@ const ProjectTree = ({
     };
 
     const removeExpressId = (node) => {
-      const index = newEids.findIndex(
-        (eid) => eid === node.expressID
-      );
+      // const index = newEids.findIndex(
+      //   (eid) => eid === node.expressID
+      // );
+      for (let i = newEids.length - 1; i >= 0; i--) {
+        if (newEids[i] === node.expressID) {
+          newEids.splice(i, 1);
+        }
+      }
       newEids.splice(index, 1);
       if (node.children && node.children.length > 0) {
         node.children.forEach((child) => {
@@ -196,9 +214,11 @@ const ProjectTree = ({
     await viewer.IFC.pickIfcItemsByID(0, newEids);
   };
 
+
+
   const isChecked = (expressIDList, node) => {
     const index = expressIDList.findIndex(
-      (expressID) => expressID === node.expressID
+      (expressID) => expressID === `${node.expressID}`
     );
     return index >= 0 ? true : false;
   };
@@ -290,14 +310,14 @@ const ProjectTree = ({
 
   const renderTree = (nodes, index) => (
     <TreeItem
-      key={`${nodes.expressID}`}
+      key={nodes.expressID}
       nodeId={`${nodes.expressID}`}
       label={
-        <Grid container spacing={3}>
+        <Grid container>
           <Grid item xs={2}>
             <Checkbox
               className={classes.treeViewCheckbox}
-              checked={isChecked(eids, nodes)}
+              checked={isChecked(expanded, nodes)}
               onChange={(e) => {
                 // handleTreeViewItemById(e, nodes);
                 handleExpressId(nodes);
@@ -311,7 +331,7 @@ const ProjectTree = ({
               {`${nodes.type} ${nodes.Name ? nodes.Name.value : ""}`}
             </Typography>
           </Grid>
-          <Grid item xs={2} style={{ textAlign: 'right' }}>
+          <Grid item xs={2} sx={{ textAlign: 'right' }}>
             <IconButton
               edge="end"
               aria-label="comments"
@@ -423,13 +443,13 @@ const ProjectTree = ({
                     <Grid xs={12}>
                       <TreeView
                         aria-label="rich object"
-                        className={classes.treeView}
+                        // className={classes.treeView}
                         defaultCollapseIcon={<ExpandMoreIcon />}
-                        // defaultExpanded={expanded}
+                        defaultExpanded={expanded}
                         defaultExpandIcon={<ChevronRightIcon />}
-                        expanded={expanded}
-                        // multiSelect
-                        onNodeToggle={handleToggle}
+                      // expanded={expanded}
+                      // multiSelect
+                      // onNodeToggle={handleToggle}
                       >
                         {renderTree(spatialStructure)}
                       </TreeView>

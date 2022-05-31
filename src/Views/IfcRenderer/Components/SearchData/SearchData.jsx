@@ -241,9 +241,9 @@ const SearchData = ({
 
   return (
     <Grid container>
-      <Grid item xs={12}>
+      {/* <Grid item xs={12}>
         <SearchBar style={{ marginBottom: "1em" }} />
-      </Grid>
+      </Grid> */}
       <Grid item xs={6} style={{ textAlign: 'left' }}>
         <ButtonGroup
           // color="secondary" aria-label="medium secondary button group"

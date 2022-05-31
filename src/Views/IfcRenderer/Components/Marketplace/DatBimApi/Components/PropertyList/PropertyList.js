@@ -16,6 +16,7 @@ import {
   InputAdornment,
   Tooltip,
   IconButton,
+  Checkbox,
 } from "@material-ui/core";
 import Add from "@material-ui/icons/Add";
 import { useHistory } from "react-router-dom";
@@ -81,6 +82,7 @@ const PropertyList = ({
   const [searchInput, setSearchInput] = useState("");
   const [propertyListDefault, setPropertyListDefault] = useState([]);
   const [properties, setProperties] = useState([]);
+  const [allChecked, setAllChecked] = useState(true);
   const history = useHistory();
   const classes = useStyles();
 
@@ -159,9 +161,18 @@ const PropertyList = ({
           }
         );
         //console.log("data", dataProp);
-        const dataPropFilter = dataProp.data.filter(prop => prop.property_visibility);
+        const dataPropFilter = dataProp.data.filter(
+          (prop) => prop.property_visibility
+        );
 
-        const temporaryFixProperties = dataPropFilter.map((property) => {
+        const dataWithCheckStatus = dataPropFilter.map((property) => {
+          return {
+            ...property,
+            checked: true,
+          };
+        });
+
+        const temporaryFixProperties = dataWithCheckStatus.map((property) => {
           if (
             property.data_type_name === "Entier" &&
             property.text_value === "A saisir"
@@ -171,12 +182,14 @@ const PropertyList = ({
               text_value: 0,
             };
           }
+          // console.log("Property =>", property);
           return property;
         });
 
         setPropertyListDefault(temporaryFixProperties);
         setProperties(temporaryFixProperties);
-        console.log("temporaryFixProperties", temporaryFixProperties);
+
+        // console.log("temporaryFixProperties", temporaryFixProperties);
       } catch (err) {
         console.log("error", err);
       }
@@ -185,23 +198,85 @@ const PropertyList = ({
     getPropertiesValues();
   }, [selectedObject]);
 
+  const handleCheckedProperties = (e) => {
+    // console.log(`Checkbox id:`, e.target.id);
+    // console.log(`Checkbox check:`, e.target.checked);
+    console.log("properties", properties);
+
+    const index = e.target.id;
+    const checkStatus = e.target.checked;
+
+    const newPropertiesArr = [...properties];
+    newPropertiesArr[index].checked = checkStatus;
+
+    if (!checkStatus) {
+      setAllChecked(false);
+    } else {
+      for (let i = 0; i < properties.length; i++) {
+        if (properties[i].checked === true) {
+          setAllChecked(true);
+        } else {
+          setAllChecked(false);
+          break;
+        }
+      }
+    }
+
+    setProperties(newPropertiesArr);
+  };
+
+  const handleGlobalCheckedProperties = (e) => {
+    const checked = e.target.checked;
+
+    if (!checked) {
+      // console.log("properties ==>", properties);
+      // console.log("All checked ==> now to be unchecked");
+
+      properties.map((property) => {
+        property.checked = false;
+      });
+
+      setAllChecked(false);
+    } else {
+      // console.log("properties 2 ==>", properties);
+      // console.log("One or more are unchecked ==> all are now checked");
+
+      properties.map((property) => {
+        property.checked = true;
+      });
+
+      setAllChecked(true);
+    }
+  };
+
   const configureProperty = (index) => (e, value) => {
+    // console.log("Value =>", value);
+    // console.log("index=>", index);
+
+    // console.log("properties", properties);
+
     let inputValue = e.target.value;
-    let newPropertiesArr = [...properties];
+    const newPropertiesArr = [...properties];
     newPropertiesArr[index].text_value = inputValue || value;
+
+    console.log("newPropertiesArr", newPropertiesArr);
     setProperties(newPropertiesArr);
   };
 
   const addElementsDatBimProperties = (properties, objSelected) => {
+    const filteredProperties = properties.filter(
+      (property) => property.checked
+    );
     addElementsNewProperties({
       viewer,
       modelID,
       expressIDs: eids,
-      properties,
+      properties: filteredProperties,
     });
     handleShowMarketplace("home");
   };
 
+  console.log('properties', properties)
   return (
     <TableContainer component={Paper}>
       {/* <SearchBar
@@ -217,6 +292,18 @@ const PropertyList = ({
             <TableCell align="center">Info</TableCell>
             <TableCell align="center">Valeur</TableCell>
             <TableCell align="center">Unité</TableCell>
+            {selectedObject ? (
+              <TableCell align="center">
+                Ajouter
+                <Checkbox
+                  defaultChecked
+                  checked={allChecked}
+                  onChange={handleGlobalCheckedProperties}
+                />
+              </TableCell>
+            ) : (
+              ""
+            )}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -251,6 +338,14 @@ const PropertyList = ({
               <TableCell width="10%" align="center">
                 {property.unit}
               </TableCell>
+              <TableCell width="10%" align="center">
+                <Checkbox
+                  defaultChecked
+                  checked={properties[propertyIndex].checked}
+                  onChange={handleCheckedProperties}
+                  id={propertyIndex}
+                />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -258,7 +353,9 @@ const PropertyList = ({
       <Grid row align="right">
         <Button
           variant="contained"
-          onClick={() => addElementsDatBimProperties(properties, objSelected)}
+          onClick={() => {
+            addElementsDatBimProperties(properties, objSelected);
+          }}
           color="primary"
           className={classes.button}
         >
