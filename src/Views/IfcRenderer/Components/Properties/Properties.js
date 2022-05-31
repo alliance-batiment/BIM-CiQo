@@ -233,8 +233,8 @@ const Properties = ({
                   property.Unit == null
                     ? ""
                     : property.Unit.value === "null"
-                    ? ""
-                    : property.Unit.value;
+                      ? ""
+                      : property.Unit.value;
                 // console.log("unit", unit);
                 newPset.push({
                   label,
