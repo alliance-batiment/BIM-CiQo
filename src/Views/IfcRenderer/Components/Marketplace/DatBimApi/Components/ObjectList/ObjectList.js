@@ -254,21 +254,41 @@ const ObjectList = ({
     ];
   };
 
+  const getExpandedNodes = async (list, node) => {
+    list.push(`${node.id}`);
+    if (node.children && node.children.length > 0) {
+      node.children.forEach((child) => {
+        getExpandedNodes(list, child);
+      });
+    }
+  }
+
   let listing = null;
 
   if (objectListing) {
     const [tree, count] = renderTree(objectListing, 0);
+    let selectedObjectListing = [];
+    if (objectListing.id === "FiltredObjects") {
+      getExpandedNodes(selectedObjectListing, objectListing)
+      console.log('selectedObjectListing', selectedObjectListing)
+    }
 
     console.log("objectListing", objectListing);
+    console.log('selectedObjectListing', selectedObjectListing)
     listing = (
       <Grid item xs={12}>
         <Typography>Objets trouvés: {count}</Typography>
         <TreeView
           aria-label="rich object"
           defaultCollapseIcon={<ExpandMoreIcon />}
+          // defaultExpanded={
+          //   objectListing.id === "FiltredObjects"
+          //     ? [`${objectListing.id}`, `${objectListing.children[0].id}`]
+          //     : [`${objectListing.id}`]
+          // }
           defaultExpanded={
             objectListing.id === "FiltredObjects"
-              ? [`${objectListing.id}`, `${objectListing.children[0].id}`]
+              ? selectedObjectListing
               : [`${objectListing.id}`]
           }
           defaultExpandIcon={<ChevronRightIcon />}

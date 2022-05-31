@@ -881,23 +881,46 @@ const IfcRenderer = () => {
           </Grid>
           <Grid item xs={12}>
             <ToolTipsElem
-              title="Reinitialise la page"
+              title="Arborescence du projet"
               placement="right"
               className={classes.fab}
-              onClick={handleRefreshPage}
+              onClick={handleShowSpatialStructure}
             >
-              <RefreshIcon />
+              <AccountTreeIcon />
             </ToolTipsElem>
           </Grid>
           <Grid item xs={12}>
             <ToolTipsElem
-              title="Système de validation de l'IFC"
+              title={
+                <p>
+                  Propriétés:
+                  <br />
+                  cliquez sur un objet de votre maquette, puis sur cet icône
+                  pour accéder à ses propriétés
+                </p>
+              }
               placement="right"
               className={classes.fab}
-              disabled={!state.alertStatus}
-              onClick={handleShowValidation}
+              onClick={() => handleShowProperties()}
             >
-              <FactCheckIcon />
+              <DescriptionIcon />
+            </ToolTipsElem>
+          </Grid>
+          <Grid item xs={12}>
+            <ToolTipsElem
+              title="Place de marché"
+              placement="right"
+              disabled={!state.alertStatus}
+              className={classes.fab}
+              onClick={() => handleShowMarketplace("home")}
+            >
+              {/* <Fab
+              size="small"
+              className={classes.fab}
+              onClick={handleShowMarketplace}
+            > */}
+              <AppsIcon />
+              {/* </Fab> */}
             </ToolTipsElem>
           </Grid>
           {/* <Grid item xs={12}>
@@ -1027,48 +1050,27 @@ const IfcRenderer = () => {
           </Grid>
           <Grid item xs={12}>
             <ToolTipsElem
-              title="Place de marché"
+              title="Système de validation de l'IFC"
               placement="right"
+              className={classes.fab}
               disabled={!state.alertStatus}
-              className={classes.fab}
-              onClick={() => handleShowMarketplace("home")}
+              onClick={handleShowValidation}
             >
-              {/* <Fab
-              size="small"
-              className={classes.fab}
-              onClick={handleShowMarketplace}
-            > */}
-              <AppsIcon />
-              {/* </Fab> */}
+              <FactCheckIcon />
             </ToolTipsElem>
           </Grid>
           <Grid item xs={12}>
             <ToolTipsElem
-              title="Arborescence du projet"
+              title="Reinitialise la page"
               placement="right"
               className={classes.fab}
-              onClick={handleShowSpatialStructure}
+              onClick={handleRefreshPage}
             >
-              <AccountTreeIcon />
+              <RefreshIcon />
             </ToolTipsElem>
           </Grid>
-          <Grid item xs={12}>
-            <ToolTipsElem
-              title={
-                <p>
-                  Propriétés:
-                  <br />
-                  cliquez sur un objet de votre maquette, puis sur cet icône
-                  pour accéder à ses propriétés
-                </p>
-              }
-              placement="right"
-              className={classes.fab}
-              onClick={() => handleShowProperties()}
-            >
-              <DescriptionIcon />
-            </ToolTipsElem>
-          </Grid>
+
+
         </Grid>
         <Grid item xs={2} className={classes.infoRightPannel}>
           <Grid item xs={12}>
