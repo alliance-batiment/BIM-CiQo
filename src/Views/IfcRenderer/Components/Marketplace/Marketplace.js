@@ -188,24 +188,17 @@ const applications = [
   //   tags: ['Coming Soon'],
   //   description: 'Application permettant de minter un NFT de sa maquette'
   // },
+  {
+    name: 'TriChain',
+    img: TriChainLogo,
+    type: 'storage & blockchain',
+    tags: ['Coming Soon'],
+    description: "Marketplace décentralisée permettant de stocker et d'échanger des NFT pour le BIM"
+  },
   // {
   //   name: 'TriChain',
   //   img: TriChainLogo,
   //   type: 'storage & blockchain',
-  //   tags: ['Coming Soon'],
-  //   description: "Marketplace décentralisée permettant de stocker et d'échanger des NFT pour le BIM"
-  // },
-  // {
-  //   name: 'TriChain',
-  //   img: TriChainLogo,
-  //   type: 'storage & blockchain',
-  //   tags: ['Coming Soon'],
-  //   description: "Marketplace décentralisée permettant de stocker et d'échanger des NFT pour le BIM"
-  // },
-  // {
-  //   name: 'TriChain',
-  //   img: TriChainLogo,
-  //   type: 'NFT',
   //   tags: ['Coming Soon'],
   //   description: "Marketplace décentralisée permettant de stocker et d'échanger des NFT pour le BIM"
   // },
