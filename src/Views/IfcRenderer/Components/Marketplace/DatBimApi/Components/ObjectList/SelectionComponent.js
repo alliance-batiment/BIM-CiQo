@@ -18,16 +18,11 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import React from "react";
 
 const SelectionComponent = ({
-  classes,
   selectors,
   selectorsLoader,
   getObjectsOfAdvancedSearch,
   selectorsRequest,
   setSelectorsRequest,
-  getSelectorsOfObjectSet,
-  setSearchBarInput,
-  getObjectsOfSelectedObject,
-  setSelectedObject,
 }) => {
   return (
     <Accordion>
@@ -36,7 +31,7 @@ const SelectionComponent = ({
         aria-controls="panel1a-content"
         id="panel1a-header"
       >
-        <Typography className={classes.heading}>Sélection</Typography>
+        <Typography>Sélection</Typography>
       </AccordionSummary>
       <AccordionDetails>
         {selectorsLoader ? (
@@ -48,13 +43,10 @@ const SelectionComponent = ({
             <Grid item xs={12}>
               {selectors && selectors.length > 0 ? (
                 <TableContainer component={Paper}>
-                  <Table className={classes.table} aria-label="simple table">
+                  <Table aria-label="simple table">
                     <TableBody>
                       {selectors?.map((selector, selectorIndex) => (
-                        <TableRow
-                          key={selector.id}
-                          className={`${classes.root} ${classes.datBimList}`}
-                        >
+                        <TableRow key={selector.id}>
                           <TableCell width="40%" component="th" scope="row">
                             {selector.name}
                           </TableCell>

@@ -1,21 +1,32 @@
 import { useState } from "react";
-import { Input, Select, MenuItem, Slider } from "@material-ui/core";
+import { Input, Select, MenuItem, Slider, makeStyles } from "@material-ui/core";
 
-function valuetext(value) {
+const useStyles = makeStyles((theme) => ({
+  datBIMColor: {
+    color: "#E6464D",
+  },
+  slider: {
+    marginTop: "25px",
+  },
+}));
+
+const valuetext = (value) => {
   return `${value}`;
-}
+};
 
-function isStaticSelector(selector_type) {
+const isStaticSelector = (selector_type) => {
   return selector_type === "S";
-}
+};
 
-function DefineTypeComponent({
+const DefineTypeComponent = ({
   type,
   selector,
   selectorsRequest,
   setSelectorsRequest,
   getObjectsOfAdvancedSearch,
-}) {
+}) => {
+  const classes = useStyles();
+
   const [selectedRangedValues, setSelectedRangedValues] = useState([
     selector.value_min,
     selector.value_max,
@@ -190,6 +201,7 @@ function DefineTypeComponent({
     case "interval":
       component = (
         <Slider
+          className={`${classes.slider} ${classes.datBIMColor}`}
           defaultValue={parseInt(selector.value_min)}
           getAriaValueText={valuetext}
           aria-labelledby="discrete-slider"
@@ -206,6 +218,7 @@ function DefineTypeComponent({
     case "definition":
       component = (
         <Slider
+          className={`${classes.slider} ${classes.datBIMColor}`}
           name="text_value"
           getAriaValueText={valuetext}
           aria-labelledby="range-slider"
@@ -225,6 +238,6 @@ function DefineTypeComponent({
   }
 
   return component;
-}
+};
 
 export default DefineTypeComponent;

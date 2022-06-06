@@ -159,7 +159,7 @@ const ObjectList = ({
     }
   };
 
-  // async function getObjects(typeProperties, selectedPage) {
+  // const getObjects = async (typeProperties, selectedPage) => {
   //   const classes = await axios.get(
   //     `${process.env.REACT_APP_API_DATBIM}/classes/mapping/${typeProperties}`,
   //     {
@@ -194,7 +194,7 @@ const ObjectList = ({
   //   });
   // }
 
-  // function searchObject(input) {
+  // const searchObject = (input) => {
   //   if (objectListDefault && objectListDefault.length > 0) {
   //     const filtered = objectListDefault.filter((object) => {
   //       const searchByObjectName = object.object_name
@@ -261,7 +261,7 @@ const ObjectList = ({
         getExpandedNodes(list, child);
       });
     }
-  }
+  };
 
   let listing = null;
 
@@ -269,12 +269,12 @@ const ObjectList = ({
     const [tree, count] = renderTree(objectListing, 0);
     let selectedObjectListing = [];
     if (objectListing.id === "FiltredObjects") {
-      getExpandedNodes(selectedObjectListing, objectListing)
-      console.log('selectedObjectListing', selectedObjectListing)
+      getExpandedNodes(selectedObjectListing, objectListing);
+      console.log("selectedObjectListing", selectedObjectListing);
     }
 
     console.log("objectListing", objectListing);
-    console.log('selectedObjectListing', selectedObjectListing)
+    console.log("selectedObjectListing", selectedObjectListing);
     listing = (
       <Grid item xs={12}>
         <Typography>Objets trouvés: {count}</Typography>
@@ -347,7 +347,6 @@ const ObjectList = ({
           </Typography>
         </Grid>
 
-
         <Grid item xs={12}>
           <SearchBar
             disabled={objectsLoader === true}
@@ -371,7 +370,7 @@ const ObjectList = ({
               <Grid container spacing={2}>
                 <Grid item xs={12}>
                   <SelectionComponent
-                    classes={classes}
+                    zIndex="2"
                     selectors={selectors}
                     selectorsLoader={selectorsLoader}
                     getObjectsOfAdvancedSearch={getObjectsOfAdvancedSearch}

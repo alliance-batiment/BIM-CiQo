@@ -38,31 +38,34 @@ const NavBarElem = ({ title, classes, handleDrawerOpen, open }) => {
         <Typography variant="h6" noWrap>
           {title}
         </Typography>
-        {REACT_APP_COMPANY === "VBMC" &&
+        {REACT_APP_COMPANY === "VBMC" && (
           <div style={{ position: "absolute", right: "10px" }}>
+            <a style={{ color: "inherit", margin: "0 20px" }} target="_blank">
+              v0.12.0
+            </a>
             <a
-
+              href="https://documentation-ciqo.notion.site/documentation-ciqo/Doc-CIQO-f47d770ccf344ea6ae50119e58c82198"
               style={{ color: "inherit", margin: "0 20px" }}
               target="_blank"
             >
-              v0.11.0
-         </a>
+              Documentation
+            </a>
             <a
               href="https://boxboisbim.mydatbim.com/mydatbimCom/mentions-legales"
               style={{ color: "inherit", margin: "0 20px" }}
               target="_blank"
             >
               Mentions légales
-         </a>
+            </a>
             <a
               href="https://www.datbim.com/template/contact/377864"
               style={{ color: "inherit", margin: "0 20px" }}
               target="_blank"
             >
               Contact
-         </a>
+            </a>
           </div>
-        }
+        )}
       </Toolbar>
     </AppBar>
   );

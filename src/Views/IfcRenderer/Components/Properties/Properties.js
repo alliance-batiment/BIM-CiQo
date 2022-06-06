@@ -20,7 +20,9 @@ import {
   ListItemIcon,
   ListItemText,
   CircularProgress,
+  Tooltip,
 } from "@material-ui/core";
+import InfoIcon from "@mui/icons-material/Info";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
@@ -145,7 +147,7 @@ const Properties = ({
           true,
           true
         );
-        // console.log("elementProperties", elementProperties);
+        console.log("elementProperties", elementProperties);
 
         // console.log("viewer", viewer);
         // console.log(
@@ -166,15 +168,20 @@ const Properties = ({
                 const value = property.NominalValue
                   ? DecodeIFCString(property.NominalValue.value)
                   : "";
+
+                const description = (property.Description && property.Description !== "")
+                  ? DecodeIFCString(property.Description.value)
+                  : null;
                 const unit =
                   property.Unit == null
                     ? ""
                     : property.Unit.value === "null"
-                    ? ""
-                    : property.Unit.value;
+                      ? ""
+                      : property.Unit.value;
                 // console.log("unit", unit);
                 newPset.push({
                   label,
+                  description,
                   value,
                   unit,
                 });
@@ -552,6 +559,16 @@ const Properties = ({
                               pset.HasProperties.map((property, index) => (
                                 <TableRow key={index}>
                                   <TableCell>{`${property.label}`}</TableCell>
+                                  <TableCell>{(property.description && property.description !== "") && (
+                                    <Tooltip
+                                      title={`${property.description}`}
+                                      placement="top-start"
+                                    >
+                                      <IconButton>
+                                        <InfoIcon />
+                                      </IconButton>
+                                    </Tooltip>
+                                  )}</TableCell>
                                   {RegExp(`^https`).test(property.value) ? (
                                     <TableCell>
                                       <a

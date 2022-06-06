@@ -182,6 +182,13 @@ const PropertyList = ({
               text_value: 0,
             };
           }
+
+          if (property.data_type_name === "Lien") {
+            return {
+              ...property,
+              text_value: property.text_value.toLowerCase(),
+            };
+          }
           // console.log("Property =>", property);
           return property;
         });
@@ -276,7 +283,7 @@ const PropertyList = ({
     handleShowMarketplace("home");
   };
 
-  console.log('properties', properties)
+  console.log("properties", properties);
   return (
     <TableContainer component={Paper}>
       {/* <SearchBar
