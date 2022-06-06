@@ -227,6 +227,11 @@ function UseIfcRenderer({
     return { type: 2, label: 'IFCLABEL', valueType: 1, value: v }
   }
 
+  function ifcBoolean(v) {
+    return { type: 2, label: 'IFCBOOLEAN', valueType: 1, value: v }
+  }
+
+
   function ifcText(v) {
     return { type: 2, label: 'IFCTEXT', valueType: 1, value: v }
   }
@@ -330,15 +335,33 @@ function UseIfcRenderer({
     name,
     description,
     value,
-    unit
+    unit,
+    property
   }) => {
+    const getPropertyValue = (type, value) => {
+      if (value) {
+        switch (type) {
+          case 'IfcLabel':
+          case 'IfcText':
+            return ifcText(`${value}`);
+          case 'IfcBoolean':
+            return ifcBoolean(`${value}`);
+          default:
+            return ifcText(`${value}`);
+        }
+      }
+      return ifcText(`no value`);
+    }
+
+
     let ifcPropertySingleValue = new WebIFC.IfcPropertySingleValue(
       expressID,
       type,
       name ? str(`${name}`) : str(`no name`),
       description ? str(`${description}`) : str(`${name}`),
-      value ? ifcText(`${value}`) : ifcText(`no value`),
-      // unit ? str(`${unit}`) : empty(),
+      // value ? ifcText(`${value}`) : ifcText(`no value`),
+      getPropertyValue(property.ifc_type, value),
+      unit ? str(`${unit}`) : empty(),
       empty(),
     );
 
@@ -488,7 +511,8 @@ function UseIfcRenderer({
           name: DecodeIFCString(existingProperty.Name.value),
           description: DecodeIFCString(property.property_definition),
           value: property.text_value,
-          unit: property.unit
+          unit: property.unit,
+          property
         });
 
         await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySingleValue);
@@ -503,7 +527,8 @@ function UseIfcRenderer({
           name: DecodeIFCString(property.ifc_property_name),
           description: DecodeIFCString(property.property_definition),
           value: property.text_value,
-          unit: property.unit
+          unit: property.unit,
+          property
         });
 
         await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySingleValue);

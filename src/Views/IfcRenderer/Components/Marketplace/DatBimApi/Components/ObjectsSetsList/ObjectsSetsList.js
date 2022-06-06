@@ -37,6 +37,17 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: "column",
     justifyContent: "space-between",
   },
+  datBimCardActionArea: {
+    width: "100%",
+    height: "100%",
+  },
+  datBimCardContent: {
+    width: "100%",
+    height: "100%",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+  },
   datBimCardTitle: {
     fontSize: 12,
     margin: 0,
@@ -47,6 +58,12 @@ const useStyles = makeStyles((theme) => ({
     fontSize: 8,
     margin: 0,
     // fontStyle: "italic",
+  },
+  datBimCardImg: {
+    width: "100%",
+    height: "100%",
+    maxHeight: "200px",
+    objectFit: "contain",
   },
   button: {
     backgroundColor: "#E6464D",
@@ -183,7 +200,7 @@ const ObjectsSetsList = ({
       Promise.allSettled(
         treeClassList.data.data.map(async (treeClassListElement) => {
           return await axios.get(
-            `${process.env.REACT_APP_API_DATBIM}/classes/${treeClassListElement.class_reference_id}/object-sets`,
+            `${process.env.REACT_APP_API_DATBIM}/portals/${selectedPortal}/object-sets/classes/${treeClassListElement.class_reference_id}`,
             {
               headers: {
                 "X-Auth-Token": sessionStorage.getItem("token"),
@@ -369,8 +386,11 @@ const ObjectsSetsList = ({
                       key={index}
                       className={`${classes.root} ${classes.datBimCard}`}
                     >
-                      <CardActionArea>
+                      <CardActionArea
+                        className={`${classes.datBimCardActionArea}`}
+                      >
                         <CardContent
+                          className={`${classes.datBimCardContent}`}
                           onClick={() => {
                             setSelectedObjectSet(object.object_id);
                             setSelectedObjectSetName(object.object_name);
@@ -385,6 +405,11 @@ const ObjectsSetsList = ({
                             {object.object_name}
                             <br />
                           </Typography>
+                          <img
+                            className={classes.datBimCardImg}
+                            src={object.img_ref}
+                            alt={object.object_name}
+                          />
                         </CardContent>
                       </CardActionArea>
                       <CardActions>

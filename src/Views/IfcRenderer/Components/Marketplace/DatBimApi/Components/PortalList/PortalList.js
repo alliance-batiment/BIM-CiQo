@@ -6,6 +6,7 @@ import {
   Card,
   CardContent,
   Typography,
+  CircularProgress,
 } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
@@ -27,6 +28,10 @@ const useStyles = makeStyles((theme) => ({
     margin: 0,
     color: "white",
   },
+  loader: {
+    color: "inherit",
+    marginTop: "80px",
+  },
 }));
 
 const PortalList = ({
@@ -38,20 +43,30 @@ const PortalList = ({
   const classes = useStyles();
 
   const [portals, setPortals] = useState([]);
+  const [portalsLoader, setPortalsLoader] = useState(false);
 
   useEffect(() => {
-    axios
-      .get(`${process.env.REACT_APP_API_DATBIM}/portals`, {
-        headers: {
-          "X-Auth-Token": sessionStorage.getItem("token"),
-        },
-      })
-      .then(({ data }) => {
-        setPortals(data.data);
-      })
-      .catch(() => {
+    const getPortalList = async () => {
+      try {
+        setPortalsLoader(true);
+
+        const portalList = await axios.get(
+          `${process.env.REACT_APP_API_DATBIM}/portals`,
+          {
+            headers: {
+              "X-Auth-Token": sessionStorage.getItem("token"),
+            },
+          }
+        );
+
+        setPortals(portalList.data.data);
+        setPortalsLoader(false);
+      } catch (error) {
         setActiveStep(0);
-      });
+      }
+    };
+
+    getPortalList();
   }, []);
 
   return (
@@ -62,29 +77,37 @@ const PortalList = ({
             Sélectionnez un portail:
           </Typography>
         </Grid>
-        {portals?.map((portal) => (
-          <Grid item lg={4}>
-            <Card
-              key={portal.portal_id}
-              className={`${classes.root} ${classes.datBimCard}`}
-            >
-              <CardContent
-                onClick={() => {
-                  openObjects(portal.portal_id);
-                  setBreadcrumbMap([portal.portal_name]);
-                  handleNext();
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  component="h3"
-                  className={classes.datBimCardTitle}
-                >{`${portal.portal_name}`}</Typography>
-                {/* <Typography variant="body1" component="body1" className={classes.datBimCardTitle}>{`url: ${portal.portal_url}`}</Typography> */}
-              </CardContent>
-            </Card>
+        {portalsLoader ? (
+          <Grid container justify="center">
+            <CircularProgress className={classes.loader} />
           </Grid>
-        ))}
+        ) : (
+          <>
+            {portals?.map((portal) => (
+              <Grid item lg={4}>
+                <Card
+                  key={portal.portal_id}
+                  className={`${classes.root} ${classes.datBimCard}`}
+                >
+                  <CardContent
+                    onClick={() => {
+                      openObjects(portal.portal_id);
+                      setBreadcrumbMap([portal.portal_name]);
+                      handleNext();
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      component="h3"
+                      className={classes.datBimCardTitle}
+                    >{`${portal.portal_name}`}</Typography>
+                    {/* <Typography variant="body1" component="body1" className={classes.datBimCardTitle}>{`url: ${portal.portal_url}`}</Typography> */}
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </>
+        )}
       </Grid>
     </Grid>
   );

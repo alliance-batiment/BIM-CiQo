@@ -98,8 +98,8 @@ function DefineTypeComponent(type, property, propertyIndex, configureProperty) {
           onChange={configureProperty(propertyIndex)}
           row
         >
-          <FormControlLabel value="1" control={<Radio />} label="OUI" />
-          <FormControlLabel value="0" control={<Radio />} label="NON" />
+          <FormControlLabel value="true" control={<Radio />} label="OUI" />
+          <FormControlLabel value="false" control={<Radio />} label="NON" />
         </RadioGroup>
       );
       break;
