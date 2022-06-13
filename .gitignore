@@ -15,8 +15,10 @@
 .DS_Store
 .env.development
 .env.development.vbmc
+.env.development.alliancedubatiment
 .env.production
 .env.production.vbmc
+.env.production.alliancedubatiment
 .env.local
 .env.development.local
 .env.test.local

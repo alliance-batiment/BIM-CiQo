@@ -169,9 +169,10 @@ const Properties = ({
                   ? DecodeIFCString(property.NominalValue.value)
                   : "";
 
-                const description = (property.Description && property.Description !== "")
-                  ? DecodeIFCString(property.Description.value)
-                  : null;
+                const description =
+                  property.Description && property.Description !== ""
+                    ? DecodeIFCString(property.Description.value)
+                    : null;
                 const unit =
                   property.Unit == null
                     ? ""
@@ -389,7 +390,6 @@ const Properties = ({
         );
       })
     );
-
     downloadFile({
       data: [...propertiesCsv].join("\n"),
       fileName: `${ifcElement ? ifcElement.name : "Undefined"}.csv`,
@@ -559,17 +559,20 @@ const Properties = ({
                               pset.HasProperties.map((property, index) => (
                                 <TableRow key={index}>
                                   <TableCell>{`${property.label}`}</TableCell>
-                                  <TableCell>{(property.description && property.description !== "") && (
-                                    <Tooltip
-                                      title={`${property.description}`}
-                                      placement="top-start"
-                                    >
-                                      <IconButton>
-                                        <InfoIcon />
-                                      </IconButton>
-                                    </Tooltip>
-                                  )}</TableCell>
-                                  {RegExp(`^https`).test(property.value) ? (
+                                  <TableCell>
+                                    {property.description &&
+                                      property.description !== "" && (
+                                        <Tooltip
+                                          title={`${property.description}`}
+                                          placement="top-start"
+                                        >
+                                          <IconButton>
+                                            <InfoIcon />
+                                          </IconButton>
+                                        </Tooltip>
+                                      )}
+                                  </TableCell>
+                                  {RegExp(`^http`).test(property.value) ? (
                                     <TableCell>
                                       <a
                                         href={`${property.value}`}
