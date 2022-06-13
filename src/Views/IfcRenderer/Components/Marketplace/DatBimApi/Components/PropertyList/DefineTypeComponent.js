@@ -18,6 +18,14 @@ function isStaticProperty(property_type) {
   return property_type === "S";
 }
 
+function toBoolean(property_value) {
+  if (property_value === "true" || property_value) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 function DefineTypeComponent(type, property, propertyIndex, configureProperty) {
   let component = null;
   switch (type) {
@@ -93,13 +101,12 @@ function DefineTypeComponent(type, property, propertyIndex, configureProperty) {
       component = (
         <RadioGroup
           name="text_value"
-          value={property.text_value}
-          disabled={isStaticProperty(property.property_type)}
+          value={`${property.text_value}`}
           onChange={configureProperty(propertyIndex)}
           row
         >
-          <FormControlLabel value="true" control={<Radio />} label="OUI" />
-          <FormControlLabel value="false" control={<Radio />} label="NON" />
+          <FormControlLabel value="true" control={<Radio />} label="OUI" disabled={isStaticProperty(property.property_type)} />
+          <FormControlLabel value="false" control={<Radio />} label="NON" disabled={isStaticProperty(property.property_type)} />
         </RadioGroup>
       );
       break;

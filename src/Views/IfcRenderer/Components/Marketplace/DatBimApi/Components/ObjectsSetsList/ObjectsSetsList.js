@@ -47,12 +47,14 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     flexDirection: "column",
     justifyContent: "space-between",
+    padding: 0,
   },
   datBimCardTitle: {
     fontSize: 12,
     margin: 0,
     color: "white",
     fontWeight: "bold",
+    padding: "1.5em 0 0 1.5em",
   },
   datBimCardDesc: {
     fontSize: 8,
@@ -62,7 +64,8 @@ const useStyles = makeStyles((theme) => ({
   datBimCardImg: {
     width: "100%",
     height: "100%",
-    maxHeight: "200px",
+    marginBottom: "1em",
+    maxHeight: "250px",
     objectFit: "contain",
   },
   button: {

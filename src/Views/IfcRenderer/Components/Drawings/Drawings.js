@@ -105,12 +105,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function a11yProps(index) {
+const a11yProps = (index) => {
   return {
     id: `simple-tab-${index}`,
     "aria-controls": `simple-tabpanel-${index}`,
   };
-}
+};
 
 const Drawings = ({ viewer, showDrawings, setShowDrawings }) => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -118,8 +118,6 @@ const Drawings = ({ viewer, showDrawings, setShowDrawings }) => {
   const [expandedView, setExpandedView] = useState(false);
   const [viewWidth, setViewWidth] = useState("100%");
   const [viewHeight, setViewHeight] = useState("100%");
-
-  useEffect(() => {}, []);
 
   const props = {
     width: viewWidth,
@@ -247,8 +245,7 @@ const Drawings = ({ viewer, showDrawings, setShowDrawings }) => {
           </div>
         }
       />
-      <CardContent>
-        {/* <CardContent className={classes.cardContent}> */}
+      <CardContent className={classes.cardContent}>
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
           <Tabs
             value={value}
@@ -272,7 +269,7 @@ const Drawings = ({ viewer, showDrawings, setShowDrawings }) => {
 
 export default Drawings;
 
-function TabPanel(props) {
+const TabPanel = (props) => {
   const { children, value, index, ...other } = props;
 
   return (
@@ -290,4 +287,4 @@ function TabPanel(props) {
       )}
     </div>
   );
-}
+};

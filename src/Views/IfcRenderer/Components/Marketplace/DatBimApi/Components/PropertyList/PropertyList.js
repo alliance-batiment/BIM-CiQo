@@ -266,7 +266,6 @@ const PropertyList = ({
     const newPropertiesArr = [...properties];
     newPropertiesArr[index].text_value = inputValue || value;
 
-    console.log("newPropertiesArr", newPropertiesArr);
     setProperties(newPropertiesArr);
   };
 

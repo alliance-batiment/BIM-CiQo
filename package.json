@@ -86,6 +86,7 @@
   "scripts": {
     "start": "react-scripts start",
     "start:vbmc": "env-cmd ./.env.development.vbmc react-scripts start",
+    "start:adb": "env-cmd ./.env.development.alliancedubatiment react-scripts start",
     "build": "CI=false && react-scripts build",
     "test": "react-scripts test",
     "coverage": "npm test -- --coverage",

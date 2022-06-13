@@ -34,14 +34,37 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const { REACT_APP_COMPANY } = process.env;
+
 const Login = ({ handleSubmit }) => {
   const classes = useStyles();
 
   const username = localStorage.getItem("email");
   const [email, setEmail] = useState(username);
 
-  function handleChange(event) {
+  const handleChange = (event) => {
     setEmail(event.target.value);
+  };
+
+  let createAccountLink;
+  if (REACT_APP_COMPANY === "TriDyme") {
+    createAccountLink = "https://www.datbim.com/template/espace-client";
+  } else if (REACT_APP_COMPANY === "VBMC") {
+    createAccountLink =
+      "https://boxboisbim.mydatbim.com/template/espace-client";
+  } else if (REACT_APP_COMPANY === "ADB") {
+    createAccountLink =
+      "https://alliance-batiment.mydatbim.com/template/espace-client";
+  }
+
+  let lostPasswordLink;
+  if (REACT_APP_COMPANY === "TriDyme") {
+    lostPasswordLink = "https://www.datbim.com/inscription/oublie-mdp";
+  } else if (REACT_APP_COMPANY === "VBMC") {
+    lostPasswordLink = "https://boxboisbim.mydatbim.com/inscription/oublie-mdp";
+  } else if (REACT_APP_COMPANY === "ADB") {
+    lostPasswordLink =
+      "https://alliance-batiment.mydatbim.com/inscription/oublie-mdp";
   }
 
   return (
@@ -73,16 +96,10 @@ const Login = ({ handleSubmit }) => {
             <Button type="submit" className={classes.button}>
               Connexion
             </Button>
-            <a
-              href="https://www.datbim.com/template/espace-client"
-              target="_blank"
-            >
+            <a href={createAccountLink} target="_blank" rel="noreferrer">
               Créer un compte
             </a>
-            <a
-              href="https://www.datbim.com/inscription/oublie-mdp"
-              target="_blank"
-            >
+            <a href={lostPasswordLink} target="_blank" rel="noreferrer">
               Mot de passe oublié?
             </a>
           </FormControl>
