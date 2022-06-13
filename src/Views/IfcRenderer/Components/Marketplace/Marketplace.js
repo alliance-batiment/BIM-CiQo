@@ -165,13 +165,13 @@ const applications = [
     tags: ["Coming Soon"],
     description: "Espace permettant le partage et le stockage de fichier",
   },
-  {
-    name: 'bsDD',
-    img: BsDDLogo,
-    type: 'data',
-    tags: ['Coming Soon'],
-    description: "The buildingSMART Data Dictionary (bSDD) is an online service that hosts classifications and their properties, allowed values, units and translations"
-  },
+  // {
+  //   name: 'bsDD',
+  //   img: BsDDLogo,
+  //   type: 'data',
+  //   tags: ['Coming Soon'],
+  //   description: "The buildingSMART Data Dictionary (bSDD) is an online service that hosts classifications and their properties, allowed values, units and translations"
+  // },
   // {
   //   name: 'Web3',
   //   img: IpfsLogo,
