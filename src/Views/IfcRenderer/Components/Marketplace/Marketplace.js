@@ -44,10 +44,12 @@ import DropboxChooser from "react-dropbox-chooser";
 import OpenDthxLogo from "./img/OpenDthxLogo.png";
 import DropBoxLogo from "./img/DropBoxLogo.png";
 import GoogleDriveLogo from "./img/GoogleDriveLogo.png";
+import OneDriveLogo from "./img/OneDriveLogo.png";
 import BsDDLogo from "./img/bsDDLogo.png";
 import AxeoBimLogo from "./img/AxeoBimLogo.jpeg";
 import IpfsLogo from "./img/IpfsLogo.png";
 import TriChainLogo from "./img/TriChainLogo.png";
+import TriSensorsLogo from "./img/TriSensorsLogo.png";
 import TriStructureLogo from "./img/TriStructureLogo.png";
 import SearchBar from "../../../../Components/SearchBar";
 
@@ -195,10 +197,17 @@ const applications = [
   // },
   // {
   //   name: 'TriSensors',
-  //   img: TriStructureLogo,
+  //   img: TriSensorsLogo,
   //   type: 'iot',
   //   tags: ['Coming Soon'],
   //   description: "Gestion de capteurs IOT connectés à la maquette"
+  // },
+  // {
+  //   name: 'OneDrive',
+  //   img: OneDriveLogo,
+  //   type: 'storage',
+  //   tags: ['Coming Soon'],
+  //   description: 'Espace permettant le partage et le stockage de fichier'
   // },
 ];
 

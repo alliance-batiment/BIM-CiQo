@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { makeStyles, Fab } from "@material-ui/core";
+import { makeStyles, Fab, Typography } from "@material-ui/core";
 import {
   Grid,
   Button,
@@ -104,13 +104,16 @@ const Cuts = ({ viewer, showCuts, setShowCuts }) => {
   const [viewWidth, setViewWidth] = useState("100%");
   const [viewHeight, setViewHeight] = useState("100%");
 
-  useEffect(() => {
-    const getCuts = async () => {
-      viewer.clipper.active = true;
-      setCuts(viewer.clipper.planes);
-    };
-    getCuts();
-  }, []);
+  // useEffect(() => {
+  //   console.log('viewer.clipper.planes', viewer.clipper.planes)
+  //   const getCuts = async () => {
+  //     setLoading(true);
+  //     viewer.clipper.active = true;
+  //     setCuts(viewer.clipper.planes);
+  //     setLoading(false);
+  //   };
+  //   getCuts();
+  // }, [cuts]);
 
   const props = {
     width: viewWidth,
@@ -128,10 +131,13 @@ const Cuts = ({ viewer, showCuts, setShowCuts }) => {
         setViewHeight(getHeight());
       }
     };
+    viewer.clipper.active = true;
     window.addEventListener("resize", resizeListener);
-
+    window.addEventListener("dblclick", addClippingPlane, false);
     return () => {
+      viewer.clipper.active = false;
       window.removeEventListener("resize", resizeListener);
+      window.removeEventListener("dblclick", addClippingPlane, false);
     };
   }, []);
 
@@ -153,11 +159,13 @@ const Cuts = ({ viewer, showCuts, setShowCuts }) => {
   };
 
   const addClippingPlane = async () => {
+    setLoading(true);
     console.log("viewer", viewer);
-    viewer.clipper.createPlane();
+    await viewer.clipper.createPlane();
     console.log("viewer.clipper.planes", viewer.clipper.planes);
     console.log("viewer.plans.planLists", viewer.plans.planLists);
     setCuts(viewer.clipper.planes);
+    setLoading(false)
   };
 
   const handleAddClippingPlane = () => {
@@ -169,27 +177,35 @@ const Cuts = ({ viewer, showCuts, setShowCuts }) => {
 
   const handleDeleteClippingPlane = async (cut, index) => {
     if (showCuts) {
+      setLoading(true);
       await viewer.clipper.deletePlane(cut);
-      const newCuts = cuts.splice(index, 1);
-      setCuts([...newCuts]);
+      setLoading(false);
+      console.log("viewer.clipper.planes", viewer.clipper.planes);
+      window.removeEventListener("dblclick", addClippingPlane, false);
+      // const newCuts = cuts.splice(index, 1);
+      // setCuts([...newCuts]);
     }
   };
 
-  const handleHideAllClippingPlane = () => {
+  const handleHideAllClippingPlane = async () => {
+    setLoading(true);
     viewer.clipper.active = !viewer.clipper.active;
     if (!viewer.clipper.active) {
-      viewer.removeClippingPlane();
+      await viewer.removeClippingPlane();
     }
+    setLoading(false);
   };
 
-  const handleRemoveAllClippingPlane = () => {
+  const handleRemoveAllClippingPlane = async () => {
+    setLoading(true);
     viewer.clipper.active = false;
-    viewer.clipper.deleteAllPlanes();
+    await viewer.clipper.deleteAllPlanes();
     // if (viewer.clipper.planes.length > 0) {
     //   viewer.clipper.planes.forEach(dimension => dimension.removeFromScene());
     // }
     viewer.clipper.planes = [];
     setCuts([]);
+    setLoading(false);
   };
 
   const handleClick = (event) => {
@@ -281,8 +297,8 @@ const Cuts = ({ viewer, showCuts, setShowCuts }) => {
         }
       />
       <CardContent>
-        <Grid container>
-          <Grid item xs={6} style={{ textAlign: "left" }}>
+        <Grid container spacing={2}>
+          {/* <Grid item xs={6} style={{ textAlign: "left" }}>
             <ButtonGroup className={classes.buttonGroup}>
               <Button
                 edge="end"
@@ -310,14 +326,22 @@ const Cuts = ({ viewer, showCuts, setShowCuts }) => {
                 <DeleteIcon />
               </Button>
             </ButtonGroup>
+          </Grid> */}
+          <Grid item xs={12}>
+            {/* <Typography variant="subtitle1" component="h3">
+              Liste de coupes:
+        </Typography> */}
+            <Typography gutterBottom variant="title2" component="div">
+              Double-cliquer sur une surface pour générer une coupe
+                  </Typography>
           </Grid>
           <Grid item xs={12}>
             {loading ? (
               <CircularProgress color="inherit" />
             ) : (
               <List sx={{ width: "100%" }}>
-                {cuts.length > 0 &&
-                  cuts.map((cut, index) => (
+                {viewer.clipper.planes.length > 0 &&
+                  viewer.clipper.planes.map((cut, index) => (
                     <ListItem
                       key={index}
                       secondaryAction={
@@ -338,7 +362,7 @@ const Cuts = ({ viewer, showCuts, setShowCuts }) => {
                       <ListItemButton
                         role={undefined}
                         dense
-                        //  onClick={() => handleShowElement(ifcClass.eids)}
+                      //  onClick={() => handleShowElement(ifcClass.eids)}
                       >
                         {/* <ListItemIcon>
                     </ListItemIcon> */}

@@ -88,6 +88,10 @@ const useStyles = makeStyles((theme) => ({
       textDecoration: "underline",
     },
   },
+
+  noObjectSetsMessage: {
+    textAlign: "center",
+  },
 }));
 
 const ObjectsSetsList = ({
@@ -106,8 +110,6 @@ const ObjectsSetsList = ({
   const [objectsSetsList, setObjectsSetsList] = useState([]);
   const [objectsSetsListDefault, setObjectsSetsListDefault] = useState([]);
   const [objectsSetsListWithEIDS, setObjectsSetsListWithEIDS] = useState([]);
-  const [objectsSetsListBySelectedClass, setObjectsSetsListBySelectedClass] =
-    useState([]);
   const [searchInput, setSearchInput] = useState("");
   const [objectsSetsListLoader, setObjectsSetsListLoader] = useState(false);
 
@@ -117,11 +119,8 @@ const ObjectsSetsList = ({
 
   const getObjectsSetsList = () => {
     setSearchInput("");
-    setObjectsSetsListBySelectedClass([]);
 
-    if ((eids.length > 0) & (searchInput.length > 0)) {
-      getobjectsSetsBySelectedEids();
-    } else if (eids.length > 0) {
+    if (eids.length > 0) {
       getobjectsSetsBySelectedEids();
     } else {
       setObjectsSetsList(objectsSetsListDefault);
@@ -175,7 +174,7 @@ const ObjectsSetsList = ({
       );
 
       setObjectsSetsList(objectsSetsBySelectedClass.data.data);
-      setObjectsSetsListBySelectedClass(objectsSetsBySelectedClass.data.data);
+      setObjectsSetsListWithEIDS(objectsSetsBySelectedClass.data.data);
       setObjectsSetsListLoader(false);
     } catch (error) {
       console.error(error);
@@ -250,6 +249,8 @@ const ObjectsSetsList = ({
         });
         setSearchInput(input);
         setObjectsSetsList(filtered);
+      } else {
+        setSearchInput(input);
       }
     } else {
       if (objectsSetsListDefault && objectsSetsListDefault.length > 0) {
@@ -319,8 +320,16 @@ const ObjectsSetsList = ({
   const resetObjectsSetsList = () => {
     setSearchInput("");
     setObjectsSetsList(objectsSetsListDefault);
-    setObjectsSetsListBySelectedClass([]);
+
+    if (eids.length > 0) {
+      getobjectsSetsBySelectedEids();
+    }
   };
+
+  let usedList =
+    (eids.length > 0) & (searchInput.length === 0)
+      ? objectsSetsListWithEIDS
+      : objectsSetsList;
 
   return (
     <Grid container spacing={3}>
@@ -378,55 +387,58 @@ const ObjectsSetsList = ({
               </Grid>
             ) : (
               <Grid container spacing={1}>
-                {((eids.length > 0) & (searchInput.length === 0)
-                  ? objectsSetsListBySelectedClass.length > 0
-                    ? objectsSetsListBySelectedClass
-                    : objectsSetsListWithEIDS
-                  : objectsSetsList
-                )?.map((object, index) => (
-                  <Grid item sm={4}>
-                    <Card
-                      key={index}
-                      className={`${classes.root} ${classes.datBimCard}`}
-                    >
-                      <CardActionArea
-                        className={`${classes.datBimCardActionArea}`}
-                      >
-                        <CardContent
-                          className={`${classes.datBimCardContent}`}
-                          onClick={() => {
-                            setSelectedObjectSet(object.object_id);
-                            setSelectedObjectSetName(object.object_name);
-                            setBreadcrumbMap([
-                              ...breadcrumbMap,
-                              object.object_name,
-                            ]);
-                            handleNext();
-                          }}
-                        >
-                          <Typography className={classes.datBimCardTitle}>
-                            {object.object_name}
-                            <br />
-                          </Typography>
-                          <img
-                            className={classes.datBimCardImg}
-                            src={object.img_ref}
-                            alt={object.object_name}
-                          />
-                        </CardContent>
-                      </CardActionArea>
-                      <CardActions>
-                        {/* <Typography className={classes.datBimCardDesc}>
-                          {object.organization_name}
-                        </Typography> */}
-                        <Chip
-                          className={classes.datBimCardDesc}
-                          label={`${object.organization_name}`}
-                        />
-                      </CardActions>
-                    </Card>
+                {usedList.length === 0 ? (
+                  <Grid item sm={12} className={classes.noObjectSetsMessage}>
+                    Aucune collection trouvée. Veuillez faire une recherche par
+                    mot clé.
                   </Grid>
-                ))}
+                ) : (
+                  usedList.map((object, index) => (
+                    <Grid item sm={4}>
+                      <Card
+                        key={index}
+                        className={`${classes.root} ${classes.datBimCard}`}
+                      >
+                        <CardActionArea
+                          className={`${classes.datBimCardActionArea}`}
+                        >
+                          <CardContent
+                            className={`${classes.datBimCardContent}`}
+                            onClick={() => {
+                              setSelectedObjectSet(object.object_id);
+                              setSelectedObjectSetName(object.object_name);
+                              setBreadcrumbMap([
+                                ...breadcrumbMap,
+                                object.object_name,
+                              ]);
+                              handleNext();
+                            }}
+                          >
+                            <Typography className={classes.datBimCardTitle}>
+                              {object.object_name}
+                              <br />
+                            </Typography>
+                            <img
+                              className={classes.datBimCardImg}
+                              src={object.img_ref}
+                              alt={object.object_name}
+                            />
+                          </CardContent>
+                        </CardActionArea>
+                        <CardActions>
+                          {/* <Typography className={classes.datBimCardDesc}>
+                                          {object.organization_name}
+                                        </Typography> */}
+                          <Chip
+                            className={classes.datBimCardDesc}
+                            label={`${object.organization_name}`}
+                          />
+                        </CardActions>
+                      </Card>
+                    </Grid>
+                  ))
+                )}
+
                 {objectsSetsList?.meta && (
                   <Pagination
                     count={objectsSetsList.meta.current_items}

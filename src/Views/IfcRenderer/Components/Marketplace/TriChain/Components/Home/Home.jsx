@@ -40,7 +40,7 @@ import {
   marketplaceAddress
 } from '../../config'
 import NFTMarketplace from '../../artifacts/contracts/NFTMarketplace.sol/NFTMarketplace.json'
-import { set } from 'immutable';
+import { useMoralis } from 'react-moralis';
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -128,6 +128,8 @@ export default function Home({
     status: true,
     message: 'Connected',
   })
+
+  const { Moralis, authenticate, isAuthenticated, user } = useMoralis();
   useEffect(() => {
     //   window.ethereum.request({
     //     method: "wallet_addEthereumChain",
@@ -145,7 +147,6 @@ export default function Home({
     // });
     if (window.ethereum) {
       window.ethereum.on('chainChanged', () => {
-        console.log('HELLo')
         loadNFTs();
       })
       window.ethereum.on('accountsChanged', () => {
@@ -162,30 +163,43 @@ export default function Home({
       message: 'Connection to the wallet...'
     })
     /* create a generic provider and query for unsold market items */
-    // const provider = await new ethers.providers.JsonRpcProvider(state.connection.provider);
-    const web3Modal = new Web3Modal()
+    //const provider = await new ethers.providers.JsonRpcProvider(state.connection.provider);
+    //const provider = await new ethers.providers.JsonRpcProvider("https://rpc-mumbai.matic.today");
+    // const web3Modal = new Web3Modal({
+    //   cacheProvider: true
+    // })
 
-    const connection = await web3Modal.connect()
-    const provider = new ethers.providers.Web3Provider(connection)
-    const { chainId } = await provider.getNetwork()
+    // const connection = await web3Modal.connect()
+    // const provider = new ethers.providers.Web3Provider(connection)
+
+
+    const provider = await Moralis.enableWeb3();
+    console.log('provider', provider)
+    const { chainId } = await provider.getNetwork();
+    console.log('chainId', chainId)
     const existingChainId = state.connection.chainIds.find(cId => cId === chainId);
+    console.log('state.connection', state.connection)
+    console.log('existingChainId', existingChainId)
     setValidation({
       ...validation,
       loading: true,
       message: 'Check blockchain availability...'
     })
+
     if (provider && existingChainId) {
       let contract;
       let data;
       let error;
       try {
-        contract = new ethers.Contract(marketplaceAddress, NFTMarketplace.abi, provider)
+        contract = new ethers.Contract(marketplaceAddress, NFTMarketplace.abi, provider);
+        console.log('contract', contract)
         setValidation({
           ...validation,
           loading: true,
           message: 'Get market items...'
         })
         data = await contract.fetchMarketItems()
+        console.log('data', data)
         /*
      *  map over items returned from smart contract and format 
      *  them as well as fetch their token metadata
@@ -193,6 +207,8 @@ export default function Home({
 
         const items = await Promise.all(data.map(async i => {
           const tokenUri = await contract.tokenURI(i.tokenId)
+          console.log('tokenUri', tokenUri)
+          console.log('tokenUri', i.tokenId.toNumber())
           const meta = await axios.get(tokenUri);
           let price = ethers.utils.formatUnits(i.price.toString(), 'ether')
           let item = {
@@ -305,8 +321,10 @@ export default function Home({
     }
   }
 
+
   return (
     <Grid container spacing={3}>
+
       { (!validation.status) ?
         <Grid item xs={12}>
           <Alert severity={`${validation.status ? 'success' : 'error'}`}>{`${validation.message}`}</Alert>

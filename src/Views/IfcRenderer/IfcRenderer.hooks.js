@@ -291,41 +291,82 @@ function UseIfcRenderer({
 
   const handleGetJsonData = async (
     viewer,
-    excludeGeometry
+    spatialStructure,
+    progress
+    // excludeGeometry
   ) => {
-    console.log('viewer', viewer)
-    const modelID = state.models.value;
-    const manager = await viewer.IFC.loader.ifcManager;
-
-    const allItems = {};
-    const lines = await manager.ifcAPI.GetAllLines(modelID);
-
-    for (let i = 1; i <= lines.size(); i++) {
-      try {
-        const itemID = lines.get(i);
-        const props = manager.ifcAPI.GetLine(modelID, itemID);
-        // const itemID = lines.get(i);
-        // const props = await viewer.IFC.getProperties(modelID, itemID, true, true);
-        props.type = props.__proto__.constructor.name;
-        if (!excludeGeometry || !geometryTypes.has(props.type)) {
-          allItems[itemID] = props;
-        }
-      } catch (e) {
-        console.log(e);
-      }
+    // const data = {};
+    const data = [];
+    let count = 0
+    for (const item of spatialStructure) {
+      // setState({
+      //   ...state,
+      //   loading: true,
+      //   loadingMessage: `Recherche: ${Math.round(count / spatialStructure.length * 100)} %`
+      // });
+      progress({
+        loading: true,
+        message: `Recherche: ${Math.round(count / spatialStructure.length * 100)} %`
+      });
+      count++;
+      const props = await viewer.IFC.getProperties(0, item.expressID, true, true);
+      data.push({
+        ...item,
+        ...props,
+        type: item.type
+      })
+      // data = { ...data, [item.expressID] : {
+      //   ...item,
+      //   ...props,
+      //   type: item.type
+      // } }
+      // data[item.expressID] = {
+      //   ...item,
+      //   ...props,
+      //   type: item.type
+      // }
     }
+    return data;
+    // console.log('viewer', viewer)
+    // const modelID = state.models.value;
+    // const manager = await viewer.IFC.loader.ifcManager;
 
-    // console.log('allItems', allItems)
-    const result = JSON.stringify(allItems, undefined, 2);
+    // const allItems = {};
+    // const lines = await manager.ifcAPI.GetAllLines(modelID);
 
-    const blob = new Blob([result], { type: "application/json" });
-    var element = document.createElement("a");
-    element.style.display = "none";
-    element.href = URL.createObjectURL(blob);
-    element.download = "data.json";
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
+    // for (let i = 1; i <= lines.size(); i++) {
+    //   try {
+    //     const itemID = lines.get(i);
+    //     // const props = await manager.ifcAPI.GetLine(modelID, itemID);
+    //     // if(i < 10) {
+    //     //   console.log('props', props)
+    //     // }
+    //     // const itemID = lines.get(i);
+    //     const props = await viewer.IFC.getProperties(modelID, itemID, true, true);
+    //     if (i < 10) {
+    //       console.log('props', props)
+    //     }
+    //     props.type = props.__proto__.constructor.name;
+    //     if (!excludeGeometry || !geometryTypes.has(props.type)) {
+    //       allItems[itemID] = props;
+    //     }
+    //   } catch (e) {
+    //     console.log(e);
+    //   }
+    // }
+
+    // // const result = JSON.stringify(allItems, undefined, 2);
+
+    // // const blob = new Blob([result], { type: "application/json" });
+    // // var element = document.createElement("a");
+    // // element.style.display = "none";
+    // // element.href = URL.createObjectURL(blob);
+    // // element.download = "data.json";
+    // // document.body.appendChild(element);
+    // // element.click();
+    // // document.body.removeChild(element);
+
+    // return allItems;
   }
 
 
@@ -339,7 +380,10 @@ function UseIfcRenderer({
     property
   }) => {
     const getPropertyValue = (type, value) => {
-      if (value) {
+
+      if (value == null) {
+        return ifcText(`no value`);
+      } else {
         switch (type) {
           case 'IfcLabel':
           case 'IfcText':
@@ -350,7 +394,6 @@ function UseIfcRenderer({
             return ifcText(`${value}`);
         }
       }
-      return ifcText(`no value`);
     }
 
 
@@ -453,173 +496,215 @@ function UseIfcRenderer({
   }) => {
     setState({
       ...state,
-      loading: true
+      loading: true,
+      loadingMessage: "Début de l'enrichissement...",
+      alertStatus: true,
+      alertMessage: "Connecté"
     });
-    const manager = await viewer.IFC.loader.ifcManager;
-    const allLines = await manager.ifcAPI.GetAllLines(modelId);
-    console.log('allLines', allLines)
-    let maxExpressId = 0;
-    await Object.keys(allLines._data).forEach(index => {
-      maxExpressId = Math.max(maxExpressId, allLines._data[index])
-    });
-    console.log('maxExpressId', maxExpressId)
+    try {
+      const manager = await viewer.IFC.loader.ifcManager;
+      const allLines = await manager.ifcAPI.GetAllLines(modelId);
+      let maxExpressId = 0;
+      await Object.keys(allLines._data).forEach(index => {
+        maxExpressId = Math.max(maxExpressId, allLines._data[index])
+      });
 
-    const elementsList = await expressIDs.map(expressID => {
-      return ref(expressID);
-    });
+      const elementsList = await expressIDs.map(expressID => {
+        return ref(expressID);
+      });
 
-    const ifcOwnerHistory = await viewer.IFC.loader.ifcManager.getAllItemsOfType(
-      modelId,
-      IFCOWNERHISTORY,
-      false
-    );
-    const eidIfcOwnerHistory = (ifcOwnerHistory && ifcOwnerHistory.length > 0) ? ifcOwnerHistory[0] : 1;
-    const newPsetOpendthXEids = [];
-    const newPsetIFCEids = [];
-    const rawLineIfcRelDefinesByPropertiesList = [];
-    let propertySingleValueExpressId = maxExpressId + 1;
+      const ifcOwnerHistory = await viewer.IFC.loader.ifcManager.getAllItemsOfType(
+        modelId,
+        IFCOWNERHISTORY,
+        false
+      );
+      const eidIfcOwnerHistory = (ifcOwnerHistory && ifcOwnerHistory.length > 0) ? ifcOwnerHistory[0] : 1;
+      const newPsetOpendthXEids = [];
+      const newPsetIFCEids = [];
+      const rawLineIfcRelDefinesByPropertiesList = [];
+      let propertySingleValueExpressId = maxExpressId + 1;
 
-    for (let property of properties) {
+      let count = 0;
 
-      // Check if corresponding IfcPropertySet exists
-      let existingPsetList = [];
-      let existingPropertyList = [];
-      for (let expressID of expressIDs) {
-        const element = await viewer.IFC.getProperties(0, expressID, true, true);
+      // CREATION D'UNE BDD DE PROPERTIES ASSOCIE AU EXPRESSIDS
+      // for (let expressID of expressIDs) {
+      //   const psetList = {
+      //     'psetId': {
+      //       elemIds: 
+      //     }
+      //   };
 
-        await element.psets?.map(pset => {
-          pset.HasProperties?.forEach(prop => {
-            if (prop.Name?.value === property.ifc_property_name || prop.Name?.value === property.property_name) {
-              existingPropertyList.push(prop);
+      // }
+      console.log('properties', properties)
+      if (properties.length > 0) {
+        try {
+          for (let property of properties) {
+            setState({
+              ...state,
+              loading: true,
+              loadingMessage: `Enrichissement: ${Math.round(count / properties.length * 100)} %`
+            });
+            count++;
+            // Check if corresponding IfcPropertySet exists
+            let existingPsetList = [];
+            let existingPropertyList = [];
+            console.log('expressIDs', expressIDs)
+            for (let expressID of expressIDs) {
+              let t0 = new Date();
+              console.log('viewer', viewer.IFC)
+              const element = await viewer.IFC.getProperties(0, expressID, true, true);
+              console.log('element', element)
+
+              let t1 = new Date();
+              console.log('delta 1: ', (t1.getTime() - t0.getTime()) / 1000)
+              t0 = new Date();
+
+              await element.psets?.map(pset => {
+                pset.HasProperties?.forEach(prop => {
+                  if (prop.Name?.value === property.ifc_property_name || prop.Name?.value === property.property_name) {
+                    existingPropertyList.push(prop);
+                  }
+                })
+              })
+
+              let existingPset = await element.psets?.find(pset => pset.Name?.value === property.ifc_class);
+
+              t1 = new Date();
+              console.log('delta 3: ', (t1.getTime() - t0.getTime()) / 1000)
+              t0 = new Date();
+
+              if (existingPset) {
+                existingPsetList.push(existingPset);
+              }
             }
-          })
-        })
 
-        let existingPset = await element.psets?.find(pset => pset.Name?.value === property.ifc_class);
-        if (existingPset) {
-          existingPsetList.push(existingPset);
-        }
-      }
-      console.log(' existingPropertyList', existingPropertyList)
-      console.log('property', existingPsetList)
+            if (existingPropertyList.length > 0) {
+              const existingProperty = existingPropertyList[0];
+              const rawLineIfcPropertySingleValue = await addOrEditIfcPropertySingleValue({
+                expressID: existingProperty.expressID,
+                type: IFCPROPERTYSINGLEVALUE,
+                name: DecodeIFCString(existingProperty.Name.value),
+                description: DecodeIFCString(property.property_definition),
+                value: property.text_value,
+                unit: property.unit,
+                property
+              });
 
-      if (existingPropertyList.length > 0) {
-        const existingProperty = existingPropertyList[0];
-        const rawLineIfcPropertySingleValue = await addOrEditIfcPropertySingleValue({
-          expressID: existingProperty.expressID,
-          type: IFCPROPERTYSINGLEVALUE,
-          name: DecodeIFCString(existingProperty.Name.value),
-          description: DecodeIFCString(property.property_definition),
-          value: property.text_value,
-          unit: property.unit,
-          property
-        });
+              await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySingleValue);
+            } else {
+              propertySingleValueExpressId += 1;
+              // Add or Edit IfcPropertySingleValue
+              const ifcPropertySingleValueEid = propertySingleValueExpressId;
+              const rawLineIfcPropertySingleValue = await addOrEditIfcPropertySingleValue({
+                expressID: ifcPropertySingleValueEid,
+                type: IFCPROPERTYSINGLEVALUE,
+                name: DecodeIFCString(property.ifc_property_name),
+                description: DecodeIFCString(property.property_definition),
+                value: property.text_value,
+                unit: property.unit,
+                property
+              });
 
-        await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySingleValue);
-      } else {
-        propertySingleValueExpressId += 1;
-        console.log('propertySingleValueExpressId', propertySingleValueExpressId)
-        // Add or Edit IfcPropertySingleValue
-        const ifcPropertySingleValueEid = propertySingleValueExpressId;
-        const rawLineIfcPropertySingleValue = await addOrEditIfcPropertySingleValue({
-          expressID: ifcPropertySingleValueEid,
-          type: IFCPROPERTYSINGLEVALUE,
-          name: DecodeIFCString(property.ifc_property_name),
-          description: DecodeIFCString(property.property_definition),
-          value: property.text_value,
-          unit: property.unit,
-          property
-        });
+              await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySingleValue);
+              if (existingPsetList.length > 0) {
+                const existingPset = existingPsetList[0];
+                const existingPsetPropertyEids = existingPset.HasProperties?.map(p => ref(p.expressID));
+                const rawLineIfcPropertySet = await addOrEditIfcPropertySet({
+                  expressID: existingPset.expressID,
+                  type: existingPset.type,
+                  globalId: existingPset.GlobalId,
+                  ifcOwnerHistoryExpressID: ref(eidIfcOwnerHistory),
+                  name: existingPset.Name,
+                  description: existingPset.Description,
+                  ifcPropertySingleValueExpressIDs: [...existingPsetPropertyEids, ref(ifcPropertySingleValueEid)]
+                })
 
-        await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySingleValue);
-        if (existingPsetList.length > 0) {
-          const existingPset = existingPsetList[0];
-          const existingPsetPropertyEids = existingPset.HasProperties?.map(p => ref(p.expressID));
-          const rawLineIfcPropertySet = await addOrEditIfcPropertySet({
-            expressID: existingPset.expressID,
-            type: existingPset.type,
-            globalId: existingPset.GlobalId,
-            ifcOwnerHistoryExpressID: ref(eidIfcOwnerHistory),
-            name: existingPset.Name,
-            description: existingPset.Description,
-            ifcPropertySingleValueExpressIDs: [...existingPsetPropertyEids, ref(ifcPropertySingleValueEid)]
-          })
+                await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySet);
+              } else if (property.ifc_class !== 'Pset_opendthx' && property.ifc_class !== '') {
+                propertySingleValueExpressId += 1;
+                const ifcPropertySetEid = propertySingleValueExpressId;
+                const rawLineIfcPropertySet = await addOrEditIfcPropertySet({
+                  expressID: ifcPropertySetEid,
+                  type: IFCPROPERTYSET,
+                  globalId: str(Math.random().toString(16).substr(2, 8)),
+                  ifcOwnerHistoryExpressID: ref(eidIfcOwnerHistory),
+                  name: str(property.ifc_class),
+                  ifcPropertySingleValueExpressIDs: [ref(ifcPropertySingleValueEid)]
+                });
 
-          await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySet);
-        } else if (property.ifc_class !== 'Pset_opendthx' && property.ifc_class !== '') {
-          propertySingleValueExpressId += 1;
-          console.log('propertySingleValueExpressId', propertySingleValueExpressId)
-          const ifcPropertySetEid = propertySingleValueExpressId;
-          const rawLineIfcPropertySet = await addOrEditIfcPropertySet({
-            expressID: ifcPropertySetEid,
-            type: IFCPROPERTYSET,
-            globalId: str(Math.random().toString(16).substr(2, 8)),
-            ifcOwnerHistoryExpressID: ref(eidIfcOwnerHistory),
-            name: str(property.ifc_class),
-            ifcPropertySingleValueExpressIDs: [ref(ifcPropertySingleValueEid)]
+                await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySet);
+
+                newPsetIFCEids.push(ref(ifcPropertySetEid));
+
+                propertySingleValueExpressId += 1;
+                const rawLineIfcRelDefinesByProperties = await addOrEditIfcRelDefinesByProperties({
+                  expressID: propertySingleValueExpressId,
+                  type: IFCRELDEFINESBYPROPERTIES,
+                  globalId: str(Math.random().toString(16).substr(2, 8)),
+                  ifcOwnerHistoryExpressID: ref(eidIfcOwnerHistory),
+                  name: empty(),
+                  description: empty(),
+                  elementsList: elementsList,
+                  ifcPropertySetExpressID: ref(ifcPropertySetEid)
+                })
+                // rawLineIfcRelDefinesByPropertiesList.push(rawLineIfcRelDefinesByProperties);
+                await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcRelDefinesByProperties);
+
+              } else {
+                newPsetOpendthXEids.push(ref(ifcPropertySingleValueEid));
+              }
+            }
+
+          }
+        } catch (e) {
+          setState({
+            ...state,
+            loading: false,
+            alertStatus: false,
+            alertMessage: "Problème lors de l'enrichissement"
           });
-
-          await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySet);
-
-          newPsetIFCEids.push(ref(ifcPropertySetEid));
-
-          propertySingleValueExpressId += 1;
-          const rawLineIfcRelDefinesByProperties = await addOrEditIfcRelDefinesByProperties({
-            expressID: propertySingleValueExpressId,
-            type: IFCRELDEFINESBYPROPERTIES,
-            globalId: str(Math.random().toString(16).substr(2, 8)),
-            ifcOwnerHistoryExpressID: ref(eidIfcOwnerHistory),
-            name: empty(),
-            description: empty(),
-            elementsList: elementsList,
-            ifcPropertySetExpressID: ref(ifcPropertySetEid)
-          })
-          console.log('rawLineIfcRelDefinesByProperties', rawLineIfcRelDefinesByProperties)
-          // rawLineIfcRelDefinesByPropertiesList.push(rawLineIfcRelDefinesByProperties);
-          await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcRelDefinesByProperties);
-
-        } else {
-          newPsetOpendthXEids.push(ref(ifcPropertySingleValueEid));
         }
       }
 
-    }
-    if (newPsetOpendthXEids.length > 0) {
-      console.log('newPsetOpendthXEids', newPsetOpendthXEids)
-      console.log('Pset_OpendthX');
-      propertySingleValueExpressId += 1;
-      const ifcPropertySetEid = propertySingleValueExpressId;
-      const rawLineIfcPropertySet = await addOrEditIfcPropertySet({
-        expressID: ifcPropertySetEid,
-        type: IFCPROPERTYSET,
-        globalId: str(Math.random().toString(16).substr(2, 8)),
-        ifcOwnerHistoryExpressID: ref(eidIfcOwnerHistory),
-        name: str('Pset_opendthx'),
-        ifcPropertySingleValueExpressIDs: newPsetOpendthXEids
+
+      if (newPsetOpendthXEids.length > 0) {
+        propertySingleValueExpressId += 1;
+        const ifcPropertySetEid = propertySingleValueExpressId;
+        const rawLineIfcPropertySet = await addOrEditIfcPropertySet({
+          expressID: ifcPropertySetEid,
+          type: IFCPROPERTYSET,
+          globalId: str(Math.random().toString(16).substr(2, 8)),
+          ifcOwnerHistoryExpressID: ref(eidIfcOwnerHistory),
+          name: str('Pset_opendthx'),
+          ifcPropertySingleValueExpressIDs: newPsetOpendthXEids
+        });
+
+        await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySet);
+
+        propertySingleValueExpressId += 1;
+        const rawLineIfcRelDefinesByProperties = await addOrEditIfcRelDefinesByProperties({
+          expressID: propertySingleValueExpressId,
+          type: IFCRELDEFINESBYPROPERTIES,
+          globalId: str(Math.random().toString(16).substr(2, 8)),
+          ifcOwnerHistoryExpressID: ref(eidIfcOwnerHistory),
+          name: empty(),
+          description: empty(),
+          elementsList: elementsList,
+          ifcPropertySetExpressID: ref(ifcPropertySetEid)
+        });
+
+        // rawLineIfcRelDefinesByPropertiesList.push(rawLineIfcRelDefinesByProperties);
+        await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcRelDefinesByProperties);
+      }
+    } catch (e) {
+      setState({
+        ...state,
+        loading: false,
+        alertStatus: false,
+        alertMessage: "Problème lors de l'enrichissement"
       });
-
-      await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySet);
-
-      propertySingleValueExpressId += 1;
-      const rawLineIfcRelDefinesByProperties = await addOrEditIfcRelDefinesByProperties({
-        expressID: propertySingleValueExpressId,
-        type: IFCRELDEFINESBYPROPERTIES,
-        globalId: str(Math.random().toString(16).substr(2, 8)),
-        ifcOwnerHistoryExpressID: ref(eidIfcOwnerHistory),
-        name: empty(),
-        description: empty(),
-        elementsList: elementsList,
-        ifcPropertySetExpressID: ref(ifcPropertySetEid)
-      });
-      console.log('rawLineIfcRelDefinesByProperties', rawLineIfcRelDefinesByProperties)
-
-      // rawLineIfcRelDefinesByPropertiesList.push(rawLineIfcRelDefinesByProperties);
-      await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcRelDefinesByProperties);
     }
-    setState({
-      ...state,
-      loading: false
-    });
+
   }
 
 
@@ -811,6 +896,49 @@ function UseIfcRenderer({
     }
   }
 
+  const handleInitSubset = async (viewer, modelID) => {
+    const models = viewer.context.items.ifcModels;
+    const ifcModel = models[modelID];
+    const allIDs = Array.from(
+      new Set(ifcModel.geometry.attributes.expressID.array)
+    );
+    const subset = getWholeSubset(viewer, ifcModel, allIDs);
+    replaceOriginalModelBySubset(viewer, ifcModel, subset);
+  }
+
+  function getWholeSubset(viewer, ifcModel, allIDs) {
+    return viewer.IFC.loader.ifcManager.createSubset({
+      modelID: ifcModel.modelID,
+      ids: allIDs,
+      applyBVH: true,
+      scene: ifcModel.parent,
+      removePrevious: true,
+      customID: 'full-model-subset',
+    });
+  }
+
+  function replaceOriginalModelBySubset(viewer, ifcModel, subset) {
+    const items = viewer.context.items;
+
+    items.pickableIfcModels = items.pickableIfcModels.filter(model => model !== ifcModel);
+    items.ifcModels = items.ifcModels.filter(model => model !== ifcModel);
+    ifcModel.removeFromParent();
+
+    items.ifcModels.push(subset);
+    items.pickableIfcModels.push(subset);
+  }
+
+  function showAllItems(viewer, ids) {
+    viewer.IFC.loader.ifcManager.createSubset({
+      modelID: 0,
+      ids,
+      removePrevious: false,
+      applyBVH: true,
+      customID: 'full-model-subset',
+    });
+  }
+
+
   return {
     models,
     meshMaterials,
@@ -823,7 +951,8 @@ function UseIfcRenderer({
     editIfcModel,
     handleCheckNetworkStatus,
     handleGetJsonData,
-    handleModelValidation
+    handleModelValidation,
+    handleInitSubset
   }
 };
 

@@ -142,7 +142,7 @@ export default function LoadFiles({
     ...baseStyle
   }), []);
 
-  const [models, setModels] = useState(state.bimData.viewer.context.items.ifcModels);
+  const [models, setModels] = useState(state.bimData.viewer.context?.items?.ifcModels);
   const ifcOnLoadError = async (err) => {
     alert(err.toString());
   };
@@ -265,7 +265,7 @@ export default function LoadFiles({
             <>
               {(!formInput.model) &&
                 <>
-                  {models.length > 0 ?
+                  {models?.length > 0 ?
                     <>
                       <Grid item xs={12}>
                         <Button

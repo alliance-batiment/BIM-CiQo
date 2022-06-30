@@ -35,7 +35,8 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import ControlCameraIcon from "@mui/icons-material/ControlCamera";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
-
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
+import { ConeGeometry, LineBasicMaterial, LineDashedMaterial, MeshBasicMaterial, Vector3 } from 'three';
 const useStyles = makeStyles((theme) => ({
   heading: {
     fontSize: theme.typography.pxToRem(15),
@@ -122,12 +123,62 @@ const Measures = ({ viewer, showMeasures, setShowMeasures }) => {
         setViewHeight(getHeight());
       }
     };
+
+    setMeasures(viewer.dimensions.dimensions);
+
+    let dimensionsActive = true;
+    viewer.dimensions.active = dimensionsActive;
+    viewer.dimensions.previewActive = dimensionsActive;
+    viewer.dimensions.setArrow(0.1, 0.03);
+
+    viewer.dimensions.lineMaterial = new LineDashedMaterial({
+      color: 0x000000,
+      linewidth: 2,
+      depthTest: false,
+      dashSize: 0.1,
+      gapSize: 0.1
+    });
+
     window.addEventListener("resize", resizeListener);
+    window.addEventListener("mousemove", handlePrePickIfcItem, false);
+    window.addEventListener("mousedown", addMeasure, false);
+    // window.addEventListener("mouseup", viewer.dimensions.cancelDrawing, false);
+    window.addEventListener("keydown", handleControlMeasures, false);
+
 
     return () => {
+      let dimensionsActive = false;
+      viewer.dimensions.active = dimensionsActive;
+      viewer.dimensions.previewActive = dimensionsActive;
+
       window.removeEventListener("resize", resizeListener);
+      window.removeEventListener("mousemove", handlePrePickIfcItem, false);
+      window.removeEventListener("mousedown", addMeasure, false);
+      // window.removeEventListener("mouseup", viewer.dimensions.cancelDrawing, false);
+      window.removeEventListener("keydown", handleControlMeasures, false);
     };
   }, []);
+
+  const handlePrePickIfcItem = async () => {
+    await viewer.IFC.selector.prePickIfcItem();
+  }
+
+  const handleControlMeasures = (e) => {
+    if (e.code === "Escape") {
+      viewer.dimensions.cancelDrawing();
+    }
+    if (
+      e.code === "Delete" ||
+      e.code === "Backspace" ||
+      e.code === "keyD"
+    ) {
+      setShowMeasures(false);
+      viewer.dimensions.deleteAll();
+    }
+  }
+
+
+
 
   const handleExpandView = (e) => {
     const width = window.innerWidth - 175;
@@ -146,23 +197,40 @@ const Measures = ({ viewer, showMeasures, setShowMeasures }) => {
     }
   };
 
-  useEffect(() => {
-    const getMeasures = async () => {
-      let dimensionsActive = true;
-      viewer.dimensions.active = dimensionsActive;
-      viewer.dimensions.previewActive = !dimensionsActive;
-      setVisibleMeasures(true);
-      setMeasures(viewer.dimensions.dimensions);
-    };
-    getMeasures();
-  }, []);
+  // useEffect(() => {
+  //   const getMeasures = async () => {
+  //     let dimensionsActive = true;
+  //     viewer.dimensions.active = dimensionsActive;
+  //     viewer.dimensions.previewActive = !dimensionsActive;
+  //     setVisibleMeasures(true);
+  //     setMeasures(viewer.dimensions.dimensions);
+  //   };
+  //   getMeasures();
+  // }, [measures]);
 
-  const addMeasure = () => {
-    viewer.dimensions.create();
-    setMeasures(viewer.dimensions.dimensions);
+  const addMeasure = async () => {
+    setLoading(true);
+    let takeMeasure = !allowMeasure;
+    setAllowMeasure(takeMeasure);
+    if (takeMeasure) {
+      await viewer.dimensions.create();
+      setMeasures(viewer.dimensions.dimensions);
+    }
+    setLoading(false)
   };
 
-  const handleAddMeasure = () => {
+  const customizePrePickItem = async () => {
+    const found = await viewer.IFC.selector.context.castRayIfc();
+    // This is more efficient than destroying and recreating the subset when the user hovers away
+    if (!found) {
+      viewer.IFC.selector.preselection.toggleVisibility(false);
+      return;
+    }
+    console.log('found', found)
+    await viewer.IFC.selector.preselection.pick(found);
+  }
+
+  const handleAddMeasure = async () => {
     let dimensionsActive = false;
     let takeMeasure = !allowMeasure;
     setAllowMeasure(takeMeasure);
@@ -170,10 +238,33 @@ const Measures = ({ viewer, showMeasures, setShowMeasures }) => {
       dimensionsActive = true;
       viewer.dimensions.active = dimensionsActive;
       viewer.dimensions.previewActive = dimensionsActive;
-      viewer.IFC.unPrepickIfcItems();
-      window.onmousemove = dimensionsActive ? null : viewer.IFC.prePickIfcItem;
+      viewer.dimensions.setArrow(0.1, 0.03);
+
+      viewer.dimensions.lineMaterial = new LineDashedMaterial({
+        color: 0x000000,
+        linewidth: 2,
+        depthTest: false,
+        dashSize: 0.1,
+        gapSize: 0.1
+      });
+      // viewer.dimensions.lineMaterial = new LineBasicMaterial({
+      //   color: 0x0000FF,
+      //   linewidth: 30,
+      //   linecap: 'round', //ignored by WebGLRenderer
+      //   linejoin: 'round' //ignored by WebGLRenderer
+      // });
+
+      // await viewer.IFC.unPrepickIfcItems();
+
+
+
+
+      // window.onmousemove = async () => dimensionsActive ? null : await viewer.IFC.prePickIfcItem();
+
+      window.onmousemove = async () => dimensionsActive ? null : await viewer.IFC.selector.prePickIfcItem();
 
       window.onmousedown = addMeasure;
+      window.onmouseup = async () => dimensionsActive ? null : await viewer.dimensions.cancelDrawing();
     } else {
       dimensionsActive = false;
       viewer.dimensions.previewActive = dimensionsActive;
@@ -184,6 +275,7 @@ const Measures = ({ viewer, showMeasures, setShowMeasures }) => {
     window.onkeydown = (event) => {
       if (event.code === "Escape") {
         viewer.dimensions.cancelDrawing();
+        window.removeEventListener("mousedown", addMeasure, false);
       }
       if (
         event.code === "Delete" ||
@@ -196,23 +288,32 @@ const Measures = ({ viewer, showMeasures, setShowMeasures }) => {
     };
   };
 
-  const handleDeleteMeasure = async (measure, index) => {
-    if (showMeasures) {
-      let dimensions = await viewer.dimensions.dimensions;
-      const selected = dimensions.find(
-        (dimension) => dimension.textLabel.uuid === measure.textLabel.uuid
-      );
-      const measureIndex = dimensions.findIndex(
-        (dimension) => dimension.textLabel.uuid === measure.textLabel.uuid
-      );
-      if (measureIndex > -1) {
-        const newMeasures = dimensions.splice(measureIndex, 1);
-        selected.removeFromScene();
 
-        // console.log('newMeasures', newMeasures);
-        setMeasures([...dimensions]);
-      }
+
+
+  const handleDeleteMeasure = async (measure, index) => {
+    setLoading(true);
+    // if (showMeasures) {
+    console.log('measure', measure);
+    console.log('dimensions', dimensions);
+    let dimensions = await viewer.dimensions.dimensions;
+    console.log('measure', measure);
+    console.log('dimensions', dimensions);
+    const selected = await dimensions.find(
+      (dimension) => dimension.textLabel.uuid === measure.textLabel.uuid
+    );
+    const measureIndex = await dimensions.findIndex(
+      (dimension) => dimension.textLabel.uuid === measure.textLabel.uuid
+    );
+    if (measureIndex > -1) {
+      const newMeasures = await dimensions.splice(measureIndex, 1);
+      await selected.removeFromScene();
+
+      // console.log('newMeasures', newMeasures);
+      setMeasures([...dimensions]);
     }
+    // }
+    setLoading(false);
   };
 
   const handleMeasuresVisibility = () => {
@@ -321,16 +422,15 @@ const Measures = ({ viewer, showMeasures, setShowMeasures }) => {
         }
       />
       <CardContent>
-        <Grid container>
-          <Grid item xs={6} style={{ textAlign: "left" }}>
+        <Grid container spacing={3}>
+          {/* <Grid item xs={6} style={{ textAlign: "left" }}>
             <ButtonGroup className={classes.buttonGroup}>
               <Button
                 edge="end"
                 aria-label="comments"
                 style={{
-                  backgroundColor: `${
-                    allowMeasure ? "lightGray" : "transparent"
-                  }`,
+                  backgroundColor: `${allowMeasure ? "lightGray" : "transparent"
+                    }`,
                 }}
                 onClick={handleAddMeasure}
               >
@@ -340,14 +440,6 @@ const Measures = ({ viewer, showMeasures, setShowMeasures }) => {
           </Grid>
           <Grid item xs={6} style={{ textAlign: "right" }}>
             <ButtonGroup className={classes.buttonGroup}>
-              {/* <Button
-                edge="end"
-                aria-label="comments"
-                style={{ backgroundColor: `${visibleMeasures ? 'lightGray' : 'transparent'}` }}
-                onClick={handleMeasuresVisibility}
-              >
-                <VisibilityIcon />
-              </Button> */}
               <Button
                 edge="end"
                 aria-label="comments"
@@ -356,7 +448,7 @@ const Measures = ({ viewer, showMeasures, setShowMeasures }) => {
                 <DeleteIcon />
               </Button>
             </ButtonGroup>
-          </Grid>
+          </Grid> */}
           <Grid item xs={12}>
             {loading ? (
               <CircularProgress color="inherit" />
@@ -382,7 +474,7 @@ const Measures = ({ viewer, showMeasures, setShowMeasures }) => {
                       <ListItemButton
                         role={undefined}
                         dense
-                        //  onClick={() => handleShowElement(ifcClass.eids)}
+                      //  onClick={() => handleShowElement(ifcClass.eids)}
                       >
                         {/* <ListItemIcon>
                     </ListItemIcon> */}

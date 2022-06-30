@@ -118,6 +118,7 @@ const Drawings = ({ viewer, showDrawings, setShowDrawings }) => {
   const [expandedView, setExpandedView] = useState(false);
   const [viewWidth, setViewWidth] = useState("100%");
   const [viewHeight, setViewHeight] = useState("100%");
+  const [plans, setPlans] = useState([]);
 
   const props = {
     width: viewWidth,
@@ -137,10 +138,15 @@ const Drawings = ({ viewer, showDrawings, setShowDrawings }) => {
     };
     window.addEventListener("resize", resizeListener);
 
-    return () => {
+    return async () => {
+      handleDeletePlane();
       window.removeEventListener("resize", resizeListener);
+
+      for (let ifcPlan of plans) {
+        await viewer.plans.clipper.deletePlane(ifcPlan.plane);
+      }
     };
-  }, []);
+  }, [plans]);
 
   const handleExpandView = (e) => {
     const width = window.innerWidth - 175;
@@ -169,6 +175,10 @@ const Drawings = ({ viewer, showDrawings, setShowDrawings }) => {
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
+  };
+
+  const handleDeletePlane = async () => {
+    await viewer.plans.exitPlanView();
   };
 
   const open = Boolean(anchorEl);
@@ -253,15 +263,18 @@ const Drawings = ({ viewer, showDrawings, setShowDrawings }) => {
             aria-label="basic tabs example"
           >
             <Tab label="Plans" {...a11yProps(0)} />
-            <Tab label="Visualiseur de DXF" {...a11yProps(1)} />
+            {/* <Tab label="Visualiseur de DXF" {...a11yProps(1)} /> */}
           </Tabs>
         </Box>
         <TabPanel value={value} index={0}>
-          <DrawingList viewer={viewer} />
+          <DrawingList
+            viewer={viewer}
+            setPlans={setPlans}
+          />
         </TabPanel>
-        <TabPanel value={value} index={1}>
+        {/* <TabPanel value={value} index={1}>
           <DxfViewer viewer={viewer} />
-        </TabPanel>
+        </TabPanel> */}
       </CardContent>
     </Card>
   );

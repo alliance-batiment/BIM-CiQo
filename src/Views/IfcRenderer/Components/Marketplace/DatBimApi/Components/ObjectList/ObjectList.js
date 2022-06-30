@@ -293,7 +293,7 @@ const ObjectList = ({
           }
           defaultExpandIcon={<ChevronRightIcon />}
           sx={{
-            height: 110,
+            height: 1100,
             flexGrow: 1,
             maxWidth: 400,
             overflowY: "auto",

@@ -134,6 +134,47 @@ export default function SellNFT({
     status: true,
     message: 'Connected',
   })
+
+  useEffect(() => {
+    if (window.ethereum) {
+      window.ethereum.on('chainChanged', () => {
+        loadNFTs();
+      })
+      window.ethereum.on('accountsChanged', () => {
+        loadNFTs();
+      })
+    }
+    loadNFTs();
+  }, []);
+
+  async function loadNFTs() {
+    setValidation({
+      ...validation,
+      loading: true,
+      message: 'Connection to the wallet...'
+    })
+    const web3Modal = new Web3Modal()
+
+    const connection = await web3Modal.connect()
+    const provider = new ethers.providers.Web3Provider(connection)
+    const { chainId } = await provider.getNetwork()
+    const existingChainId = state.connection.chainIds.find(cId => cId === chainId);
+    setValidation({
+      ...validation,
+      loading: true,
+      message: 'Check blockchain availability...'
+    })
+    if (provider && existingChainId) {
+    } else {
+      setValidation({
+        ...validation,
+        loading: false,
+        status: false,
+        message: `Not connected to a blockchain`
+      })
+    }
+  }
+
   const [formInput, updateFormInput] = useState({
     name: '',
     description: '',
@@ -495,83 +536,87 @@ export default function SellNFT({
           Create NFT:
         </Typography>
       </Grid>
-      {!validation.status &&
+      {!validation.status ?
         <Grid item xs={12}>
           <Alert severity={`error`}>{`${validation.message}`}</Alert>
         </Grid>
-      }
-      <Grid item xs={12}>
-        <Stepper activeStep={activeStep} alternativeLabel>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-      </Grid>
-      {activeStep === steps.length ? (
-        <div>
-          <Typography className={classes.instructions}>All steps completed</Typography>
-          <Button onClick={handleReset}>Reset</Button>
-        </div>
-      ) : (
+        :
         <>
-          {getStepContent(activeStep)}
-          {
-            (!formInput.name || !formInput.price || formInput.price <= 0 || !formInput.image || !formInput.file || !formInput.model) ? (
-              <Grid item xs={12}>
-                <Grid container>
-                  <Grid item xs={6} style={{ textAlign: "left" }}>
-                    <Button
-                      disabled={activeStep === 0}
-                      onClick={handleBack}
-                      className={classes.backButton}
-                    >
-                      Back
+          <Grid item xs={12}>
+            <Stepper activeStep={activeStep} alternativeLabel>
+              {steps.map((label) => (
+                <Step key={label}>
+                  <StepLabel>{label}</StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          </Grid>
+          {activeStep === steps.length ? (
+            <div>
+              <Typography className={classes.instructions}>All steps completed</Typography>
+              <Button onClick={handleReset}>Reset</Button>
+            </div>
+          ) : (
+            <>
+              {getStepContent(activeStep)}
+              {
+                (!formInput.name || !formInput.price || formInput.price <= 0 || !formInput.image || !formInput.file || !formInput.model) ? (
+                  <Grid item xs={12}>
+                    <Grid container>
+                      <Grid item xs={6} style={{ textAlign: "left" }}>
+                        <Button
+                          disabled={activeStep === 0}
+                          onClick={handleBack}
+                          className={classes.backButton}
+                        >
+                          Back
                   </Button>
+                      </Grid>
+                      <Grid item xs={6} style={{ textAlign: "right" }}>
+                        <Button variant="contained" color="primary" onClick={handleNext} disabled={true}>
+                          {activeStep === steps.length - 1 ? 'Create NFT' : 'Next'}
+                        </Button>
+                      </Grid>
+                    </Grid>
                   </Grid>
-                  <Grid item xs={6} style={{ textAlign: "right" }}>
-                    <Button variant="contained" color="primary" onClick={handleNext} disabled={true}>
-                      {activeStep === steps.length - 1 ? 'Create NFT' : 'Next'}
-                    </Button>
-                  </Grid>
-                </Grid>
-              </Grid>
-            ) : (
-              <Grid item xs={12}>
-                <Grid container>
-                  <Grid item xs={6} style={{ textAlign: "left" }}>
-                    {(!validation.status || !validation.loading) &&
-                      <Button
-                        disabled={activeStep === 0}
-                        onClick={handleBack}
-                        className={classes.backButton}
-                      >
-                        Back
-                  </Button>
-                    }
-                  </Grid>
-                  <Grid item xs={6} style={{ textAlign: "right" }}>
-                    {activeStep !== steps.length - 1 ?
-                      <Button variant="contained" color="primary" onClick={handleNext} >
-                        {'Next'}
-                      </Button>
-                      :
-                      <>
+                ) : (
+                  <Grid item xs={12}>
+                    <Grid container>
+                      <Grid item xs={6} style={{ textAlign: "left" }}>
                         {(!validation.status || !validation.loading) &&
-                          <Button onClick={listNFTForSale} className={classes.button}>
-                            Create NFT
-          </Button>
+                          <Button
+                            disabled={activeStep === 0}
+                            onClick={handleBack}
+                            className={classes.backButton}
+                          >
+                            Back
+                  </Button>
                         }
-                      </>
-                    }
+                      </Grid>
+                      <Grid item xs={6} style={{ textAlign: "right" }}>
+                        {activeStep !== steps.length - 1 ?
+                          <Button variant="contained" color="primary" onClick={handleNext} >
+                            {'Next'}
+                          </Button>
+                          :
+                          <>
+                            {(!validation.status || !validation.loading) &&
+                              <Button onClick={listNFTForSale} className={classes.button}>
+                                Create NFT
+          </Button>
+                            }
+                          </>
+                        }
+                      </Grid>
+                    </Grid>
                   </Grid>
-                </Grid>
-              </Grid>
-            )
+                )
+              }
+            </>
+          )
           }
+
         </>
-      )
       }
     </Grid >
   )

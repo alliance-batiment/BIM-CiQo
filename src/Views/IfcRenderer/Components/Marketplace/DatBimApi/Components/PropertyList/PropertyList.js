@@ -256,28 +256,73 @@ const PropertyList = ({
     }
   };
 
-  const configureProperty = (index) => (e, value) => {
+  const configureProperty = (index, key) => (e, value) => {
     // console.log("Value =>", value);
     // console.log("index=>", index);
 
     // console.log("properties", properties);
 
+    // let keyValue = key ? key : 'text_value';
     let inputValue = e.target.value;
+
+    let property = properties[index];
     const newPropertiesArr = [...properties];
-    newPropertiesArr[index].text_value = inputValue || value;
+    switch (property.data_type_name) {
+      case "Intervalle":
+        newPropertiesArr[index]['num_value'] = inputValue || value;
+        newPropertiesArr[index]['text_value'] = inputValue || value;
+        break;
+      default:
+        newPropertiesArr[index]['text_value'] = inputValue || value;
+        break;
+    }
+    // const newPropertiesArr = [...properties];
+    // newPropertiesArr[index][keyValue] = inputValue || value;
+    // newPropertiesArr[index].value = inputValue || value;
 
     setProperties(newPropertiesArr);
   };
+
+
+  const updatePorperty = (property) => {
+    switch (property.data_type_name) {
+      case "Intervalle":
+        return {
+          ...property,
+          text_value: property.num_value
+        }
+      case "Grid/Tableau":
+        const { values } = JSON.parse(property.text_value)
+        const newValues = [];
+        for (let value of values) {
+          newValues.push(`${value[0].data}: ${value[1].data}`)
+        }
+        return {
+          ...property,
+          text_value: newValues.toString()
+        }
+      default:
+        return property;
+    }
+  }
+
+
 
   const addElementsDatBimProperties = (properties, objSelected) => {
     const filteredProperties = properties.filter(
       (property) => property.checked
     );
+
+    const updateProperties = [];
+    for (let property of filteredProperties) {
+      updateProperties.push(updatePorperty(property));
+    }
+
     addElementsNewProperties({
       viewer,
       modelID,
       expressIDs: eids,
-      properties: filteredProperties,
+      properties: updateProperties,
     });
     handleShowMarketplace("home");
   };

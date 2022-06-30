@@ -33,6 +33,8 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import ClearIcon from "@material-ui/icons/Clear";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import SearchBar from '../../../../Components/SearchBar';
 import { IFCSLAB, IFCMEMBER, IFCSTRUCTURALCURVEMEMBER } from "web-ifc";
 import CommentIcon from '@mui/icons-material/Comment';
@@ -114,6 +116,18 @@ const Settings = ({
   const [value, setValue] = useState(0);
   const [checked, setChecked] = React.useState([0]);
   const [ifcModelsClasses, setIfcModelsClasses] = useState([]);
+  const [eidsHidden, setEidsHidden] = useState([]);
+
+  // useEffect(() => {
+  //   const models = viewer.context.items.ifcModels;
+  //   const ifcModel = models[0];
+  //   const allIDs = Array.from(
+  //     new Set(ifcModel.geometry.attributes.expressID.array)
+  //   );
+  //   const subset = getWholeSubset(viewer, ifcModel, allIDs);
+  //   replaceOriginalModelBySubset(viewer, ifcModel, subset);
+  //   setupEvents(viewer, allIDs);
+  // }, []);
 
   useEffect(() => {
     async function init() {
@@ -126,7 +140,8 @@ const Settings = ({
             newIfcModelsClasses.push({
               name: ifcClass,
               icon: IfcIcons[`${ifcClass}`],
-              eids: [...classEids]
+              eids: [...classEids],
+              hide: false
             })
           }
         }
@@ -181,6 +196,63 @@ const Settings = ({
     await viewer.IFC.pickIfcItemsByID(0, ids, false, 0);
   }
 
+
+  function handleRestoreElements(eids, index) {
+    const idsHidden = eidsHidden.reduce(function (acc, id) {
+      if (eids.indexOf(id) === -1) {
+        acc.push(id);
+      }
+      return acc;
+    }, []);
+    setEidsHidden(idsHidden)
+
+    const models = viewer.context.items.ifcModels;
+    const ifcModel = models[0];
+    const allIDs = Array.from(
+      new Set(ifcModel.geometry.attributes.expressID.array)
+    )
+    const idsRestore = allIDs.reduce(function (acc, id) {
+      if (idsHidden.indexOf(id) === -1) {
+        acc.push(id);
+      }
+      return acc;
+    }, []);
+
+    viewer.IFC.loader.ifcManager.createSubset({
+      modelID: ifcModel.modelID,
+      ids: idsRestore,
+      applyBVH: true,
+      scene: ifcModel.parent,
+      removePrevious: true,
+      customID: 'full-model-subset',
+    });
+
+    const newIfcModelsClasses = [...ifcModelsClasses];
+    newIfcModelsClasses[index] = {
+      ...newIfcModelsClasses[index],
+      hide: false
+    }
+
+    setIfcModelsClasses(newIfcModelsClasses);
+  }
+
+  const handleHideElements = async (eids, index) => {
+    setEidsHidden([...eidsHidden, ...eids]);
+    viewer.IFC.loader.ifcManager.removeFromSubset(
+      0,
+      eids,
+      'full-model-subset',
+    );
+
+    const newIfcModelsClasses = [...ifcModelsClasses];
+    newIfcModelsClasses[index] = {
+      ...newIfcModelsClasses[index],
+      hide: true
+    }
+
+    setIfcModelsClasses(newIfcModelsClasses);
+  }
+
   const downloadFile = ({ data, fileName, fileType }) => {
     // Create a blob with the data we want to download as a file
     const blob = new Blob([data], { type: fileType });
@@ -205,24 +277,30 @@ const Settings = ({
     let headers = ['modelId', 'elementName', 'elementClass', 'globalId', 'expressId', 'psetName', 'propertyName', 'propertyValue'].join(',');
     propertiesCsv.push(headers)
 
-
-
-    await Promise.all(ifcClass.eids.map(async eid => {
+    for (let eid of ifcClass.eids) {
       const ifcElement = await viewer.IFC.getProperties(0, eid, true, true);
       console.log('ifcElement', ifcElement)
-      await Promise.all(ifcElement.psets?.map(async pset => await Promise.all(pset.HasProperties?.map(async (property) => {
-        const modelID = 0;
-        const elementName = `${ifcElement.Name?.value}`;
-        const elementClass = `${ifcClass.name}`;
-        const globalID = `${ifcElement.GlobalId.value}`;
-        const expressID = `${ifcElement.expressID}`;
-        const psetName = `${pset.Name.value}`;
-        const propertyName = `${property.Name?.value}`;
-        const propertyValue = `${property.NominalValue?.value}`;
+      if (ifcElement && ifcElement.psets && ifcElement.psets.length > 0) {
+        for (let pset of ifcElement.psets) {
+          console.log('pset', pset)
+          if (pset.HasProperties && pset.HasProperties.length > 0) {
+            for (let property of pset.HasProperties) {
+              console.log('property', property)
+              const modelID = 0;
+              const elementName = `${ifcElement.Name?.value}`;
+              const elementClass = `${ifcClass.name}`;
+              const globalID = `${ifcElement.GlobalId.value}`;
+              const expressID = `${ifcElement.expressID}`;
+              const psetName = `${pset.Name.value}`;
+              const propertyName = `${property.Name?.value}`;
+              const propertyValue = `${property.NominalValue?.value}`;
 
-        propertiesCsv.push([modelID, elementName, elementClass, globalID, expressID, psetName, propertyName, propertyValue].join(','))
-      }))))
-    }));
+              propertiesCsv.push([modelID, elementName, elementClass, globalID, expressID, psetName, propertyName, propertyValue].join(','))
+            }
+          }
+        }
+      }
+    }
 
     downloadFile({
       data: [...propertiesCsv].join('\n'),
@@ -296,20 +374,23 @@ const Settings = ({
               key={index}
               secondaryAction={
                 <>
-                  {/* <IconButton
-                    edge="end"
-                    aria-label="comments"
-                    onClick={() => handleGetAllItemsOfType(element)}
-                  >
-                    <LibraryAddIcon />
-                  </IconButton> */}
-                  {/* <IconButton
-                    edge="end"
-                    aria-label="comments"
-                    onClick={() => handleRemoveElement(element)}
-                  >
-                    <DescriptionIcon />
-                  </IconButton> */}
+                  {/* { ifcClass.hide ?
+                    <IconButton
+                      edge="end"
+                      aria-label="comments"
+                      onClick={() => handleRestoreElements(ifcClass.eids, index)}
+                    >
+                      <VisibilityOffIcon />
+                    </IconButton>
+                    :
+                    <IconButton
+                      edge="end"
+                      aria-label="comments"
+                      onClick={() => handleHideElements(ifcClass.eids, index)}
+                    >
+                      <VisibilityIcon color="primary" />
+                    </IconButton>
+                  } */}
                   <IconButton
                     edge="end"
                     aria-label="comments"

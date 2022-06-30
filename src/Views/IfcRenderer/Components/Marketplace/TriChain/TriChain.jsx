@@ -39,6 +39,8 @@ import Check from "@material-ui/icons/Check";
 // import { UseNFTMinter } from "./NFTMinter.hooks";
 // import { MoralisProvider } from "react-moralis";
 import axios from 'axios';
+import WalletConnectMoralis from './Components/WalletConnectMoralis';
+import { MoralisProvider } from "react-moralis";
 import Home from './Components/Home';
 import SellNFT from './Components/SellNFT';
 import MyNFTs from './Components/MyNFTs';
@@ -123,7 +125,9 @@ const useStyles = makeStyles((theme) => ({
 
 
 const {
-  REACT_APP_THIRD_PARTY_API
+  REACT_APP_THIRD_PARTY_API,
+  REACT_APP_MORALIS_APPLICATION_ID,
+  REACT_APP_MORALIS_SERVER_URL
 } = process.env;
 
 const TriChain = ({
@@ -170,50 +174,57 @@ const TriChain = ({
         </Grid>
         : */}
       <>
-        {state.views.value === "home" &&
-          <Box sx={{ width: '100%' }}>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-              <Tabs value={state.views.index} onChange={handleChange} aria-label="basic tabs example">
-                <Tab label="Home" {...a11yProps(0)} />
-                <Tab label="Sell NFT" {...a11yProps(1)} />
-                <Tab label="My NFTs" {...a11yProps(2)} />
-                {/* <Tab label="Dashboard" {...a11yProps(3)} /> */}
-              </Tabs>
-            </Box>
-            <TabPanel value={state.views.index} index={0}>
-              <Home
-                state={state}
-                setState={setState}
-              />
-            </TabPanel>
-            <TabPanel value={state.views.index} index={1}>
-              <SellNFT
-                state={state}
-                setState={setState}
-                setBimData={setBimData}
-              />
-            </TabPanel>
-            <TabPanel value={state.views.index} index={2}>
-              <MyNFTs
-                state={state}
-                setState={setState}
-              />
-            </TabPanel>
-            {/* <TabPanel value={state.views.index} index={3}>
+        <MoralisProvider
+          appId={REACT_APP_MORALIS_APPLICATION_ID}
+          serverUrl={REACT_APP_MORALIS_SERVER_URL}
+        >
+          <WalletConnectMoralis />
+
+          {state.views.value === "home" &&
+            <Box sx={{ width: '100%' }}>
+              <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                <Tabs value={state.views.index} onChange={handleChange} aria-label="basic tabs example">
+                  <Tab label="Home" {...a11yProps(0)} />
+                  <Tab label="Sell NFT" {...a11yProps(1)} />
+                  <Tab label="My NFTs" {...a11yProps(2)} />
+                  {/* <Tab label="Dashboard" {...a11yProps(3)} /> */}
+                </Tabs>
+              </Box>
+              <TabPanel value={state.views.index} index={0}>
+                <Home
+                  state={state}
+                  setState={setState}
+                />
+              </TabPanel>
+              <TabPanel value={state.views.index} index={1}>
+                <SellNFT
+                  state={state}
+                  setState={setState}
+                  setBimData={setBimData}
+                />
+              </TabPanel>
+              <TabPanel value={state.views.index} index={2}>
+                <MyNFTs
+                  state={state}
+                  setState={setState}
+                />
+              </TabPanel>
+              {/* <TabPanel value={state.views.index} index={3}>
               <Dashboard
                 state={state}
                 setState={setState}
               />
             </TabPanel> */}
-          </Box>
-        }
-        {state.views.value === "resell-nft" &&
-          <ResellNFT
-            state={state}
-            setState={setState}
-            setBimData={setBimData}
-          />
-        }
+            </Box>
+          }
+          {state.views.value === "resell-nft" &&
+            <ResellNFT
+              state={state}
+              setState={setState}
+              setBimData={setBimData}
+            />
+          }
+        </MoralisProvider>
         {/* {state.views.value === "home" &&
           <Home
             state={state}
