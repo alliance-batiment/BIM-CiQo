@@ -15,7 +15,10 @@ import {
   CircularProgress,
   Fab,
   Grid,
-  Paper
+  Paper,
+  LinearProgress,
+  Box,
+  Typography
 } from '@material-ui/core';
 import Alert from '@mui/material/Alert';
 import FolderOpenOutlinedIcon from '@material-ui/icons/FolderOpenOutlined';
@@ -91,7 +94,13 @@ import { UseIfcRenderer } from "./IfcRenderer.hooks";
 import ToolTipsElem from "../../Components/ToolTipsElem/ToolTipsElem.js";
 import animationClippedVue from "./Images/animation-vue-de-coupe.gif";
 import animationMeasureTool from "./Images/animation-outil-de-mesure.gif";
+import { ClippingEdges } from 'web-ifc-viewer/dist/components/display/clipping-planes/clipping-edges';
+import { geometryTypes } from "./Utils/geometry-types";
+import flatten from 'tree-flatten';
 import axios from "axios";
+
+import TriBim from './Utils/TriBim';
+
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -167,6 +176,7 @@ const IfcRenderer = () => {
 
   const [state, setState] = useState({
     loading: false,
+    loadingMessage: 'Chargement...',
     alertStatus: true,
     alertMessage: 'Connecté',
     bcfDialogOpen: false,
@@ -175,9 +185,11 @@ const IfcRenderer = () => {
     openLeftView: false,
     leftView: "spatialStructure",
     viewer: '',
+    api: {},
     models: {
       value: 0,
-      list: []
+      list: [],
+      data: []
     },
     spatialStructures: {
       value: {},
@@ -187,6 +199,10 @@ const IfcRenderer = () => {
       value: {},
       list: []
     },
+    jsonData: {
+      value: {},
+      list: []
+    }
   });
 
   const {
@@ -200,7 +216,8 @@ const IfcRenderer = () => {
     editIfcModel,
     handleCheckNetworkStatus,
     handleGetJsonData,
-    handleModelValidation
+    handleModelValidation,
+    handleInitSubset
   } = UseIfcRenderer({
     eids,
     setEids,
@@ -211,6 +228,7 @@ const IfcRenderer = () => {
   useEffect(() => {
     async function init() {
       const container = document.getElementById("viewer-container");
+
       const newViewer = new IfcViewerAPI({
         container,
         backgroundColor: new Color(0xffffff),
@@ -218,6 +236,7 @@ const IfcRenderer = () => {
 
       setState({
         ...state,
+        loading: true,
         viewer: newViewer
       })
       // newViewer.addAxes();
@@ -273,29 +292,40 @@ const IfcRenderer = () => {
       // models.push(subset);
 
       // console.log('model', model);
+
       // // pickableModels.push(subset);
       // model.position.set(10, 10, 10)
-      // // subset.position.set(10, 10, 10)
+      // subset.position.set(10, 10, 10)
+
+      //const newJsonData = await handleGetJsonData(newViewer, false);
       // const newSpatialStructure = await newViewer.IFC.getSpatialStructure(
       //   0,
-      //   true
+      //   false
       // );
       // const updateSpatialStructures = [
       //   ...spatialStructures,
       //   newSpatialStructure,
       // ];
-      // setSpatialStructures(updateSpatialStructures);
-      // setState({
-      //   ...state,
-      //   loading: false,
-      //   spatialStructures: {
-      //     value: { ...newSpatialStructure },
-      //     list: [...updateSpatialStructures]
-      //   }
-      // });
 
-      newViewer.shadowDropper.darkness = 1.5;
-      newViewer.clipper.active = true;
+      // setSpatialStructures(updateSpatialStructures);
+
+      // const data = await handleGetJsonData(newViewer, flatten(updateSpatialStructures[0], 'children'));
+      // console.log('data', data)
+      setState({
+        ...state,
+        loading: false,
+        // models: {
+        //   ...state.models,
+        //   data: [...data]
+        // },
+        // spatialStructures: {
+        //   value: { ...newSpatialStructure },
+        //   list: [...updateSpatialStructures]
+        // },
+      });
+
+      // newViewer.shadowDropper.darkness = 1.5;
+      // newViewer.clipper.active = true;
       setViewer(newViewer);
 
       await handleInitAxeoBim({
@@ -320,10 +350,15 @@ const IfcRenderer = () => {
         const percentage = Math.floor((event.loaded * 100) / event.total);
         console.log("percentage", percentage);
         setPercentageLoading(percentage);
+        setState({
+          ...state,
+          loading: true,
+          loadingMessage: `Chargement: ${percentage} %`
+        });
       });
 
       viewer.IFC.loader.ifcManager.parser.setupOptionalCategories({
-        [IFCSPACE]: false,
+        [IFCSPACE]: true,
         [IFCOPENINGELEMENT]: false,
         [IFCSTRUCTURALANALYSISMODEL]: true,
         [IFCSTRUCTURALSURFACEMEMBER]: true,
@@ -333,6 +368,7 @@ const IfcRenderer = () => {
       let model;
       try {
         model = await viewer.IFC.loadIfc(files[0], true, ifcOnLoadError);
+        // console.log('data', properties)
       } catch (error) {
         console.log('error:', error)
         return
@@ -356,6 +392,8 @@ const IfcRenderer = () => {
       const newIfcModels = [...ifcModels, model];
       setIfcModels(newIfcModels);
 
+      await handleInitSubset(viewer, 0);
+
       // model.position.set(10, 10, 10)
       // await viewer.shadowDropper.renderShadow(model.modelID);
 
@@ -371,9 +409,18 @@ const IfcRenderer = () => {
       setSpatialStructures(updateSpatialStructures);
       console.log("updateSpatialStructure", updateSpatialStructures);
 
+      // const data = await handleGetJsonData(viewer, flatten(updateSpatialStructures[0], 'children'));
+      const tribim = new TriBim();
+
       setState({
         ...state,
         loading: false,
+        api: tribim,
+        viewer: viewer,
+        // models: {
+        //   ...state.models,
+        //   data: [...data]
+        // },
         spatialStructures: {
           value: { ...newSpatialStructure },
           list: [...updateSpatialStructures]
@@ -462,7 +509,7 @@ const IfcRenderer = () => {
       console.log('model', model)
       onDrop({ files: [model], viewer });
       setState({
-        state,
+        ...state,
         loading: false
       });
       setApiConnectors({
@@ -795,6 +842,7 @@ const IfcRenderer = () => {
                 handleShowSpatialStructure={handleShowSpatialStructure}
                 handleShowMarketplace={handleShowMarketplace}
                 handleShowProperties={handleShowProperties}
+                handleGetJsonData={handleGetJsonData}
                 eids={eids}
                 setEids={setEids}
               />
@@ -803,6 +851,8 @@ const IfcRenderer = () => {
           {selectedElementID && showProperties && (
             <DraggableCard>
               <Properties
+                bimData={state}
+                setBimData={setState}
                 viewer={viewer}
                 element={element}
                 setShowProperties={setShowProperties}
@@ -885,6 +935,7 @@ const IfcRenderer = () => {
               placement="right"
               className={classes.fab}
               onClick={handleShowSpatialStructure}
+              disabled={viewer?.context?.items?.ifcModels.length === 0}
             >
               <AccountTreeIcon />
             </ToolTipsElem>
@@ -902,6 +953,7 @@ const IfcRenderer = () => {
               placement="right"
               className={classes.fab}
               onClick={() => handleShowProperties()}
+              disabled={viewer?.context?.items?.ifcModels.length === 0}
             >
               <DescriptionIcon />
             </ToolTipsElem>
@@ -976,6 +1028,7 @@ const IfcRenderer = () => {
               //   })
               // }}
               onClick={handleShowCuts}
+              disabled={viewer?.context?.items?.ifcModels.length === 0}
             >
               <CropIcon />
             </ToolTipsElem>
@@ -999,6 +1052,7 @@ const IfcRenderer = () => {
               placement="right"
               className={classes.fab}
               onClick={handleShowDrawings}
+              disabled={viewer?.context?.items?.ifcModels.length === 0}
             >
               <MapIcon />
             </ToolTipsElem>
@@ -1013,37 +1067,24 @@ const IfcRenderer = () => {
               <ControlCameraIcon />
             </ToolTipsElem>
           </Grid> */}
-          <Grid item xs={12}>
+          {/* <Grid item xs={12}>
             <ToolTipsElem
               title="Outils de mesure"
-              // title={
-              //   <div>
-              //     <p>
-              //       Outil de mesure :
-              //       <br />
-              //       1. Cliquez sur cet icône
-              //       <br />
-              //       2. Cliquez sur un point de départ de mesure
-              //       <br />
-              //       3. Cliquez sur un point d'arrivée
-              //     </p>
-              //     <img src={animationMeasureTool} alt="animation" />
-              //   </div>
-              // }
               placement="right"
               className={classes.fab}
               onClick={handleShowMeasures}
-            // onClick={handleMeasure}
+              disabled={viewer?.context?.items?.ifcModels.length === 0}
             >
               <StraightenIcon />
             </ToolTipsElem>
-          </Grid>
+          </Grid> */}
           <Grid item xs={12}>
             <ToolTipsElem
               title="Capture d'écran"
               placement="right"
               className={classes.fab}
               onClick={handleCapture}
+              disabled={viewer?.context?.items?.ifcModels.length === 0}
             >
               <PhotoCameraIcon />
             </ToolTipsElem>
@@ -1055,6 +1096,7 @@ const IfcRenderer = () => {
               className={classes.fab}
               disabled={!state.alertStatus}
               onClick={handleShowValidation}
+              disabled={viewer?.context?.items?.ifcModels.length === 0}
             >
               <FactCheckIcon />
             </ToolTipsElem>
@@ -1065,6 +1107,7 @@ const IfcRenderer = () => {
               placement="right"
               className={classes.fab}
               onClick={handleRefreshPage}
+              disabled={viewer?.context?.items?.ifcModels.length === 0}
             >
               <RefreshIcon />
             </ToolTipsElem>
@@ -1198,7 +1241,7 @@ const IfcRenderer = () => {
           }
         >
           {`${state.alertMessage}`}
-        </Alert>
+        </Alert >
         :
         <Alert severity="error" sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }}>
           {`${state.alertMessage}`}
@@ -1226,8 +1269,26 @@ const IfcRenderer = () => {
         }}
         open={state.loading}
       >
+        <Grid container spacing={2}>
+          <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
+            <CircularProgress color="inherit" style={{ color: 'white' }} />
+          </Grid>
+          <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
+            <Typography gutterBottom variant="subtitle1" component="div" style={{ color: 'white' }}>
+              {`${state.loadingMessage}`}
+            </Typography>
+          </Grid>
+        </Grid>
+        {/* <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
+          <CircularProgress color="inherit" />
+        </Grid>
+        <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
+          <Typography gutterBottom variant="subtitle1" component="div">
+            {`${validation.message}`}
+          </Typography>
+        </Grid>
         <CircularProgress color="inherit" />
-        {/* {`${percentageLoading} %`} */}
+        {`${percentageLoading} %`} */}
       </Backdrop>
     </>
   );

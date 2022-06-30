@@ -130,6 +130,7 @@ const SpatialStructure = ({
   handleShowSpatialStructure,
   handleShowMarketplace,
   handleShowProperties,
+  handleGetJsonData,
   eids,
   setEids,
 }) => {
@@ -282,9 +283,12 @@ const SpatialStructure = ({
         <TabPanel value={value} index={0}>
           {/* <SearchBar /> */}
           <SearchData
+            bimData={state}
+            setBimData={setState}
             viewer={viewer}
             handleShowMarketplace={handleShowMarketplace}
             handleShowProperties={handleShowProperties}
+            handleGetJsonData={handleGetJsonData}
             eids={eids}
             setEids={setEids}
           />

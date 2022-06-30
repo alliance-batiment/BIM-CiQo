@@ -21,6 +21,7 @@ import {
   ListItemText,
   CircularProgress,
   Tooltip,
+  Paper
 } from "@material-ui/core";
 import InfoIcon from "@mui/icons-material/Info";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
@@ -34,6 +35,24 @@ import DownloadIcon from "@mui/icons-material/Download";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import * as WebIFC from "web-ifc";
 import { Grid } from "@mui/material";
+import {
+  Scene,
+  WebGLRenderer,
+  PerspectiveCamera,
+  BoxGeometry,
+  MeshLambertMaterial,
+  Mesh,
+  Color,
+  DoubleSide,
+  MathUtils,
+  EdgesGeometry,
+  LineBasicMaterial,
+  MeshBasicMaterial,
+  Vector2,
+  Box3,
+  Vector3
+} from "three";
+import { IfcViewerAPI } from 'web-ifc-viewer';
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -69,7 +88,7 @@ const useStyles = makeStyles((theme) => ({
   },
   cardContent: {
     opacity: "0.95",
-    height: "90%",
+    height: "100%",
     overflowY: "auto",
     overflowX: "hidden",
     "&::-webkit-scrollbar": {
@@ -83,9 +102,22 @@ const useStyles = makeStyles((theme) => ({
       outline: "0px solid slategrey",
     },
   },
+  mapContainer: {
+    padding: theme.spacing(2),
+    display: 'flex',
+    overflow: 'auto',
+    flexDirection: 'column',
+    height: 400,
+  },
+  map: {
+    width: '100%',
+    height: '100%'
+  }
 }));
 
 const Properties = ({
+  bimData,
+  setBimData,
   viewer,
   element,
   selectedElementID,
@@ -104,7 +136,7 @@ const Properties = ({
   // const props = { width: { viewWidth }, height: { viewHeight } };
   const props = {
     width: viewWidth,
-    height: viewHeight,
+    height: viewHeight
   };
 
   const classes = useStyles(props);
@@ -141,14 +173,38 @@ const Properties = ({
       console.log("selectedElementID", selectedElementID);
       setIsLoading(true);
       if (selectedElementID) {
+
+        // const models = viewer.context.items.ifcModels;
+        // const ifcModel = models[0];
+        // viewer.IFC.loader.ifcManager.createSubset({
+        //   modelID: ifcModel.modelID,
+        //   ids: [selectedElementID],
+        //   applyBVH: true,
+        //   scene: ifcModel.parent,
+        //   removePrevious: true,
+        //   customID: 'single-element-subset',
+        // });
+        // const elementMesh = await viewer.IFC.loader.ifcManager.getSubset(0, null, 'single-element-subset')
+        // console.log('elementMesh', elementMesh)
+        // if (elementMesh) {
+        //   const container = document.getElementById('element-viewer');
+        //   const elementViewer = new IfcViewerAPI({ container, backgroundColor: new Color(0xffffff) });
+        //   elementViewer.IFC.setWasmPath("../../files/");
+        //   elementViewer.IFC.applyWebIfcConfig({
+        //     COORDINATE_TO_ORIGIN: true,
+        //     USE_FAST_BOOLS: false
+        //   });;
+        //   elementMesh.position.set(0, 0, 0);
+        //   const scene = elementViewer.IFC.context.scene.scene;
+        //   scene.add(elementMesh);
+        // }
+
         const elementProperties = await viewer.IFC.getProperties(
           0,
           selectedElementID,
           true,
           true
         );
-        console.log("elementProperties", elementProperties);
-
         // console.log("viewer", viewer);
         // console.log(
         //   "ifcClass",
@@ -213,6 +269,9 @@ const Properties = ({
                 HasProperties: [],
               });
             }
+          }
+          for (let mat of elementProperties.mats) {
+
           }
           // psets = await Promise.all(elementProperties.psets.map(async (pset) => {
           //   if (pset.HasProperties && pset.HasProperties.length > 0) {
@@ -494,108 +553,128 @@ const Properties = ({
         title={`${ifcElement ? DecodeIFCString(ifcElement.name) : "Undefined"}`}
         subheader={`${ifcElement ? ifcElement.type : "Undefined"}`}
       />
-      {isLoading ? (
-        <Grid container>
-          <Grid item xs={12} style={{ textAlign: "center" }}>
-            <CircularProgress color="inherit" />
+      <CardContent className={classes.cardContent}>
+        {/* <Paper className={classes.mapContainer}>
+          <div id="element-viewer" style={{
+            // position: "absolute",
+            height: "100%",
+            width: "100%",
+            left: "0",
+            top: "0",
+          }}>
+          </div>
+        </Paper> */}
+        {isLoading ? (
+          <Grid container>
+            <Grid item md={12} style={{ textAlign: "center" }}>
+              <CircularProgress color="inherit" />
+            </Grid>
           </Grid>
-        </Grid>
-      ) : (
-        <CardContent className={classes.cardContent}>
-          {ifcElement && (
-            <>
-              <Accordion>
-                <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  aria-controls="panel1a-content"
-                  id="panel1a-header"
-                >
-                  <Typography className={classes.heading}>
-                    Attributes
+        ) : (
+
+          <>
+
+            {ifcElement && (
+              <>
+                <Accordion>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls="panel1a-content"
+                    id="panel1a-header"
+                  >
+                    <Typography className={classes.heading}>
+                      Attributes
                   </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <TableContainer>
-                    <Table className={classes.table} aria-label="simple table">
-                      <TableBody>
-                        <TableRow key={0}>
-                          <TableCell>{`GlobalId`}</TableCell>
-                          <TableCell>{`${ifcElement.GlobalId.value}`}</TableCell>
-                        </TableRow>
-                        <TableRow key={1}>
-                          <TableCell>{`Name`}</TableCell>
-                          <TableCell>{`${ifcElement.name}`}</TableCell>
-                        </TableRow>
-                        <TableRow key={2}>
-                          <TableCell>{`Type`}</TableCell>
-                          <TableCell>{`${ifcElement.type}`}</TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </AccordionDetails>
-              </Accordion>
-              {ifcElement.psets.length > 0 &&
-                ifcElement.psets.map((pset, i) => (
-                  <Accordion key={i}>
-                    <AccordionSummary
-                      expandIcon={<ExpandMoreIcon />}
-                      aria-controls="panel1a-content"
-                      id="panel1a-header"
-                    >
-                      <Typography
-                        className={classes.heading}
-                      >{`${DecodeIFCString(pset.Name.value)}`}</Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <TableContainer>
-                        <Table
-                          className={classes.table}
-                          aria-label="simple table"
-                        >
-                          <TableBody>
-                            {pset.HasProperties &&
-                              pset.HasProperties.length > 0 &&
-                              pset.HasProperties.map((property, index) => (
-                                <TableRow key={index}>
-                                  <TableCell>{`${property.label}`}</TableCell>
-                                  <TableCell>
-                                    {property.description &&
-                                      property.description !== "" && (
-                                        <Tooltip
-                                          title={`${property.description}`}
-                                          placement="top-start"
-                                        >
-                                          <IconButton>
-                                            <InfoIcon />
-                                          </IconButton>
-                                        </Tooltip>
-                                      )}
-                                  </TableCell>
-                                  {RegExp(`^http`).test(property.value) ? (
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <TableContainer>
+                      <Table className={classes.table} aria-label="simple table">
+                        <TableBody>
+                          <TableRow key={0}>
+                            <TableCell>{`GlobalId`}</TableCell>
+                            <TableCell>{`${ifcElement.GlobalId.value}`}</TableCell>
+                          </TableRow>
+                          <TableRow key={1}>
+                            <TableCell>{`Name`}</TableCell>
+                            <TableCell>{`${ifcElement.name}`}</TableCell>
+                          </TableRow>
+                          <TableRow key={2}>
+                            <TableCell>{`Type`}</TableCell>
+                            <TableCell>{`${ifcElement.type}`}</TableCell>
+                          </TableRow>
+                          {ifcElement.PredefinedType &&
+                            <TableRow key={2}>
+                              <TableCell>{`Predifined Type`}</TableCell>
+                              <TableCell>{`${ifcElement.PredefinedType.value}`}</TableCell>
+                            </TableRow>
+                          }
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </AccordionDetails>
+                </Accordion>
+                {ifcElement.psets.length > 0 &&
+                  ifcElement.psets.map((pset, i) => (
+                    <Accordion key={i}>
+                      <AccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        aria-controls="panel1a-content"
+                        id="panel1a-header"
+                      >
+                        <Typography
+                          className={classes.heading}
+                        >{`${DecodeIFCString(pset.Name.value)}`}</Typography>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <TableContainer>
+                          <Table
+                            className={classes.table}
+                            aria-label="simple table"
+                          >
+                            <TableBody>
+                              {pset.HasProperties &&
+                                pset.HasProperties.length > 0 &&
+                                pset.HasProperties.map((property, index) => (
+                                  <TableRow key={index}>
+                                    <TableCell>{`${property.label}`}</TableCell>
                                     <TableCell>
-                                      <a
-                                        href={`${property.value}`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                      >{`${property.value}`}</a>
+                                      {property.description &&
+                                        property.description !== "" && (
+                                          <Tooltip
+                                            title={`${property.description}`}
+                                            placement="top-start"
+                                          >
+                                            <IconButton>
+                                              <InfoIcon />
+                                            </IconButton>
+                                          </Tooltip>
+                                        )}
                                     </TableCell>
-                                  ) : (
-                                    <TableCell>{`${property.value}`}</TableCell>
-                                  )}
-                                  <TableCell>{`${property.unit}`}</TableCell>
-                                </TableRow>
-                              ))}
-                          </TableBody>
-                        </Table>
-                      </TableContainer>
-                    </AccordionDetails>
-                  </Accordion>
-                ))}
-            </>
-          )}
-        </CardContent>
-      )}
+                                    {RegExp(`^http`).test(property.value) ? (
+                                      <TableCell>
+                                        <a
+                                          href={`${property.value}`}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                        >{`${property.value}`}</a>
+                                      </TableCell>
+                                    ) : (
+                                      <TableCell>{`${property.value}`}</TableCell>
+                                    )}
+                                    <TableCell>{`${property.unit}`}</TableCell>
+                                  </TableRow>
+                                ))}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      </AccordionDetails>
+                    </Accordion>
+                  ))}
+              </>
+            )}
+          </>
+        )}
+      </CardContent>
     </Card>
   );
 };

@@ -79,7 +79,7 @@ const DxfViewer = ({
         const parser = new DxfParser();
         const dxf = parser.parseSync(reader.result);
         console.log('dxf', dxf)
-        let cadCanvas = new Viewer(dxf, document.getElementById('cad-view'), 400, 300);
+        let cadCanvas = new Viewer(dxf, document.getElementById('cad-view'), 500, 500);
       } catch (err) {
         return console.error(err.stack);
       }

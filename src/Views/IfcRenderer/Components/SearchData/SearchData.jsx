@@ -22,6 +22,7 @@ import {
   Grid,
   Button,
   ButtonGroup,
+  CircularProgress,
   Divider
 } from "@mui/material";
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
@@ -45,6 +46,7 @@ import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import MutltiSelectionIcon from '@mui/icons-material/ControlPointDuplicate';
 import OpenDthxLogo from './img/OpenDthxLogo.png';
 import IfcIcons from '../../Utils/ifc-full-icons.json';
+import flatten from 'tree-flatten';
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -100,16 +102,25 @@ const useStyles = makeStyles((theme) => ({
 
 
 const SearchData = ({
+  bimData,
+  setBimData,
   viewer,
   handleShowMarketplace,
   handleShowProperties,
+  handleGetJsonData,
   eids,
   setEids
 }) => {
   const classes = useStyles();
   const [value, setValue] = useState(0);
   const [checked, setChecked] = React.useState([0]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [searchInput, setSearchInput] = useState("");
   const [selectedElements, setSelectedElements] = useState([]);
+  const [validation, setValidation] = useState({
+    loading: false,
+    message: `${selectedElements.length} éléments`,
+  });
   // const [ifcElementByType, setIfcElementByType] = useState([]);
   // const [expressIDList, setExpressIDList] = useState([]);
 
@@ -239,11 +250,125 @@ const SearchData = ({
     rowLength: 100,
   });
 
+  const handleSearchData = async (input) => {
+    setValidation({
+      loading: true,
+      message: 'Chargement...'
+    });
+    let dataList = [...bimData.models.data];
+    if (!dataList || dataList.length === 0) {
+      const data = await handleGetJsonData(viewer, flatten(bimData.spatialStructures.list[0], 'children'), setValidation);
+      console.log('data', data)
+      setBimData({
+        ...bimData,
+        models: {
+          ...bimData.models,
+          data: [...data]
+        }
+      });
+      dataList = [...data];
+    }
+    const filteredEids = [];
+
+    if (dataList && dataList.length > 0) {
+      const newFilteredData = await dataList.filter((data) => {
+        const searchResult = searchEngine(data, input);
+        if (searchResult) {
+          filteredEids.push(data.expressID);
+        }
+        return searchResult;
+      });
+      setSearchInput(input);
+      setFilteredData(newFilteredData);
+      setEids(filteredEids);
+      setSelectedElements(newFilteredData);
+      await viewer.IFC.pickIfcItemsByID(0, filteredEids);
+    }
+    setValidation({
+      loading: false,
+      message: `${filteredEids.length} éléments`
+    });
+  };
+
+  function DecodeIFCString(ifcString) {
+    const ifcUnicodeRegEx = /\\X2\\(.*?)\\X0\\/giu;
+    let resultString = ifcString;
+    let match = ifcUnicodeRegEx.exec(ifcString);
+    while (match) {
+      const unicodeChar = String.fromCharCode(parseInt(match[1], 16));
+      resultString = resultString.replace(match[0], unicodeChar);
+      match = ifcUnicodeRegEx.exec(ifcString);
+    }
+    return resultString;
+  }
+
+  const searchEngine = (data, input) => {
+    const keyWords = [];
+    keyWords.push(`${data.Name?.value} ${data.type} ${data.Description} ${data.GlobalId?.value} ${data.ObjectType?.value} ${data.expressID}`);
+    for (let pset of data.psets) {
+      keyWords.push(`${pset.Name?.value}`);
+      if (pset.HasProperties && pset.HasProperties.length > 0) {
+        for (let property of pset.HasProperties) {
+          const label = DecodeIFCString(property.Name.value);
+          const value = property.NominalValue
+            ? DecodeIFCString(property.NominalValue.value)
+            : "";
+
+          const description =
+            property.Description && property.Description !== ""
+              ? DecodeIFCString(property.Description.value)
+              : null;
+          keyWords.push(`${label} ${value} ${description}`);
+        }
+      }
+    }
+
+    for (let mat of data.mats) {
+      keyWords.push(`${mat.ForLayerSet?.Description} ${mat.ForLayerSet?.LayerSetName?.value}`);
+      if (mat.ForLayerSet?.MaterialLayers && mat.ForLayerSet?.MaterialLayers.length > 0) {
+        for (let material of mat.ForLayerSet.MaterialLayers) {
+          const name = DecodeIFCString(material.Material.Name.value);
+          // const thickness = DecodeIFCString(material.Material.Name.value);
+          keyWords.push(`${name}`);
+        }
+      }
+    }
+
+    const searchResult = keyWords.some(keyWord => keyWord.toLowerCase()
+      .includes(input.toLowerCase()));
+
+    return searchResult;
+  }
+
+
+  const handleChange = (input) => {
+    setSearchInput(input);
+  }
+
+  const handleResetSearch = async () => {
+    setSearchInput("");
+    setEids([]);
+    setSelectedElements([]);
+    await viewer.IFC.pickIfcItemsByID(0, []);
+  };
+
   return (
-    <Grid container>
-      {/* <Grid item xs={12}>
-        <SearchBar style={{ marginBottom: "1em" }} />
-      </Grid> */}
+    <Grid container spacing={1}>
+      <Grid item xs={12}>
+        <SearchBar
+          input={searchInput}
+          style={{ marginBottom: "1em" }}
+          onChange={handleChange}
+          placeholder="Mot clé"
+          onClickOne={() => handleSearchData(searchInput)}
+          onClickTwo={handleResetSearch}
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <Typography gutterBottom variant="title2" component="div">
+          Remarque: La première recherche par mot clès peut être longue car elle génère les données pour la recherche.
+        </Typography>
+      </Grid>
       <Grid item xs={6} style={{ textAlign: 'left' }}>
         <ButtonGroup
           // color="secondary" aria-label="medium secondary button group"
@@ -307,53 +432,68 @@ const SearchData = ({
         </ButtonGroup>
       </Grid>
       <Grid item xs={12}>
-        <List sx={{ width: "100%" }}>
-          {selectedElements.map((element, index) => (
-            <ListItem
-              key={index}
-              secondaryAction={
-                <>
-                  {/* <IconButton
+        {validation.loading ?
+          <>
+            <Grid item xs={12} style={{ textAlign: 'center' }}>
+              <CircularProgress color="inherit" />
+            </Grid>
+            <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
+              <Typography gutterBottom variant="h5" component="div">{`${validation.message}`}    </Typography>
+            </Grid>
+          </>
+          :
+          <>
+            <Grid item xs={12} >
+              <Typography gutterBottom variant="title" component="div">{`${validation.message}`}    </Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <List sx={{ width: "100%" }}>
+                {selectedElements.map((element, index) => (
+                  <ListItem
+                    key={index}
+                    secondaryAction={
+                      <>
+                        {/* <IconButton
                     edge="end"
                     aria-label="comments"
                     onClick={() => handleGetAllItemsOfType(element)}
                   >
                     <LibraryAddIcon />
                   </IconButton> */}
-                  <IconButton
-                    edge="end"
-                    aria-label="comments"
-                    onClick={(e) => {
-                      handleShowProperties(element.expressID);
-                      e.stopPropagation();
-                    }}
+                        <IconButton
+                          edge="end"
+                          aria-label="comments"
+                          onClick={(e) => {
+                            handleShowProperties(element.expressID);
+                            e.stopPropagation();
+                          }}
+                        >
+                          <DescriptionIcon />
+                        </IconButton>
+                        <IconButton
+                          edge="end"
+                          aria-label="comments"
+                          onClick={(e) => handleExportToCsv(e, [element.expressID])}
+                        >
+                          <DownloadIcon />
+                        </IconButton>
+                        <IconButton
+                          edge="end"
+                          aria-label="comments"
+                          onClick={() => handleRemoveElement(element)}
+                        >
+                          <CloseIcon />
+                        </IconButton>
+                      </>
+                    }
+                    disablePadding
                   >
-                    <DescriptionIcon />
-                  </IconButton>
-                  <IconButton
-                    edge="end"
-                    aria-label="comments"
-                    onClick={(e) => handleExportToCsv(e, [element.expressID])}
-                  >
-                    <DownloadIcon />
-                  </IconButton>
-                  <IconButton
-                    edge="end"
-                    aria-label="comments"
-                    onClick={() => handleRemoveElement(element)}
-                  >
-                    <CloseIcon />
-                  </IconButton>
-                </>
-              }
-              disablePadding
-            >
-              <ListItemButton
-                role={undefined}
-                dense
-                onClick={() => handleElementSelection(element)}
-              >
-                {/* <ListItemIcon>
+                    <ListItemButton
+                      role={undefined}
+                      dense
+                      onClick={() => handleElementSelection(element)}
+                    >
+                      {/* <ListItemIcon>
                   <Checkbox
                     edge="start"
                     checked={checked.indexOf(element) !== -1}
@@ -362,15 +502,19 @@ const SearchData = ({
                     inputProps={{ 'aria-labelledby': `checkbox-list-label-${index}` }}
                   />
                 </ListItemIcon> */}
-                <ListItemText
-                  id={`checkbox-list-label-${index}`}
-                  primary={`${element.Name ? element.Name.value : 'NO NAME'}`}
-                // secondary={secondary ? 'Secondary text' : null}
-                />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+                      <ListItemText
+                        id={`checkbox-list-label-${index}`}
+                        primary={`${element.Name ? element.Name.value : 'NO NAME'}`}
+                      // secondary={secondary ? 'Secondary text' : null}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+            </Grid>
+          </>
+        }
+
       </Grid>
     </Grid>
     // <div style={{ height: 400, width: '100%' }}>

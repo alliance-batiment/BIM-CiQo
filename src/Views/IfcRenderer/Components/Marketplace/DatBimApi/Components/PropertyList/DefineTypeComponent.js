@@ -8,6 +8,12 @@ import {
   RadioGroup,
   Radio,
   FormControlLabel,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow
 } from "@material-ui/core";
 
 function valuetext(value) {
@@ -97,6 +103,29 @@ function DefineTypeComponent(type, property, propertyIndex, configureProperty) {
         </Select>
       );
       break;
+    case "Grid/Tableau":
+      const { values } = JSON.parse(property.text_value)
+      component = (
+        <TableContainer>
+          <Table style={{ minWidth: 650 }} aria-label="simple table">
+            <TableBody>
+              {values.map((row, index) => (
+                <TableRow
+                  key={`row ${index}`}
+                  style={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                >
+                  {row.map((cell, i) => (
+                    <TableCell key={`cell ${index} ${i}`} component="th" scope="row">
+                      {cell.data}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      );
+      break;
     case "Booléen":
       component = (
         <RadioGroup
@@ -105,8 +134,18 @@ function DefineTypeComponent(type, property, propertyIndex, configureProperty) {
           onChange={configureProperty(propertyIndex)}
           row
         >
-          <FormControlLabel value="true" control={<Radio />} label="OUI" disabled={isStaticProperty(property.property_type)} />
-          <FormControlLabel value="false" control={<Radio />} label="NON" disabled={isStaticProperty(property.property_type)} />
+          <FormControlLabel
+            value="true"
+            control={<Radio />}
+            label="OUI"
+            disabled={isStaticProperty(property.property_type)}
+          />
+          <FormControlLabel
+            value="false"
+            control={<Radio />}
+            label="NON"
+            disabled={isStaticProperty(property.property_type)}
+          />
         </RadioGroup>
       );
       break;
@@ -124,15 +163,22 @@ function DefineTypeComponent(type, property, propertyIndex, configureProperty) {
       component = (
         <Slider
           disabled={isStaticProperty(property.property_type)}
-          name="text_value"
-          onChange={configureProperty(propertyIndex)}
-          defaultValue={parseInt(property.min_interval)}
+          name="num_value"
+          onChange={configureProperty(propertyIndex, "num_value")}
+          defaultValue={parseFloat(property.num_value)}
           getAriaValueText={valuetext}
           aria-labelledby="discrete-slider-custom"
-          min={parseInt(property.min_interval)}
-          step={1}
-          value={property.text_value}
-          max={parseInt(property.max_interval)}
+          min={parseFloat(property.min_interval)}
+          step={
+            Math.pow(
+              10,
+              Math.floor(
+                Math.log10(property.max_interval - property.min_interval)
+              )
+            ) * 0.1
+          }
+          value={property.num_value}
+          max={parseFloat(property.max_interval)}
           marks={marks}
           valueLabelDisplay="auto"
         />

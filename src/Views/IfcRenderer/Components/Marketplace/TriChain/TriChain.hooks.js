@@ -42,7 +42,7 @@ function UseTriChain({
     connection: {
       status: true,
       message: 'Connected',
-      provider: 'https://rpc-mumbai.maticvigil.com',
+      provider: 'https://rpc-mumbai.matic.today',
       chainIds: [80001, 137]
     },
     views: {
