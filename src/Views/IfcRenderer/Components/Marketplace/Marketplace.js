@@ -87,7 +87,7 @@ const useStyles = makeStyles((theme) => ({
   },
   cardContent: {
     opacity: "0.95",
-    height: "90%",
+    height: "85%",
     overflowY: "auto",
     overflowX: "hidden",
     "&::-webkit-scrollbar": {
@@ -167,13 +167,13 @@ const applications = [
     tags: ["Coming Soon"],
     description: "Espace permettant le partage et le stockage de fichier",
   },
-  {
-    name: 'bsDD',
-    img: BsDDLogo,
-    type: 'data',
-    tags: ['Coming Soon'],
-    description: "The buildingSMART Data Dictionary (bSDD) is an online service that hosts classifications and their properties, allowed values, units and translations"
-  },
+  // {
+  //   name: 'bsDD',
+  //   img: BsDDLogo,
+  //   type: 'data',
+  //   tags: ['Coming Soon'],
+  //   description: "The buildingSMART Data Dictionary (bSDD) is an online service that hosts classifications and their properties, allowed values, units and translations"
+  // },
   // {
   //   name: 'Web3',
   //   img: IpfsLogo,
