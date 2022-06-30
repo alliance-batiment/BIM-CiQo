@@ -242,13 +242,22 @@ const Validation = ({
 
       const analysis = await axios.post(
         process.env.REACT_APP_API_URL,
-        formData
+        formData,
+        {
+          headers: {
+            "Access-Control-Allow-Origin": "*"
+          }
+        }
       );
       const { projectId } = analysis.data;
       console.log("projectId", projectId);
       function poll() {
         axios
-          .get(`${process.env.REACT_APP_API_URL}/pp/${projectId}`)
+          .get(`${process.env.REACT_APP_API_URL}/pp/${projectId}`, {
+            headers: {
+              "Access-Control-Allow-Origin": "*"
+            }
+          })
           .then((r) => {
             const progressLoading = r.data.progress;
             if (progressLoading === 100) {
@@ -296,13 +305,22 @@ const Validation = ({
         setProgress(0);
         const analysis = await axios.post(
           process.env.REACT_APP_API_URL,
-          formData
+          formData,
+          {
+            headers: {
+              "Access-Control-Allow-Origin": "*"
+            }
+          }
         );
         const { projectId } = analysis.data;
         console.log("projectId", projectId);
         function poll() {
           axios
-            .get(`${process.env.REACT_APP_API_URL}/pp/${projectId}`)
+            .get(`${process.env.REACT_APP_API_URL}/pp/${projectId}`, {
+              headers: {
+                "Access-Control-Allow-Origin": "*"
+              }
+            })
             .then((r) => {
               const progressLoading = r.data.progress;
               if (progressLoading === 100) {
@@ -310,7 +328,11 @@ const Validation = ({
                 setProgress(progressLoading);
 
                 axios
-                  .get(`${process.env.REACT_APP_API_URL}/log/${projectId}.json`)
+                  .get(`${process.env.REACT_APP_API_URL}/log/${projectId}.json`, {
+                    headers: {
+                      "Access-Control-Allow-Origin": "*"
+                    }
+                  })
                   .then((logs) => {
                     console.log("logs", logs.data);
                     setLogs(logs.data);
