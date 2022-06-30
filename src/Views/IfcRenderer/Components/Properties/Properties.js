@@ -88,7 +88,7 @@ const useStyles = makeStyles((theme) => ({
   },
   cardContent: {
     opacity: "0.95",
-    height: "100%",
+    height: "85%",
     overflowY: "auto",
     overflowX: "hidden",
     "&::-webkit-scrollbar": {
