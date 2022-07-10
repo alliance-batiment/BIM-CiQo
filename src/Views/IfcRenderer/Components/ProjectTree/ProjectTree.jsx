@@ -108,14 +108,13 @@ const ProjectTree = ({
   const [value, setValue] = useState(0);
   const [expanded, setExpanded] = useState([]);
   const [expressIDList, setExpressIDList] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [spatialStructures, setSpatialStructures] = useState([...state.spatialStructures.list]);
-
 
   useEffect(() => {
     async function init() {
+      console.log('Project Tree')
       setLoading(true);
-      console.log('eids proej', eids)
       const modelID = await viewer.IFC.getModelID();
       // const expandedNode = await eids.map(eid => String(eid))
       // setExpanded(expandedNode);
@@ -144,7 +143,7 @@ const ProjectTree = ({
         }
 
         let count = 0;
-        getExpandedNodes(spatialStructures[0], count);
+        await getExpandedNodes(spatialStructures[0], count);
         setExpanded(expandedNodes);
       }
 
@@ -371,13 +370,6 @@ const ProjectTree = ({
         <ButtonGroup
           className={classes.buttonGroup}
         >
-          {/* <Button
-            edge="end"
-            aria-label="comments"
-          // onClick={() => handleGetAllItemsOfType(element)}
-          >
-            <CheckBoxIcon />
-          </Button> */}
           <Button
             edge="end"
             aria-label="comments"
@@ -428,8 +420,8 @@ const ProjectTree = ({
           </Button>
         </ButtonGroup>
       </Grid>
-      {loading ?
-        <Grid container justify="center">
+      {(loading) ?
+        <Grid item xs={12} justify="center" style={{ textAlign: 'center' }}>
           <CircularProgress color="inherit" />
         </Grid>
         :

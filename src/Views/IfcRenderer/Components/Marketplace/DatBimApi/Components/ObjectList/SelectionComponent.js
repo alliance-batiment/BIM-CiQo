@@ -11,11 +11,14 @@ import {
   AccordionSummary,
   AccordionDetails,
   Typography,
+  Button
 } from "@material-ui/core";
 
 import DefineTypeComponent from "./DefineTypeComponent";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import React from "react";
+
+
 
 const SelectionComponent = ({
   selectors,
@@ -23,7 +26,11 @@ const SelectionComponent = ({
   getObjectsOfAdvancedSearch,
   selectorsRequest,
   setSelectorsRequest,
+  resetSelectors
 }) => {
+  // const classes = useStyles();
+
+
   return (
     <Accordion>
       <AccordionSummary
@@ -39,7 +46,7 @@ const SelectionComponent = ({
             <CircularProgress color="inherit" />
           </Grid>
         ) : (
-          <Grid container>
+          <Grid container spacing={2}>
             <Grid item xs={12}>
               {selectors && selectors.length > 0 ? (
                 <TableContainer component={Paper}>
@@ -70,6 +77,16 @@ const SelectionComponent = ({
               ) : (
                 <Typography>Aucun sélecteur disponible</Typography>
               )}
+            </Grid>
+            <Grid item xs={12} style={{ textAlign: 'right' }}>
+              <Button
+                variant="contained"
+                onClick={resetSelectors}
+                color="primary"
+                style={{ backgroundColor: "#E6464D", color: "white" }}
+              >
+                Réinitialiser
+              </Button>
             </Grid>
           </Grid>
         )}
