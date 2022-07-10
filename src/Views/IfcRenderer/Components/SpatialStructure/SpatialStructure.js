@@ -144,6 +144,7 @@ const SpatialStructure = ({
 
   useEffect(() => {
     async function init() {
+      console.log('Spatial Structure')
       const modelID = await viewer.IFC.getModelID();
       setExpressIDList(eids);
       console.log("EIDS", eids);

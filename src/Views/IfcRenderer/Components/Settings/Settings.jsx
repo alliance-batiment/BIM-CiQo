@@ -131,6 +131,7 @@ const Settings = ({
 
   useEffect(() => {
     async function init() {
+      console.log('Settings')
       // const ifcApi = new WebIFC.IfcAPI();
       const newIfcModelsClasses = [];
       for (let ifcClass of ifcClasses) {
