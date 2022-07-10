@@ -376,6 +376,7 @@ const ObjectList = ({
                     getObjectsOfAdvancedSearch={getObjectsOfAdvancedSearch}
                     selectorsRequest={selectorsRequest}
                     setSelectorsRequest={setSelectorsRequest}
+                    resetSelectors={resetSelectors}
                   />
                 </Grid>
                 {listing}

@@ -397,10 +397,22 @@ const IfcRenderer = () => {
       // model.position.set(10, 10, 10)
       // await viewer.shadowDropper.renderShadow(model.modelID);
 
+      setState({
+        ...state,
+        loading: true,
+        loadingMessage: `Chargement: génération de l'arborescence du projet`
+      });
       const newSpatialStructure = await viewer.IFC.getSpatialStructure(
         model.modelID,
-        true
+        false
       );
+
+      setState({
+        ...state,
+        loading: true,
+        loadingMessage: `Chargement: fin de la génération de l'arborescence du projet`
+      });
+
       console.log("newSpatialStructure", newSpatialStructure);
       const updateSpatialStructures = [
         ...spatialStructures,

@@ -184,9 +184,10 @@ const PropertyList = ({
           }
 
           if (property.data_type_name === "Lien") {
+            const newLink = property.text_value.replace("Https", "https");
             return {
               ...property,
-              text_value: property.text_value.toLowerCase(),
+              text_value: newLink,
             };
           }
           // console.log("Property =>", property);

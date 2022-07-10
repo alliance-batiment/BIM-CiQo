@@ -126,6 +126,7 @@ const SearchData = ({
 
   useEffect(() => {
     async function init() {
+      console.log('Search data')
       console.log('IfcIcons', IfcIcons)
       const selectedElements = await Promise.all(eids.map(async (eid) => {
         const elementProperties = await viewer.IFC.getProperties(0, eid, false, false);

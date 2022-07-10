@@ -202,20 +202,23 @@ const DefineTypeComponent = ({
       component = (
         <Slider
           className={`${classes.slider} ${classes.datBIMColor}`}
-          defaultValue={parseInt(selector.value_min)}
+          defaultValue={selector.value_min}
           getAriaValueText={valuetext}
           aria-labelledby="discrete-slider"
           valueLabelDisplay="auto"
-          step={1}
+          step={(selector.value_max - selector.value_min) / 100}
           marks={marks}
-          min={parseInt(selector.value_min)}
-          max={parseInt(selector.value_max)}
+          min={selector.value_min}
+          max={selector.value_max}
           onChangeCommitted={handleChangeIntervalCommitted}
         />
       );
       break;
 
     case "definition":
+      console.log('definition', selector);
+      console.log('selector.value_min', parseInt(selector.value_min));
+
       component = (
         <Slider
           className={`${classes.slider} ${classes.datBIMColor}`}
@@ -223,11 +226,12 @@ const DefineTypeComponent = ({
           getAriaValueText={valuetext}
           aria-labelledby="range-slider"
           valueLabelDisplay="auto"
-          step={1}
+          defaultValue={selectedRangedValues}
+          step={(selector.value_max - selector.value_min) / 100}
           marks={marks}
           value={selectedRangedValues}
-          min={parseInt(selector.value_min)}
-          max={parseInt(selector.value_max)}
+          min={selector.value_min}
+          max={selector.value_max}
           onChange={updateSelectedRangedValues}
           onChangeCommitted={handleChangeDefinitionCommitted}
         />
