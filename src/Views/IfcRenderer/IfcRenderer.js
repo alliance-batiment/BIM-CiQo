@@ -1238,7 +1238,7 @@ const IfcRenderer = () => {
       </Grid>
       {state.alertStatus ?
         <Alert severity="success" sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, width: '100%' }}
-          action={REACT_APP_COMPANY === "VBMC" &&
+          action={
             <Grid container spacing={1}>
               <Grid item xs={4} style={{ textAlign: 'right' }}>
                 <img src={ANCTPng} style={{ height: '2em', width: 'auto' }} />
