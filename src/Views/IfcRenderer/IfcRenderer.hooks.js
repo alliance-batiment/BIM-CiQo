@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import * as WebIFC from 'web-ifc';
+import { IfcAPI } from "web-ifc/web-ifc-api";
 import {
   IFCBUILDINGSTOREY,
   IFCPROJECT,
@@ -286,8 +287,6 @@ function UseIfcRenderer({
       existingPset
     }
   }
-
-
 
   const handleGetJsonData = async (
     viewer,

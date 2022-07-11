@@ -254,9 +254,9 @@ const IfcRenderer = () => {
         "../../files/IFCWorker.js"
       );
 
-      // const db = await initIndexDB();
-      // const allModels = await getModels(db);
-      // console.log('allModels', allModels)
+      const db = await initIndexDB();
+      const allModels = await getModels(db);
+      console.log('allModels', allModels)
 
       // const model = await newViewer.IFC.loadIfcUrl(allModels[0].file, false);
 
@@ -996,8 +996,8 @@ const IfcRenderer = () => {
             >
               <FactCheckIcon />
             </ToolTipsElem>
-          </Grid>
-          {/* <Grid item xs={12}>
+          </Grid>*/}
+          <Grid item xs={12}>
             <Fab
               size="small"
               className={classes.fab}
@@ -1014,7 +1014,7 @@ const IfcRenderer = () => {
             >
               BCF
             </Fab>
-          </Grid> */}
+          </Grid>
           <Grid item xs={12}>
             <ToolTipsElem
               // title={

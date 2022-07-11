@@ -55,6 +55,10 @@ const Models = () => {
     }
   }
 
+  const showModel = (model) => {
+    console.log(model)
+  }
+
   useEffect(() => {
     //get all models from the database
     const getModels = async () => {
@@ -75,6 +79,7 @@ const Models = () => {
             <h2>{model.title}</h2>
             <p>{model.content}</p>
             <button className="delete" onClick={() => deleteModel(model.title)}>Delete</button>
+            <button className="show" onClick={() => showModel(model)}>show</button>
           </div>
         })
       }
