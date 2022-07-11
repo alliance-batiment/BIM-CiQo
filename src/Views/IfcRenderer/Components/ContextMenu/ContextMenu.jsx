@@ -25,7 +25,6 @@ import {
   MeshPhysicalMaterial,
   Mesh
 } from 'three';
-import { VisibilityManager } from 'web-ifc-viewer/dist/components/ifc/visibility-manager';
 
 const ContextMenu = ({
   viewer,
