@@ -997,7 +997,7 @@ const IfcRenderer = () => {
               <FactCheckIcon />
             </ToolTipsElem>
           </Grid>*/}
-          <Grid item xs={12}>
+          {/* <Grid item xs={12}>
             <Fab
               size="small"
               className={classes.fab}
@@ -1014,7 +1014,7 @@ const IfcRenderer = () => {
             >
               BCF
             </Fab>
-          </Grid>
+          </Grid> */}
           <Grid item xs={12}>
             <ToolTipsElem
               // title={
@@ -1101,7 +1101,7 @@ const IfcRenderer = () => {
               <PhotoCameraIcon />
             </ToolTipsElem>
           </Grid>
-          <Grid item xs={12}>
+          {/* <Grid item xs={12}>
             <ToolTipsElem
               title="Système de validation de l'IFC"
               placement="right"
@@ -1112,7 +1112,7 @@ const IfcRenderer = () => {
             >
               <FactCheckIcon />
             </ToolTipsElem>
-          </Grid>
+          </Grid> */}
           <Grid item xs={12}>
             <ToolTipsElem
               title="Reinitialise la page"
