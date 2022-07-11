@@ -34,23 +34,8 @@ import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import DatBimApi from "./DatBimApi/DatBimApi";
 import DropBox from "./DropBox/DropBox";
-import BsDD from "./BsDD";
-import AxeoBim from "./AxeoBim";
-import Web3 from "./Web3";
-import NFTMinter from "./NFTMinter";
-import TriChain from "./TriChain";
-import TriStructure from "./TriStructure";
 import DropboxChooser from "react-dropbox-chooser";
 import OpenDthxLogo from "./img/OpenDthxLogo.png";
-import DropBoxLogo from "./img/DropBoxLogo.png";
-import GoogleDriveLogo from "./img/GoogleDriveLogo.png";
-import OneDriveLogo from "./img/OneDriveLogo.png";
-import BsDDLogo from "./img/bsDDLogo.png";
-import AxeoBimLogo from "./img/AxeoBimLogo.jpeg";
-import IpfsLogo from "./img/IpfsLogo.png";
-import TriChainLogo from "./img/TriChainLogo.png";
-import TriSensorsLogo from "./img/TriSensorsLogo.png";
-import TriStructureLogo from "./img/TriStructureLogo.png";
 import SearchBar from "../../../../Components/SearchBar";
 
 const useStyles = makeStyles((theme) => ({
@@ -147,64 +132,8 @@ const applications = [
   //   description: "Espace permettant le partage et le stockage de fichier",
   // },
   // {
-  //   name: 'TriStructure',
-  //   img: TriStructureLogo,
-  //   type: 'structural analysis',
-  //   tags: ['Coming Soon'],
-  //   description: "Application permettant la génération d'un modèle analytique pour du calcul de structure"
-  // },
-  // {
   //   name: 'Google Drive',
   //   img: GoogleDriveLogo,
-  //   type: 'storage',
-  //   tags: ['Coming Soon'],
-  //   description: 'Espace permettant le partage et le stockage de fichier'
-  // },
-  {
-    name: "AxeoBIM",
-    img: AxeoBimLogo,
-    type: "storage",
-    tags: ["Coming Soon"],
-    description: "Espace permettant le partage et le stockage de fichier",
-  },
-  // {
-  //   name: 'bsDD',
-  //   img: BsDDLogo,
-  //   type: 'data',
-  //   tags: ['Coming Soon'],
-  //   description: "The buildingSMART Data Dictionary (bSDD) is an online service that hosts classifications and their properties, allowed values, units and translations"
-  // },
-  // {
-  //   name: 'Web3',
-  //   img: IpfsLogo,
-  //   type: 'Storage & Validation',
-  //   tags: ['Coming Soon'],
-  //   description: 'Espace permettant le partage et le stockage de fichier de manière décentralisée'
-  // },
-  // {
-  //   name: 'NFT Minter',
-  //   img: IpfsLogo,
-  //   type: 'NFT',
-  //   tags: ['Coming Soon'],
-  //   description: 'Application permettant de minter un NFT de sa maquette'
-  // },
-  // {
-  //   name: 'TriChain',
-  //   img: TriChainLogo,
-  //   type: 'storage & blockchain',
-  //   tags: ['Coming Soon'],
-  //   description: "Marketplace décentralisée permettant de stocker et d'échanger des NFT pour le BIM"
-  // },
-  // {
-  //   name: 'TriSensors',
-  //   img: TriSensorsLogo,
-  //   type: 'iot',
-  //   tags: ['Coming Soon'],
-  //   description: "Gestion de capteurs IOT connectés à la maquette"
-  // },
-  // {
-  //   name: 'OneDrive',
-  //   img: OneDriveLogo,
   //   type: 'storage',
   //   tags: ['Coming Soon'],
   //   description: 'Espace permettant le partage et le stockage de fichier'
@@ -457,77 +386,8 @@ const Marketplace = ({
             handleShowMarketplace={handleShowMarketplace}
           />
         )}
-        {selectedApp === "AxeoBIM" && (
-          <>
-            {/* {apiConnectors[selectedApp] ? */}
-            <AxeoBim
-              viewer={viewer}
-              modelID={modelID}
-              eids={eids}
-              setEids={setEids}
-              addElementsNewProperties={addElementsNewProperties}
-              handleShowMarketplace={handleShowMarketplace}
-              setSelectedApp={setSelectedApp}
-            />
-            {/* :
-              <Alert severity="warning">La maquette doit provenir d'AxeoBIM pour activer cette application</Alert>
-            } */}
-          </>
-        )}
         {selectedApp === "DropBox" && (
           <DropBox viewer={viewer} onDrop={onDrop} />
-        )}
-        {selectedApp === "bsDD" && (
-          <BsDD
-            viewer={viewer}
-            modelID={modelID}
-            eids={eids}
-            setEids={setEids}
-            addElementsNewProperties={addElementsNewProperties}
-            handleShowMarketplace={handleShowMarketplace}
-          />
-        )}
-        {selectedApp === "Web3" && (
-          <Web3
-            viewer={viewer}
-            modelID={modelID}
-            eids={eids}
-            setEids={setEids}
-            addElementsNewProperties={addElementsNewProperties}
-            handleShowMarketplace={handleShowMarketplace}
-          />
-        )}
-        {selectedApp === "NFT Minter" && (
-          <NFTMinter
-            viewer={viewer}
-            modelID={modelID}
-            eids={eids}
-            setEids={setEids}
-            addElementsNewProperties={addElementsNewProperties}
-            handleShowMarketplace={handleShowMarketplace}
-          />
-        )}
-        {selectedApp === "TriChain" && (
-          <TriChain
-            bimData={bimData}
-            setBimData={setBimData}
-            viewer={viewer}
-            modelID={modelID}
-            eids={eids}
-            setEids={setEids}
-            addElementsNewProperties={addElementsNewProperties}
-            handleShowMarketplace={handleShowMarketplace}
-          />
-        )}
-        {selectedApp === "TriStructure" && (
-          <TriStructure
-            viewer={viewer}
-            modelID={modelID}
-            eids={eids}
-            setEids={setEids}
-            addElementsNewProperties={addElementsNewProperties}
-            handleShowMarketplace={handleShowMarketplace}
-          />
         )}
       </CardContent>
     </Card>
