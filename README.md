@@ -1,3 +1,5 @@
+![BIM-CiQo](./AllianceBatiment.jpeg "BIM-CiQo")
+
 ## Créer mon application openBIM à partir de BIM-CiQo
 
 > Afin de permettre aux acteurs de la construction de pouvoir développer leurs propres applications openBIM en ligne et de pouvoir les enrichir avec de la donnée au format libre <a href="https://alliance-batiment.org/open-dthx-langage-ouvert-et-libre-dacces-pour-decrire-les-composants/" target="_blank">open dthX</a>, <a href="https://alliance-batiment.org/" target="_blank">Alliance du Batiment</a> met à disposition le kit de développement <a href="https://github.com/alliance-batiment/bim-ciqo" target="_blank">BIM-CiQo</a>.
@@ -6,7 +8,7 @@
 
 >Démo live: 👉 <a href="https://alliance-batiment.ciqo.eu/" target="_blank">BIM-CiQo</a> 👈
 
-## Sommaire (Optional)
+## Sommaire
 
 - [Mise en route](#installations)
 - [Créer notre première application](#create-my-own-app)
