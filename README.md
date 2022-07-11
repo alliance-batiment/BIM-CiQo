@@ -1,12 +1,10 @@
-## Créer mon application openBIM
+## Créer mon application openBIM à partir de BIM-CiQo
 
-> Afin de permettre aux ingénieurs de pouvoir développer leurs propres applications openBIM en ligne, <a href="https://www.tridyme.com/fr/" target="_blank">TriDyme</a> met à disposition le kit de développement <a href="https://github.com/tridyme/sdk-bim-viewer" target="_blank">sdk-bim-viewer</a>.
-
-> Ce projet vous permet de créer et de publier vos propres applications de ligne et de les proposer dans la marketplace de <a href="https://www.tridyme.com/fr/" target="_blank">TriDyme</a> gratuitement.
+> Afin de permettre aux acteurs de la construction de pouvoir développer leurs propres applications openBIM en ligne et de pouvoir les enrichir avec de la donnée au format libre <a href="https://alliance-batiment.org/open-dthx-langage-ouvert-et-libre-dacces-pour-decrire-les-composants/" target="_blank">open dthX</a>, <a href="https://alliance-batiment.org/" target="_blank">Alliance du Batiment</a> met à disposition le kit de développement <a href="https://github.com/alliance-batiment/bim-ciqo" target="_blank">BIM-CiQo</a>.
 
 > Il est basé sur cette excellente initiative open-source qu'est <a href="https://ifcjs.github.io/info/" target="_blank">IFC.js</a>.
 
->Démo live: 👉 <a href="https://bimviewer.tridyme.com/" target="_blank">BIMViewer</a> 👈
+>Démo live: 👉 <a href="https://alliance-batiment.ciqo.eu/" target="_blank">BIM-CiQo</a> 👈
 
 ## Sommaire (Optional)
 
@@ -26,14 +24,14 @@ Pour plus d'informations concernant les prérequis en matière de languages de p
 
 ### Cloner le kit de développement
 
-Afin de créer notre propre application openBIM, commençons par cloner le <a href="https://github.com/tridyme/sdk-bim-viewer" target="_blank">sdk-bim-viewer</a> grâce à **git** dans le repertoire ou nous souhaitons :
+Afin de créer notre propre application openBIM, commençons par cloner le <a href="https://github.com/alliance-batiment/bim-ciqo" target="_blank">BIM-CiQo</a> grâce à **git** dans le repertoire ou nous souhaitons :
 ```shell
-$ git clone https://github.com/tridyme/sdk-bim-viewer.git
+$ git clone https://github.com/alliance-batiment/BIM-CiQo.git
 ```
 
 ### Démarrage
 
-Une fois le clonage finalisé, vous pouvez renommer le dossier **sdk-bim-viewer** comme vous le souhaitez, ici nous l'appelerons **my-bim-app**:
+Une fois le clonage finalisé, vous pouvez renommer le dossier **BIM-CiQo** comme vous le souhaitez, ici nous l'appelerons **my-bim-app**:
 
 
 Puis, entrez dans votre dossier, lancez l'installation des modules **Node.js** via la commande `npm install` et enfin démarrez l'application avec `npm start`:
@@ -53,23 +51,20 @@ Cette application permet de charger et de visualiser une maquette IFC.
 Afin de mettre son application en ligne, voir le tutoriel suivant:
 <a href="https://www.tridyme.com/fr/blog/deploiement-avec-netlify">Deployer son Application Web en ligne gratuitement avec Netlify</a>
 
-Si vous souhaitez la mettre en ligne de manière décentralisée avec le Web3.0:
-<a href="https://www.tridyme.com/fr/blog/application-web3-decentralise">Deployer son Application Web décentralisée gratuitement avec Fleek</a>
-
 
 ## <a name="assistance"></a>Communauté & Assistance
 
-Afin de pouvoir échanger sur le sujet et répondre à vos questions, vous pouvez rejoindre notre serveur <a href="https://discord.gg/zgHGa2Tpe4" target="_blank">Discord</a> et suivre nos développements sur notre <a href="https://github.com/tridyme?tab=repositories" target="_blank">Github</a>.
+Afin de pouvoir échanger sur le sujet et répondre à vos questions, vous pouvez rejoindre notre serveur <a href="https://discord.gg/b9xy9zVpTB" target="_blank">Discord</a> et suivre nos développements sur notre <a href="https://github.com/alliance-batiment?tab=repositories" target="_blank">Github</a>.
 
-Vous pouvez également nous contacter par email: <a href="contact@tridyme.com" target="_blank">contact@tridyme.com</a>.
+Vous pouvez également nous contacter par email: <a href="contact@alliance-batiment.org" target="_blank">contact@alliance-batiment.org</a>.
 
 
 
-A bientôt sur <a href="http://app.tridyme.com">TriDyme</a>!!
+A bientôt sur <a href="https://alliance-batiment.org/">Alliance du Batiment</a>!!
 
 ## License
 
-[![License](http://img.shields.io/:license-mit-blue.svg?style=flat-square)](http://badges.mit-license.org)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-- **[MIT license](http://opensource.org/licenses/mit-license.php)**
-- Copyright 2021 © <a href="http://tridyme.com" target="_blank">TriDyme</a>.
+- **[GNU license](https://www.gnu.org/licenses/gpl-3.0.html)**
+- Copyright 2022 © <a href="https://alliance-batiment.org/" target="_blank">Alliance du Batiment</a>.
