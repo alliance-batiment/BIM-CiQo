@@ -551,7 +551,7 @@ const Properties = ({
           </div>
         }
         title={`${ifcElement ? DecodeIFCString(ifcElement.name) : "Undefined"}`}
-        subheader={`${ifcElement ? ifcElement.type : "Undefined"}`}
+        subheader={`${ifcElement ? ifcElement.type : "Undefined"} - ${selectedElementID}`}
       />
       <CardContent className={classes.cardContent}>
         {/* <Paper className={classes.mapContainer}>

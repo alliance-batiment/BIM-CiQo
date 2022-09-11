@@ -113,6 +113,13 @@ const useStyles = makeStyles((theme) => ({
   fab: {
     backgroundColor: "white",
   },
+  MuiButtonBase: {
+    defaultProps: {
+      // The props to apply
+      disableRipple: true, // No more ripple, on the whole application 💣!
+    },
+  },
+
 }));
 
 function a11yProps(index) {
@@ -126,7 +133,6 @@ const SpatialStructure = ({
   state,
   setState,
   viewer,
-  spatialStructures,
   handleShowSpatialStructure,
   handleShowMarketplace,
   handleShowProperties,
@@ -142,15 +148,15 @@ const SpatialStructure = ({
   const [viewWidth, setViewWidth] = useState("100%");
   const [viewHeight, setViewHeight] = useState("100%");
 
-  useEffect(() => {
-    async function init() {
-      console.log('Spatial Structure')
-      const modelID = await viewer.IFC.getModelID();
-      setExpressIDList(eids);
-      console.log("EIDS", eids);
-    }
-    init();
-  }, [eids]);
+  // useEffect(() => {
+  //   async function init() {
+  //     console.log('Spatial Structure')
+  //     const modelID = await viewer.IFC.getModelID();
+  //     setExpressIDList(eids);
+  //     console.log("EIDS", eids);
+  //   }
+  //   init();
+  // }, [eids]);
 
   const props = {
     width: viewWidth,
@@ -296,8 +302,9 @@ const SpatialStructure = ({
         </TabPanel>
         <TabPanel value={value} index={1}>
           <ProjectTree
-            state={state}
-            setState={setState}
+            // state={state}
+            // setState={setState}
+            tree={state.spatialStructures.list}
             viewer={viewer}
             handleShowMarketplace={handleShowMarketplace}
             handleShowProperties={handleShowProperties}

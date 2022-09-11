@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, memo } from "react";
 import { makeStyles } from "@material-ui/core";
 import {
   Checkbox,
@@ -251,12 +251,80 @@ const SearchData = ({
     rowLength: 100,
   });
 
+
+  function getAllItemsOfType(type, properties) {
+    return Object.values(properties).filter(item => item.type === type);
+  }
+
+  // function getRelElements(data, dataList) {
+  //   if (data.type.toLowerCase().includes("property")) {
+  //     const pset = dataList.filter(item => item.type === 'IFCPROPERTYSET');
+  //     const allPsetsRels = propertyValues.filter(item => item.type === 'IFCRELDEFINESBYPROPERTIES');
+  //     const relatedPsetsRels = allPsetsRels.filter(item => item.RelatedObjects.includes(id));
+  //     const psets = relatedPsetsRels.map(item => properties[item.RelatingPropertyDefinition]);
+  //     for (let pset of psets) {
+  //       pset.HasProperty = pset.HasProperties.map(id => properties[id]);
+  //     }
+  //   }
+  // }
+
+  // const newHandleSearchData = async (input) => {
+  //   setValidation({
+  //     loading: true,
+  //     message: 'Chargement...'
+  //   });
+
+  //   const properties = bimData.models.data[0];
+  //   const relContained = getAllItemsOfType('IFCRELAGGREGATES', properties);
+  //   console.log('relContained', relContained)
+  //   const relSpatial = getAllItemsOfType('IFCRELCONTAINEDINSPATIALSTRUCTURE', properties);
+  //   console.log('relSpatial', relSpatial)
+
+  //   const relPset = getAllItemsOfType('IFCRELDEFINESBYPROPERTIES', properties);
+  //   const relMat = getAllItemsOfType('IFCRELASSOCIATESMATERIAL', properties);
+
+
+  //   console.log('propertiesValues', Object.values(properties))
+  //   const dataList = Object.values(properties)
+  //   // const dataList =  await Object.keys(data).forEach(index => {
+  //   //   maxExpressId = Math.max(maxExpressId, allLines._data[index])
+  //   // });
+  //   // console.log('dataList', dataList)
+  //   const filteredEids = [];
+
+  //   const newFilteredData = await dataList.filter((data) => {
+  //     const searchResult = newSearchEngine(data, input);
+  //     if (searchResult) {
+  //       filteredEids.push(data.expressID);
+  //     }
+  //     return searchResult;
+  //   });
+  //   console.log('filteredEids', filteredEids)
+  //   setEids(filteredEids);
+  //   await viewer.IFC.pickIfcItemsByID(0, filteredEids);
+  //   setValidation({
+  //     loading: false,
+  //     message: `éléments`
+  //   });
+  // }
+
+  // const newSearchEngine = (data, input) => {
+  //   const keyWords = [];
+  //   keyWords.push(`${data.expressID} ${DecodeIFCString(data.Name)} ${data.type} ${DecodeIFCString(data.Description)} ${data.GlobalId} ${DecodeIFCString(data.NominalValue)} ${data.Unit}`);
+
+  //   const searchResult = keyWords.some(keyWord => keyWord.toLowerCase()
+  //     .includes(input.toLowerCase()));
+
+  //   return searchResult;
+  // }
+
   const handleSearchData = async (input) => {
     setValidation({
       loading: true,
       message: 'Chargement...'
     });
     let dataList = [...bimData.models.data];
+    console.log('input', input)
     if (!dataList || dataList.length === 0) {
       const data = await handleGetJsonData(viewer, flatten(bimData.spatialStructures.list[0], 'children'), setValidation);
       console.log('data', data)
@@ -282,6 +350,7 @@ const SearchData = ({
       setSearchInput(input);
       setFilteredData(newFilteredData);
       setEids(filteredEids);
+      console.log('newFilteredData', newFilteredData)
       setSelectedElements(newFilteredData);
       await viewer.IFC.pickIfcItemsByID(0, filteredEids);
     }
@@ -494,18 +563,10 @@ const SearchData = ({
                       dense
                       onClick={() => handleElementSelection(element)}
                     >
-                      {/* <ListItemIcon>
-                  <Checkbox
-                    edge="start"
-                    checked={checked.indexOf(element) !== -1}
-                    tabIndex={-1}
-                    disableRipple
-                    inputProps={{ 'aria-labelledby': `checkbox-list-label-${index}` }}
-                  />
-                </ListItemIcon> */}
+                      {/* <Chip label={`${String(element.type)}`} /> */}
                       <ListItemText
                         id={`checkbox-list-label-${index}`}
-                        primary={`${element.Name ? element.Name.value : 'NO NAME'}`}
+                        primary={`${element.Name ? element.Name.value : 'NO NAME'} / ${element.expressID}`}
                       // secondary={secondary ? 'Secondary text' : null}
                       />
                     </ListItemButton>
@@ -524,4 +585,4 @@ const SearchData = ({
   );
 };
 
-export default SearchData;
+export default React.memo(SearchData);

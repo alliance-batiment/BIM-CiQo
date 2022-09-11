@@ -130,12 +130,6 @@ function UseIfcRenderer({
     // }
   }
 
-  const handleSelectedElementsIsolation = ({
-    eids
-  }) => {
-
-  }
-
   const select = (viewer, setModelID, modelID, expressID, pick = true) => {
     if (pick) viewer.IFC.pickIfcItemsByID(modelID, expressID);
     setModelID(modelID);
@@ -237,57 +231,6 @@ function UseIfcRenderer({
     return { type: 2, label: 'IFCTEXT', valueType: 1, value: v }
   }
 
-  // const editIfcModel = async ({
-  //   viewer
-  // }) => {
-  //   const manager = await viewer.IFC.loader.ifcManager;
-  //   const storeysIDs = await manager.getAllItemsOfType(0, IFCBUILDINGSTOREY, false);
-  //   const storeyID = storeysIDs[0];
-  //   const storey = await manager.getItemProperties(0, storeyID);
-  //   console.log(storey);
-
-  //   storey.Name.value = "Nivel 1 - Editado";
-  //   manager.ifcAPI.WriteLine(0, storey);
-
-  //   const data = await manager.ifcAPI.ExportFileAsIFC(0);
-  //   const blob = new Blob([data]);
-  //   const file = new File([blob], "modified.ifc");
-
-  //   const link = document.createElement('a');
-  //   link.download = 'modified.ifc';
-  //   link.href = URL.createObjectURL(file);
-  //   document.body.appendChild(link);
-  //   link.click();
-  //   link.remove();
-  // };
-
-  const checkIfPsetExist = async ({
-    psetName,
-    manager,
-    modelId
-  }) => {
-    let existingPset;
-    if (psetName) {
-      const psetsEid = await manager.getAllItemsOfType(
-        modelId,
-        IFCPROPERTYSET,
-        false
-      );
-      console.log('psetsEid', psetsEid)
-      await Promise.all(psetsEid.map(async (psetEid) => {
-        const pset = await manager.getItemProperties(0, psetEid);
-        if (psetName === pset.Name?.value) {
-          console.log('pset.Name?.value')
-          existingPset = { ...pset };
-        }
-      }));
-    }
-    console.log('psetsEid', existingPset)
-    return {
-      existingPset
-    }
-  }
-
   const handleGetJsonData = async (
     viewer,
     spatialStructure,
@@ -298,11 +241,6 @@ function UseIfcRenderer({
     const data = [];
     let count = 0
     for (const item of spatialStructure) {
-      // setState({
-      //   ...state,
-      //   loading: true,
-      //   loadingMessage: `Recherche: ${Math.round(count / spatialStructure.length * 100)} %`
-      // });
       progress({
         loading: true,
         message: `Recherche: ${Math.round(count / spatialStructure.length * 100)} %`
@@ -314,58 +252,8 @@ function UseIfcRenderer({
         ...props,
         type: item.type
       })
-      // data = { ...data, [item.expressID] : {
-      //   ...item,
-      //   ...props,
-      //   type: item.type
-      // } }
-      // data[item.expressID] = {
-      //   ...item,
-      //   ...props,
-      //   type: item.type
-      // }
     }
     return data;
-    // console.log('viewer', viewer)
-    // const modelID = state.models.value;
-    // const manager = await viewer.IFC.loader.ifcManager;
-
-    // const allItems = {};
-    // const lines = await manager.ifcAPI.GetAllLines(modelID);
-
-    // for (let i = 1; i <= lines.size(); i++) {
-    //   try {
-    //     const itemID = lines.get(i);
-    //     // const props = await manager.ifcAPI.GetLine(modelID, itemID);
-    //     // if(i < 10) {
-    //     //   console.log('props', props)
-    //     // }
-    //     // const itemID = lines.get(i);
-    //     const props = await viewer.IFC.getProperties(modelID, itemID, true, true);
-    //     if (i < 10) {
-    //       console.log('props', props)
-    //     }
-    //     props.type = props.__proto__.constructor.name;
-    //     if (!excludeGeometry || !geometryTypes.has(props.type)) {
-    //       allItems[itemID] = props;
-    //     }
-    //   } catch (e) {
-    //     console.log(e);
-    //   }
-    // }
-
-    // // const result = JSON.stringify(allItems, undefined, 2);
-
-    // // const blob = new Blob([result], { type: "application/json" });
-    // // var element = document.createElement("a");
-    // // element.style.display = "none";
-    // // element.href = URL.createObjectURL(blob);
-    // // element.download = "data.json";
-    // // document.body.appendChild(element);
-    // // element.click();
-    // // document.body.removeChild(element);
-
-    // return allItems;
   }
 
 
@@ -704,99 +592,6 @@ function UseIfcRenderer({
   }
 
 
-  const addDataToIfc = async ({
-    viewer,
-    modelId,
-    expressIDs,
-    properties
-  }) => {
-    const allLines = await viewer.IFC.loader.ifcManager.state.api.GetAllLines(modelId);
-    console.log('allLines', allLines)
-    //const line = await viewer.IFC.loader.ifcManager.state.api.GetLine(modelId, 39116);
-    const line = await viewer.IFC.loader.ifcManager.state.api.GetRawLineData(modelId, 39116);
-    console.log('lines', line)
-    let maxExpressId = 0;
-    await Object.keys(allLines._data).forEach(index => {
-      maxExpressId = Math.max(maxExpressId, allLines._data[index])
-    });
-
-    let propertiesEids = [];
-    properties.map(async (property, index) => {
-      const propertyEid = maxExpressId + index + 1;
-      propertiesEids.push(ref(propertyEid))
-      let ifcPropertySingleValue = new WebIFC.IfcPropertySingleValue(
-        propertyEid,
-        IFCPROPERTYSINGLEVALUE,
-        property.property_name ? str(`${property.property_name}`) : empty(),
-        property.property_definition ? str(`${property.property_definition}`) : str(`${property.property_name}`),
-        property.text_value ? ifcText(`${property.text_value}`) : empty(),
-        property.unit ? str(`${property.unit}`) : empty(),
-      );
-
-      let rawLineIfcPropertySingleValue = {
-        ID: ifcPropertySingleValue.expressID,
-        type: ifcPropertySingleValue.type,
-        arguments: ifcPropertySingleValue.ToTape()
-      };
-
-      await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySingleValue);
-    })
-
-    const ifcOwnerHistory = await viewer.IFC.loader.ifcManager.getAllItemsOfType(
-      modelId,
-      IFCOWNERHISTORY,
-      false
-    );
-    console.log('ifcOwnerHistory', ifcOwnerHistory)
-    const eidIfcOwnerHistory = (ifcOwnerHistory && ifcOwnerHistory.length > 0) ? ifcOwnerHistory[0] : 1;
-
-    console.log('propertiesEids', propertiesEids)
-    const psetEid = propertiesEids[propertiesEids.length - 1].value + 1;
-    let ifcPropertySet = new WebIFC.IfcPropertySet(
-      psetEid,
-      IFCPROPERTYSET,
-      str(Math.random().toString(16).substr(2, 8)),
-      ref(eidIfcOwnerHistory),
-      str('Pset_OpendthX'),
-      empty(),
-      propertiesEids
-    );
-    console.log('ifcPropertySet', ifcPropertySet)
-    let rawLineIfcPropertySet = {
-      ID: ifcPropertySet.expressID,
-      type: ifcPropertySet.type,
-      arguments: ifcPropertySet.ToTape()
-    };
-
-    await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySet);
-    console.log('rawLineIfcPropertySet', rawLineIfcPropertySet)
-    const elementsList = expressIDs.map(expressID => {
-      return ref(expressID);
-    })
-
-    let ifcRelDefinesByProperties = new WebIFC.IfcRelDefinesByProperties(
-      psetEid + 1,
-      IFCRELDEFINESBYPROPERTIES,
-      str(Math.random().toString(16).substr(2, 8)),
-      ref(eidIfcOwnerHistory),
-      empty(),
-      empty(),
-      elementsList,
-      ref(psetEid)
-    );
-    // setEid(ID++);
-    console.log('ifcRelDefinesByProperties', ifcRelDefinesByProperties)
-    let rawLineIfcRelDefinesByProperties = {
-      ID: ifcRelDefinesByProperties.expressID,
-      type: ifcRelDefinesByProperties.type,
-      arguments: ifcRelDefinesByProperties.ToTape()
-    };
-    await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcRelDefinesByProperties);
-
-    console.log('rawLineIfcRelDefinesByProperties', rawLineIfcRelDefinesByProperties)
-  }
-
-
   const addElementsNewProperties = async ({
     viewer,
     modelID,
@@ -823,20 +618,6 @@ function UseIfcRenderer({
       }
     }
   }
-
-  const addGeometryToIfc = async ({
-    viewer,
-    modelId
-  }) => {
-    const allLines = await viewer.IFC.loader.ifcManager.state.api.GetAllLines(modelId);
-    let maxExpressId = 0;
-    await Object.keys(allLines._data).forEach(index => {
-      maxExpressId = Math.max(maxExpressId, allLines._data[index])
-    });
-    const ifcApi = viewer.IFC.loader.ifcManager.state.api;
-    await BuildModel(modelId, ifcApi);
-  }
-
 
   const handleCheckNetworkStatus = () => {
     function changeStatus() {
@@ -865,16 +646,6 @@ function UseIfcRenderer({
       const formData = new FormData();
       formData.append('files', ifcFile);
 
-
-      // const analysis = await axios.post(process.env.REACT_APP_API_URL, formData);
-      // console.log('projectId', analysis.data)
-      // const { projectId } = analysis.data;
-
-      // const logs = await axios.get(`${process.env.REACT_APP_API_URL}/log/${projectId}.json`);
-      // console.log('logs', logs.data);
-
-      // const jsonData = await JSON.parse(logs.data);
-      // console.log('jsonData', jsonData["level"]);
       axios.post(process.env.REACT_APP_API_URL, formData).then((value) => {
         console.log('value.data', value.data)
         return value.data;
@@ -924,16 +695,6 @@ function UseIfcRenderer({
     items.pickableIfcModels.push(subset);
   }
 
-  function showAllItems(viewer, ids) {
-    viewer.IFC.loader.ifcManager.createSubset({
-      modelID: 0,
-      ids,
-      removePrevious: false,
-      applyBVH: true,
-      customID: 'full-model-subset',
-    });
-  }
-
 
   return {
     models,
@@ -943,7 +704,6 @@ function UseIfcRenderer({
     addTransformControls,
     getElementProperties,
     addElementsNewProperties,
-    addGeometryToIfc,
     editIfcModel,
     handleCheckNetworkStatus,
     handleGetJsonData,

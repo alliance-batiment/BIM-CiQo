@@ -22,6 +22,7 @@ import {
   Radio,
   Popover,
   CircularProgress,
+  Typography
 } from "@mui/material";
 import CropIcon from "@mui/icons-material/Crop";
 import CloseIcon from "@mui/icons-material/Close";
@@ -37,6 +38,8 @@ import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial';
 import { ConeGeometry, LineBasicMaterial, LineDashedMaterial, MeshBasicMaterial, Vector3 } from 'three';
+
+
 const useStyles = makeStyles((theme) => ({
   heading: {
     fontSize: theme.typography.pxToRem(15),
@@ -123,13 +126,17 @@ const Measures = ({ viewer, showMeasures, setShowMeasures }) => {
         setViewHeight(getHeight());
       }
     };
-
+    console.log('dimensions', viewer.dimensions.dimensions);
     setMeasures(viewer.dimensions.dimensions);
 
     let dimensionsActive = true;
     viewer.dimensions.active = dimensionsActive;
     viewer.dimensions.previewActive = dimensionsActive;
-    viewer.dimensions.setArrow(0.1, 0.03);
+    // viewer.dimensions.setArrow(0.1, 0.03);
+    // const coneGeometry = new ConeGeometry(radius, height);
+    // coneGeometry.translate(0, -height / 2, 0);
+    // coneGeometry.rotateX(-Math.PI / 2);
+    // viewer.dimensions.endpoint = coneGeometry;
 
     viewer.dimensions.lineMaterial = new LineDashedMaterial({
       color: 0x000000,
@@ -141,7 +148,7 @@ const Measures = ({ viewer, showMeasures, setShowMeasures }) => {
 
     window.addEventListener("resize", resizeListener);
     window.addEventListener("mousemove", handlePrePickIfcItem, false);
-    window.addEventListener("mousedown", addMeasure, false);
+    window.addEventListener("dblclick", addMeasure, false);
     // window.addEventListener("mouseup", viewer.dimensions.cancelDrawing, false);
     window.addEventListener("keydown", handleControlMeasures, false);
 
@@ -153,7 +160,7 @@ const Measures = ({ viewer, showMeasures, setShowMeasures }) => {
 
       window.removeEventListener("resize", resizeListener);
       window.removeEventListener("mousemove", handlePrePickIfcItem, false);
-      window.removeEventListener("mousedown", addMeasure, false);
+      window.removeEventListener("dblclick", addMeasure, false);
       // window.removeEventListener("mouseup", viewer.dimensions.cancelDrawing, false);
       window.removeEventListener("keydown", handleControlMeasures, false);
     };
@@ -210,13 +217,14 @@ const Measures = ({ viewer, showMeasures, setShowMeasures }) => {
 
   const addMeasure = async () => {
     setLoading(true);
+    console.log('HELLoo')
     let takeMeasure = !allowMeasure;
     setAllowMeasure(takeMeasure);
     if (takeMeasure) {
       await viewer.dimensions.create();
       setMeasures(viewer.dimensions.dimensions);
     }
-    setLoading(false)
+    setLoading(false);
   };
 
   const customizePrePickItem = async () => {
@@ -287,8 +295,6 @@ const Measures = ({ viewer, showMeasures, setShowMeasures }) => {
       }
     };
   };
-
-
 
 
   const handleDeleteMeasure = async (measure, index) => {
@@ -422,7 +428,7 @@ const Measures = ({ viewer, showMeasures, setShowMeasures }) => {
         }
       />
       <CardContent>
-        <Grid container spacing={3}>
+        <Grid container spacing={2}>
           {/* <Grid item xs={6} style={{ textAlign: "left" }}>
             <ButtonGroup className={classes.buttonGroup}>
               <Button
@@ -450,12 +456,17 @@ const Measures = ({ viewer, showMeasures, setShowMeasures }) => {
             </ButtonGroup>
           </Grid> */}
           <Grid item xs={12}>
+            <Typography gutterBottom variant="title2" component="div">
+              Double-cliquer pour créer une mesure
+                  </Typography>
+          </Grid>
+          <Grid item xs={12}>
             {loading ? (
               <CircularProgress color="inherit" />
             ) : (
               <List sx={{ width: "100%" }}>
-                {measures.length > 0 &&
-                  measures.map((measure, index) => (
+                {viewer.dimensions.dimensions.length > 0 &&
+                  viewer.dimensions.dimensions.map((measure, index) => (
                     <ListItem
                       key={index}
                       secondaryAction={
@@ -480,7 +491,7 @@ const Measures = ({ viewer, showMeasures, setShowMeasures }) => {
                     </ListItemIcon> */}
                         <ListItemText
                           id={`checkbox-list-label-${index}`}
-                          primary={`${measure.textLabel.uuid}`}
+                          primary={`Mesure-${measure.textLabel.uuid}`}
                         />
                       </ListItemButton>
                     </ListItem>

@@ -1,44 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useReducer, useRef, useCallback } from "react";
 import { IFCLoader } from "web-ifc-three/IFCLoader";
-import { makeStyles } from "@material-ui/core";
+import { makeStyles, Icon } from "@material-ui/core";
 import {
-  Checkbox,
-  FormControlLabel,
-  Typography,
-  Card,
-  CardHeader,
-  CardContent,
   Avatar,
-  IconButton,
-  Popover,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Box,
-  Tabs,
-  Tab,
-  Chip,
-  ListItemButton,
   Grid,
   Button,
   ButtonGroup,
   CircularProgress
 } from "@mui/material";
-import TreeView from "@mui/lab/TreeView";
-import TreeItem from "@mui/lab/TreeItem";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-import MoreVertIcon from "@material-ui/icons/MoreVert";
-import ClearIcon from "@material-ui/icons/Clear";
-import { IFCSLAB, IFCMEMBER, IFCSTRUCTURALCURVEMEMBER } from "web-ifc";
-import SearchData from '../SearchData';
-import DescriptionIcon from '@material-ui/icons/Description';
-import CheckBoxIcon from '@mui/icons-material/CheckBox';
+
 import DeleteIcon from '@mui/icons-material/Delete';
 import DownloadIcon from '@mui/icons-material/Download';
 import OpenDthxLogo from './img/OpenDthxLogo.png';
-import ifcClassType from '../../Utils/types-ifcClass-map';
+import TreeComponent from "./Components/Tree";
+import reducer from './reducer';
+import { deselectAllNodes, toggleNode, loadTree } from './actions';
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -85,173 +61,35 @@ const useStyles = makeStyles((theme) => ({
     // height: 240,
     flexGrow: 1,
     // maxWidth: 400,
-  },
+  }
 }));
 
-function a11yProps(index) {
-  return {
-    id: `simple-tab-${index}`,
-    "aria-controls": `simple-tabpanel-${index}`,
-  };
-}
-
 const ProjectTree = ({
-  state,
-  setState,
+  tree,
   viewer,
   handleShowMarketplace,
   handleShowProperties,
   eids,
   setEids
 }) => {
+  const [{ spatialStructures, loading, selected, hashMapTree, vtree }, dispatch] = useReducer(reducer, { loading: true, loadingCursor: false, selected: [], expanded: [], hashMapTree: {}, vtree: {} });
+  const refSelectedItems = useRef(selected);
   const classes = useStyles();
-  const [value, setValue] = useState(0);
-  const [expanded, setExpanded] = useState([]);
-  const [expressIDList, setExpressIDList] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [spatialStructures, setSpatialStructures] = useState([...state.spatialStructures.list]);
 
   useEffect(() => {
-    async function init() {
-      console.log('Project Tree')
-      setLoading(true);
-      const modelID = await viewer.IFC.getModelID();
-      // const expandedNode = await eids.map(eid => String(eid))
-      // setExpanded(expandedNode);
-      if (spatialStructures && spatialStructures.length > 0) {
-        const expandedNodes = [];
+    refSelectedItems.current = selected
+  }, [selected])
 
-        const getExpandedNodes = async (node, count) => {
-          let findEid = eids.find(eid => eid === node.expressID);
-          if (findEid && node.parents?.length > 0) {
-            node.parents.forEach(parent => expandedNodes.push(`${parent}`));
-          }
+  useEffect(() => {
+    return () => {
+      const selectedItemsIds = refSelectedItems.current.map((selectedItems) => parseInt(selectedItems));
+      setEids(selectedItemsIds);
+    };
+  }, [])
 
-          if (node.children && node.children.length > 0) {
-            // if (node.children && node.children.length > 0 && count < 3) {
-            // expandedNodes.push(`${node.expressID}`);
-            count++;
-            node.children.forEach((child) => {
-              if (node['parents']) {
-                child['parents'] = [...node['parents'], node.expressID, child.expressID];
-              } else {
-                child['parents'] = [node.expressID, child.expressID];
-              }
-              getExpandedNodes(child, count);
-            });
-          }
-        }
-
-        let count = 0;
-        await getExpandedNodes(spatialStructures[0], count);
-        setExpanded(expandedNodes);
-      }
-
-      setLoading(false);
-    }
-    init();
+  useEffect(() => {
+    loadTree(dispatch)(tree, eids);
   }, [eids]);
-
-  const resetSelection = async () => {
-    setEids([]);
-  }
-
-  const handleRemoveAllElements = async () => {
-    setEids([]);
-    await viewer.IFC.unpickIfcItems();
-  }
-
-  const handleShowElement = async () => {
-    await viewer.IFC.pickIfcItemsByID(0, expressIDList, false, 0);
-  };
-
-  const handleToggle = async (event, nodes) => {
-    // const expandedNode = await eids.map(eid => String(eid))
-    setExpanded(nodes);
-  };
-
-  const handleExpressId = async (node) => {
-    const newEids = [...eids];
-    const index = eids.findIndex(
-      (eid) => eid === node.expressID
-    );
-
-    const addExpressId = (node) => {
-      newEids.push(node.expressID);
-      if (node.children && node.children.length > 0) {
-        node.children.forEach((child) => {
-          addExpressId(child);
-        });
-      }
-    };
-
-    const removeExpressId = (node) => {
-      // const index = newEids.findIndex(
-      //   (eid) => eid === node.expressID
-      // );
-      for (let i = newEids.length - 1; i >= 0; i--) {
-        if (newEids[i] === node.expressID) {
-          newEids.splice(i, 1);
-        }
-      }
-      newEids.splice(index, 1);
-      if (node.children && node.children.length > 0) {
-        node.children.forEach((child) => {
-          removeExpressId(child);
-        });
-      }
-    };
-
-    if (index < 0) {
-      await addExpressId(node);
-    } else {
-      await removeExpressId(node);
-    }
-
-    // await viewer.IFC.selector.highlightIfcItemsByID(0, newExpressIDList, false);
-    setEids(newEids);
-    await viewer.IFC.pickIfcItemsByID(0, newEids);
-  };
-
-
-
-  const isChecked = (expressIDList, node) => {
-    const index = expressIDList.findIndex(
-      (expressID) => expressID === `${node.expressID}`
-    );
-    return index >= 0 ? true : false;
-  };
-
-  const handleTreeViewItemById = async (event, node) => {
-    if (node && node.children.length === 0) {
-      await viewer.IFC.unpickIfcItems();
-      if (event.target.checked) {
-        console.log("CHECKED");
-        const ids = [...expressIDList, node.expressID];
-        await viewer.IFC.pickIfcItemsByID(0, ids, false, 0);
-        setExpressIDList(ids);
-      } else {
-        console.log("UNCHECKED");
-        const index = expressIDList.findIndex(
-          (index) => index === node.expressID
-        );
-        const ids = expressIDList.splice(index, 1);
-        await viewer.IFC.pickIfcItemsByID(0, ids, false, 0);
-        setExpressIDList(ids);
-      }
-    }
-  };
-
-  // const handleElementsVisibility = async (index) => {
-  //   const ids = ifcElementByType[index].elements.map(
-  //     (element) => element.expressID
-  //   );
-  //   // await viewer.IFC.hideAllItems(0);
-  //   // await viewer.IFC.showItems(0, ids);
-  //   console.log('ids', ids)
-  //   await viewer.IFC.pickIfcItemsByID(1, ids);
-  // };
-
 
   const downloadFile = ({ data, fileName, fileType }) => {
     // Create a blob with the data we want to download as a file
@@ -270,7 +108,7 @@ const ProjectTree = ({
     a.remove()
   }
 
-  const handleExportToCsv = async (e) => {
+  const handleExportToCsv = async (e, eids) => {
     e.preventDefault()
     // Headers for each column
     let propertiesCsv = [];
@@ -306,63 +144,13 @@ const ProjectTree = ({
     })
   }
 
+  function toggleRow(nodeId) {
+    toggleNode(dispatch)(selected, hashMapTree, nodeId, viewer);
+  }
 
-  const renderTree = (nodes, index) => (
-    <TreeItem
-      key={nodes.expressID}
-      nodeId={`${nodes.expressID}`}
-      label={
-        <Grid container>
-          <Grid item xs={2}>
-            <Checkbox
-              className={classes.treeViewCheckbox}
-              checked={isChecked(expanded, nodes)}
-              onChange={(e) => {
-                // handleTreeViewItemById(e, nodes);
-                handleExpressId(nodes);
-              }}
-              onClick={(e) => e.stopPropagation()}
-            />
-          </Grid>
-          <Grid item xs={8}>
-            {/* <div style={{ overflow: "hidden", textOverflow: "ellipsis", width: '5em' }}> */}
-            <Typography nowrap mt={1.2} className={classes.treeViewLabel}>
-              {`${nodes.type} ${nodes.Name ? nodes.Name.value : ""}`}
-            </Typography>
-          </Grid>
-          <Grid item xs={2} sx={{ textAlign: 'right' }}>
-            <IconButton
-              edge="end"
-              aria-label="comments"
-              onClick={(e) => {
-                console.log('nodes.expressID', nodes.expressID);
-                handleShowProperties(nodes.expressID);
-                e.stopPropagation();
-              }}
-            >
-              <DescriptionIcon />
-            </IconButton>
-          </Grid>
-        </Grid>
-        // <FormControlLabel
-        //   control={<Checkbox
-        //     checked={isChecked(expressIDList, nodes)}
-        //     onChange={(e) => {
-        //       // handleTreeViewItemById(e, nodes);
-        //       handleAddId(nodes);
-        //     }}
-        //   />}
-        //   name={nodes.expressID}
-        //   label={`${nodes.type} ${nodes.Name ? nodes.Name.value : ""}`}
-        // />
-      }
-    // label={`${nodes.type} ${nodes.Name ? nodes.Name.value : ""}`}
-    >
-      {Array.isArray(nodes.children)
-        ? nodes.children.map((node) => renderTree(node))
-        : null}
-    </TreeItem>
-  );
+  function handleRemoveAllElements() {
+    deselectAllNodes(dispatch)(viewer);
+  }
 
   return (
     <Grid container>
@@ -373,7 +161,7 @@ const ProjectTree = ({
           <Button
             edge="end"
             aria-label="comments"
-            onClick={handleRemoveAllElements}
+            onClick={() => handleRemoveAllElements()}
           >
             <DeleteIcon />
           </Button>
@@ -397,7 +185,7 @@ const ProjectTree = ({
             edge="end"
             aria-label="comments"
             className={classes.button}
-            onClick={(e) => handleExportToCsv(e)}
+            onClick={(e) => handleExportToCsv(e, eids)}
           >
             <DownloadIcon />
           </Button>
@@ -425,33 +213,27 @@ const ProjectTree = ({
           <CircularProgress color="inherit" />
         </Grid>
         :
-        <>
-          {spatialStructures &&
+        <div style={{ display: 'flex', width: "100%" }}>
+
+          {
+            spatialStructures &&
             spatialStructures.length &&
             spatialStructures.map((spatialStructure) => (
-              <>
-                {spatialStructure.children &&
-                  spatialStructure.children.length > 0 && (
-                    <Grid xs={12}>
-                      <TreeView
-                        aria-label="rich object"
-                        // className={classes.treeView}
-                        defaultCollapseIcon={<ExpandMoreIcon />}
-                        defaultExpanded={expanded}
-                        defaultExpandIcon={<ChevronRightIcon />}
-                      // expanded={expanded}
-                      // multiSelect
-                      // onNodeToggle={handleToggle}
-                      >
-                        {renderTree(spatialStructure)}
-                      </TreeView>
-                    </Grid>
-                  )}
-              </>
-            ))}
-        </>
+              <div style={{ flex: '1 1 auto', height: '300px' }} key={spatialStructure.expressID}>
+                <TreeComponent
+                  spatialStructures={spatialStructures}
+                  spatialStructure={spatialStructure}
+                  handleShowProperties={handleShowProperties}
+                  toggleRow={toggleRow}
+                  vtree={vtree}
+                />
+              </div>
+
+            ))
+          }
+        </div>
       }
-    </Grid>
+    </Grid >
   );
 };
 
