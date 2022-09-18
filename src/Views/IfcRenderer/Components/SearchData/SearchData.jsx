@@ -10,7 +10,7 @@ import {
   Avatar,
   IconButton,
   Popover,
-  List,
+  // List,
   ListItem,
   ListItemIcon,
   ListItemText,
@@ -47,6 +47,7 @@ import MutltiSelectionIcon from '@mui/icons-material/ControlPointDuplicate';
 import OpenDthxLogo from './img/OpenDthxLogo.png';
 import IfcIcons from '../../Utils/ifc-full-icons.json';
 import flatten from 'tree-flatten';
+import { FixedSizeList as List } from "react-window";
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -126,8 +127,10 @@ const SearchData = ({
 
   useEffect(() => {
     async function init() {
-      console.log('Search data')
-      console.log('IfcIcons', IfcIcons)
+      setValidation({
+        loading: true,
+        message: `Chargement de la sélection...`,
+      })
       const selectedElements = await Promise.all(eids.map(async (eid) => {
         const elementProperties = await viewer.IFC.getProperties(0, eid, false, false);
         const type = await viewer.IFC.loader.ifcManager.getIfcType(0, eid);
@@ -135,7 +138,10 @@ const SearchData = ({
       }));
 
       setSelectedElements(selectedElements);
-      console.log('EIDS', eids)
+      setValidation({
+        loading: false,
+        message: `${selectedElements.length} éléments`
+      })
     }
     init();
   }, [eids]);
@@ -229,29 +235,6 @@ const SearchData = ({
     })
   }
 
-  // const open = Boolean(anchorEl);
-  // const id = open ? "simple-popover" : undefined;
-
-  const rows = [
-    { id: 1, col1: 'Hello', col2: 'World' },
-    { id: 2, col1: 'DataGridPro', col2: 'is Awesome' },
-    { id: 3, col1: 'MUI', col2: 'is Amazing' },
-  ];
-
-  const columns = [
-    { field: 'col1', headerName: 'Column 1', width: 150 },
-    { field: 'col2', headerName: 'Column 2', width: 150 },
-  ];
-
-  const VISIBLE_FIELDS = ['name', 'rating', 'country', 'dateCreated', 'isAdmin'];
-
-  const { data } = useDemoData({
-    dataSet: 'Employee',
-    visibleFields: VISIBLE_FIELDS,
-    rowLength: 100,
-  });
-
-
   function getAllItemsOfType(type, properties) {
     return Object.values(properties).filter(item => item.type === type);
   }
@@ -323,16 +306,16 @@ const SearchData = ({
       loading: true,
       message: 'Chargement...'
     });
-    let dataList = [...bimData.models.data];
-    console.log('input', input)
+    console.log('inputs', input)
+    let dataList = bimData.search.data[0];
+    console.log('dataList', dataList)
     if (!dataList || dataList.length === 0) {
       const data = await handleGetJsonData(viewer, flatten(bimData.spatialStructures.list[0], 'children'), setValidation);
-      console.log('data', data)
       setBimData({
         ...bimData,
-        models: {
-          ...bimData.models,
-          data: [...data]
+        search: {
+          ...bimData.search,
+          data: [...bimData.search.data, data]
         }
       });
       dataList = [...data];
@@ -375,34 +358,34 @@ const SearchData = ({
   const searchEngine = (data, input) => {
     const keyWords = [];
     keyWords.push(`${data.Name?.value} ${data.type} ${data.Description} ${data.GlobalId?.value} ${data.ObjectType?.value} ${data.expressID}`);
-    for (let pset of data.psets) {
-      keyWords.push(`${pset.Name?.value}`);
-      if (pset.HasProperties && pset.HasProperties.length > 0) {
-        for (let property of pset.HasProperties) {
-          const label = DecodeIFCString(property.Name.value);
-          const value = property.NominalValue
-            ? DecodeIFCString(property.NominalValue.value)
-            : "";
+    // for (let pset of data.psets) {
+    //   keyWords.push(`${pset.Name?.value}`);
+    //   if (pset.HasProperties && pset.HasProperties.length > 0) {
+    //     for (let property of pset.HasProperties) {
+    //       const label = DecodeIFCString(property.Name.value);
+    //       const value = property.NominalValue
+    //         ? DecodeIFCString(property.NominalValue.value)
+    //         : "";
 
-          const description =
-            property.Description && property.Description !== ""
-              ? DecodeIFCString(property.Description.value)
-              : null;
-          keyWords.push(`${label} ${value} ${description}`);
-        }
-      }
-    }
+    //       const description =
+    //         property.Description && property.Description !== ""
+    //           ? DecodeIFCString(property.Description.value)
+    //           : null;
+    //       keyWords.push(`${label} ${value} ${description}`);
+    //     }
+    //   }
+    // }
 
-    for (let mat of data.mats) {
-      keyWords.push(`${mat.ForLayerSet?.Description} ${mat.ForLayerSet?.LayerSetName?.value}`);
-      if (mat.ForLayerSet?.MaterialLayers && mat.ForLayerSet?.MaterialLayers.length > 0) {
-        for (let material of mat.ForLayerSet.MaterialLayers) {
-          const name = DecodeIFCString(material.Material.Name.value);
-          // const thickness = DecodeIFCString(material.Material.Name.value);
-          keyWords.push(`${name}`);
-        }
-      }
-    }
+    // for (let mat of data.mats) {
+    //   keyWords.push(`${mat.ForLayerSet?.Description} ${mat.ForLayerSet?.LayerSetName?.value}`);
+    //   if (mat.ForLayerSet?.MaterialLayers && mat.ForLayerSet?.MaterialLayers.length > 0) {
+    //     for (let material of mat.ForLayerSet.MaterialLayers) {
+    //       const name = DecodeIFCString(material.Material.Name.value);
+    //       // const thickness = DecodeIFCString(material.Material.Name.value);
+    //       keyWords.push(`${name}`);
+    //     }
+    //   }
+    // }
 
     const searchResult = keyWords.some(keyWord => keyWord.toLowerCase()
       .includes(input.toLowerCase()));
@@ -421,6 +404,65 @@ const SearchData = ({
     setSelectedElements([]);
     await viewer.IFC.pickIfcItemsByID(0, []);
   };
+
+  const Row = ({ index, key, style }) => (
+    // <div key={key} style={style} className="post">
+    //   <p>{`${selectedElements[index].Name ? selectedElements[index].Name.value : 'NO NAME'} / ${selectedElements[index].expressID}`}</p>
+    // </div>
+    <ListItem
+      key={key}
+      secondaryAction={
+        <>
+          {/* <IconButton
+    edge="end"
+    aria-label="comments"
+    onClick={() => handleGetAllItemsOfType(element)}
+  >
+    <LibraryAddIcon />
+  </IconButton> */}
+          <IconButton
+            edge="end"
+            aria-label="comments"
+            onClick={(e) => {
+              handleShowProperties(selectedElements[index].expressID);
+              e.stopPropagation();
+            }}
+          >
+            <DescriptionIcon />
+          </IconButton>
+          <IconButton
+            edge="end"
+            aria-label="comments"
+            onClick={(e) => handleExportToCsv(e, [selectedElements[index].expressID])}
+          >
+            <DownloadIcon />
+          </IconButton>
+          <IconButton
+            edge="end"
+            aria-label="comments"
+            onClick={() => handleRemoveElement(selectedElements[index])}
+          >
+            <CloseIcon />
+          </IconButton>
+        </>
+      }
+      disablePadding
+      style={style}
+    >
+      <ListItemButton
+        role={undefined}
+        dense
+        onClick={() => handleElementSelection(selectedElements[index])}
+      >
+        {/* <Chip label={`${String(element.type)}`} /> */}
+        <ListItemText
+          id={`checkbox-list-label-${index}`}
+          primary={`${selectedElements[index].Name ? selectedElements[index].Name.value : 'NO NAME'} / ${selectedElements[index].expressID}`}
+        // secondary={secondary ? 'Secondary text' : null}
+        />
+      </ListItemButton>
+    </ListItem>
+  )
 
   return (
     <Grid container spacing={1}>
@@ -517,61 +559,14 @@ const SearchData = ({
               <Typography gutterBottom variant="title" component="div">{`${validation.message}`}    </Typography>
             </Grid>
             <Grid item xs={12}>
-              <List sx={{ width: "100%" }}>
-                {selectedElements.map((element, index) => (
-                  <ListItem
-                    key={index}
-                    secondaryAction={
-                      <>
-                        {/* <IconButton
-                    edge="end"
-                    aria-label="comments"
-                    onClick={() => handleGetAllItemsOfType(element)}
-                  >
-                    <LibraryAddIcon />
-                  </IconButton> */}
-                        <IconButton
-                          edge="end"
-                          aria-label="comments"
-                          onClick={(e) => {
-                            handleShowProperties(element.expressID);
-                            e.stopPropagation();
-                          }}
-                        >
-                          <DescriptionIcon />
-                        </IconButton>
-                        <IconButton
-                          edge="end"
-                          aria-label="comments"
-                          onClick={(e) => handleExportToCsv(e, [element.expressID])}
-                        >
-                          <DownloadIcon />
-                        </IconButton>
-                        <IconButton
-                          edge="end"
-                          aria-label="comments"
-                          onClick={() => handleRemoveElement(element)}
-                        >
-                          <CloseIcon />
-                        </IconButton>
-                      </>
-                    }
-                    disablePadding
-                  >
-                    <ListItemButton
-                      role={undefined}
-                      dense
-                      onClick={() => handleElementSelection(element)}
-                    >
-                      {/* <Chip label={`${String(element.type)}`} /> */}
-                      <ListItemText
-                        id={`checkbox-list-label-${index}`}
-                        primary={`${element.Name ? element.Name.value : 'NO NAME'} / ${element.expressID}`}
-                      // secondary={secondary ? 'Secondary text' : null}
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
+              <List
+                // sx={{ width: "100%" }}
+                width={"100%"}
+                height={700}
+                itemCount={selectedElements.length}
+                itemSize={30}
+              >
+                {Row}
               </List>
             </Grid>
           </>
@@ -585,4 +580,4 @@ const SearchData = ({
   );
 };
 
-export default React.memo(SearchData);
+export default memo(SearchData);

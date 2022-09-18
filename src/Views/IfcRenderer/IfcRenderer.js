@@ -199,6 +199,11 @@ const IfcRenderer = () => {
       value: {},
       list: []
     },
+    search: {
+      value: '',
+      list: [],
+      data: []
+    },
     jsonData: {
       value: {},
       list: []
@@ -408,7 +413,7 @@ const IfcRenderer = () => {
       });
       const file = new File(properties, 'properties');
       const data = JSON.parse(await file.text());
-
+      console.log('data', data);
       // model.position.set(10, 10, 10)
       // await viewer.shadowDropper.renderShadow(model.modelID);
 
@@ -444,11 +449,11 @@ const IfcRenderer = () => {
         loading: false,
         api: tribim,
         viewer: viewer,
-        // models: {
-        //   ...state.models,
-        //   list: [...state.models.list, model],
-        //   data: [...state.models.data, data]
-        // },
+        models: {
+          ...state.models,
+          list: [...state.models.list, model],
+          data: [...state.models.data, data]
+        },
         spatialStructures: {
           value: { ...newSpatialStructure },
           list: [...updateSpatialStructures]
@@ -773,6 +778,12 @@ const IfcRenderer = () => {
   };
 
   const handleDownloadIfc = async () => {
+    setState({
+      ...state,
+      loading: true,
+      loadingMessage: "Génération de l'IFC..."
+    });
+
     const modelId = modelID ? modelID : 0;
     // EXPORT FICHIER IFC
     const ifcData =
@@ -799,6 +810,10 @@ const IfcRenderer = () => {
     element.click();
 
     document.body.removeChild(element);
+    setState({
+      ...state,
+      loading: false
+    });
   };
 
   const handleShowBcfDialog = () => {

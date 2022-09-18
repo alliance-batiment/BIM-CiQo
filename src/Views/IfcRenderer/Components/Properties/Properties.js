@@ -205,6 +205,7 @@ const Properties = ({
           true,
           true
         );
+        console.log('elementProperties', elementProperties)
         // console.log("viewer", viewer);
         // console.log(
         //   "ifcClass",

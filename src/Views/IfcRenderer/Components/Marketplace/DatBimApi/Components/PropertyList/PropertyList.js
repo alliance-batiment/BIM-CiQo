@@ -72,6 +72,8 @@ const PropertyList = ({
   setLoader,
   objSelected,
   selectedObject,
+  bimData,
+  setBimData,
   viewer,
   modelID,
   eids,
@@ -320,6 +322,8 @@ const PropertyList = ({
     }
 
     addElementsNewProperties({
+      bimData,
+      setBimData,
       viewer,
       modelID,
       expressIDs: eids,

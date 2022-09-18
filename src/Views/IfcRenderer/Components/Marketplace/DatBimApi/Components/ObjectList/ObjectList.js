@@ -42,6 +42,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const ObjectList = ({
+  bimData,
+  setBimData,
   projectId,
   objSelected,
   addElementsNewProperties,
@@ -399,6 +401,8 @@ const ObjectList = ({
             projectId={projectId}
             objSelected={objSelected}
             selectedObject={selectedObject}
+            bimData={bimData}
+            setBimData={setBimData}
             viewer={viewer}
             modelID={modelID}
             eids={eids}
