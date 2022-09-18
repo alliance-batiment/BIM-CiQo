@@ -156,12 +156,14 @@ const QontoConnector = withStyles({
 })(StepConnector);
 
 const DatBimApi = ({
+  bimData,
+  setBimData,
   viewer,
   modelID,
   eids,
   setEids,
   addElementsNewProperties,
-  handleShowMarketplace,
+  handleShowMarketplace, s
 }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [breadcrumbMap, setBreadcrumbMap] = useState([]);
@@ -245,7 +247,7 @@ const DatBimApi = ({
         console.log('error', error);
         setValidation({
           status: false,
-          message: 'Erreur de connection'
+          message: 'Erreur de connexion'
         })
         setActiveStep(0);
       });
@@ -308,6 +310,8 @@ const DatBimApi = ({
             selectedPortal={selectedPortal}
             // typeProperties={window.objProperties.type}
             typeProperties={"IfcWall"}
+            bimData={bimData}
+            setBimData={setBimData}
             viewer={viewer}
             modelID={modelID}
             eids={eids}

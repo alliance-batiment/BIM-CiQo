@@ -378,6 +378,8 @@ const Marketplace = ({
         )}
         {selectedApp === "Open dthX" && (
           <DatBimApi
+            bimData={bimData}
+            setBimData={setBimData}
             viewer={viewer}
             modelID={modelID}
             eids={eids}

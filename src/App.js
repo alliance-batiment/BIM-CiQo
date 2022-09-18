@@ -28,7 +28,7 @@ const Menu = {
   ],
   MenuSideBarInf: [
     // { text: "Documentation", link: "", href: "https://www.tridyme.com/fr/documentation/fr/developpers/tridyme-webapp-kit-serverless", icon: "chrome_reader_mode" },
-    { text: "GitHub", link: "", href: "https://github.com/tridyme/sdk-structure-app", icon: "code" }
+    { text: "GitHub", link: "", href: "https://github.com/alliance-batiment/BIM-CiQo", icon: "code" }
   ]
 };
 

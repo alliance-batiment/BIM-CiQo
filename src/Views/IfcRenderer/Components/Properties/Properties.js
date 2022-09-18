@@ -205,6 +205,7 @@ const Properties = ({
           true,
           true
         );
+        console.log('elementProperties', elementProperties)
         // console.log("viewer", viewer);
         // console.log(
         //   "ifcClass",
@@ -551,7 +552,7 @@ const Properties = ({
           </div>
         }
         title={`${ifcElement ? DecodeIFCString(ifcElement.name) : "Undefined"}`}
-        subheader={`${ifcElement ? ifcElement.type : "Undefined"}`}
+        subheader={`${ifcElement ? ifcElement.type : "Undefined"} - ${selectedElementID}`}
       />
       <CardContent className={classes.cardContent}>
         {/* <Paper className={classes.mapContainer}>
