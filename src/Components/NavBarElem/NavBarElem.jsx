@@ -40,7 +40,7 @@ const NavBarElem = ({ title, classes, handleDrawerOpen, open }) => {
         </Typography>
         <div style={{ position: "absolute", right: "10px" }}>
           <a style={{ color: "inherit", margin: "0 20px" }} target="_blank">
-            v0.0.16
+            v0.0.17
             </a>
           <a
             href="https://documentation-ciqo.notion.site/documentation-ciqo/Doc-CIQO-f47d770ccf344ea6ae50119e58c82198"

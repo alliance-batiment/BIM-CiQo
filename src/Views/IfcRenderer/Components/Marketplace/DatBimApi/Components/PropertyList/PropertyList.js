@@ -96,60 +96,6 @@ const PropertyList = ({
     setProperties(filtered);
   }
 
-  // function addProperties(properties, objSelected) {
-  //   setLoader(true);
-
-  //   const formatedProperties = properties.map((property) => {
-  //     if (property.data_type_name === "Date") {
-  //       return {
-  //         ...property,
-  //         text_value: moment(property.text_value).format("DD/MM/YYYY"),
-  //       };
-  //     }
-  //     return property;
-  //   });
-  //   axios
-  //     .post(
-  //       `${process.env.REACT_APP_API_URL}/createPset/${projectId}`,
-  //       {
-  //         products: formatedProperties,
-  //         target: objSelected,
-  //       },
-  //       {
-  //         headers: {
-  //           "X-Auth-Token": sessionStorage.getItem("token"),
-  //         },
-  //       }
-  //     )
-  //     .then(({ data }) => {
-  //       const formData = new FormData();
-  //       formData.append("files", data);
-  //       axios
-  //         .post(process.env.REACT_APP_API_URL, formData)
-  //         .then((value) => {
-  //           return value.data;
-  //         })
-  //         .then(({ projectId }) => {
-  //           axios
-  //             .get(`${process.env.REACT_APP_API_URL}/p/${projectId}`)
-  //             .then(() => {
-  //               history.push(`/temp`);
-  //               history.goBack();
-  //               setLoader(false);
-  //             });
-  //         })
-  //         .catch((error) => {
-  //           console.log("ERRORRR", error);
-  //           alert("Echec de l'enrichissement");
-  //           setLoader(false);
-  //         });
-  //     })
-  //     .catch((error) => {
-  //       console.log("ERRORRR", error);
-  //       alert("Echec de l'enrichissement");
-  //       setLoader(false);
-  //     });
-  // }
 
   useEffect(() => {
     const getPropertiesValues = async () => {
@@ -292,7 +238,8 @@ const PropertyList = ({
       case "Intervalle":
         return {
           ...property,
-          text_value: property.num_value
+          text_value: property.num_value,
+          value: property.num_value
         }
       case "Grid/Tableau":
         const { values } = JSON.parse(property.text_value)
@@ -302,16 +249,20 @@ const PropertyList = ({
         }
         return {
           ...property,
-          text_value: newValues.toString()
+          text_value: newValues.toString(),
+          value: newValues.toString(),
         }
       default:
-        return property;
+        return {
+          ...property,
+          value: property.text_value
+        };
     }
   }
 
 
 
-  const addElementsDatBimProperties = (properties, objSelected) => {
+  const addElementsDatBimProperties = async (properties, objSelected) => {
     const filteredProperties = properties.filter(
       (property) => property.checked
     );
@@ -321,13 +272,27 @@ const PropertyList = ({
       updateProperties.push(updatePorperty(property));
     }
 
-    addElementsNewProperties({
+    console.log('updateProperties', updateProperties)
+    console.log('objSelected', objSelected)
+    const response = await axios({
+      method: "post",
+      url: `${process.env.REACT_APP_API_DATBIM}/objects/${objSelected}/signing`,
+      headers: {
+        "content-type": "application/json",
+        "X-Auth-Token": sessionStorage.getItem("token"),
+      },
+      data: updateProperties
+    });
+
+    console.log('data', response.data)
+
+    await addElementsNewProperties({
       bimData,
       setBimData,
       viewer,
       modelID,
       expressIDs: eids,
-      properties: updateProperties,
+      properties: response.data.property ? response.data.property : updateProperties,
     });
     handleShowMarketplace("home");
   };
@@ -410,7 +375,7 @@ const PropertyList = ({
         <Button
           variant="contained"
           onClick={() => {
-            addElementsDatBimProperties(properties, objSelected);
+            addElementsDatBimProperties(properties, selectedObject);
           }}
           color="primary"
           className={classes.button}
