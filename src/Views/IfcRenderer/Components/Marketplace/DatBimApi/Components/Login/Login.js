@@ -52,9 +52,12 @@ const Login = ({ handleSubmit }) => {
   } else if (REACT_APP_COMPANY === "VBMC") {
     createAccountLink =
       "https://boxboisbim.mydatbim.com/template/espace-client";
-  } else if (REACT_APP_COMPANY === "ADB") {
+  } else if (REACT_APP_COMPANY === "Alliance-Batiment") {
     createAccountLink =
       "https://alliance-batiment.mydatbim.com/template/espace-client";
+  } else {
+    createAccountLink =
+    "https://alliance-batiment.mydatbim.com/template/espace-client";
   }
 
   let lostPasswordLink;
@@ -62,9 +65,12 @@ const Login = ({ handleSubmit }) => {
     lostPasswordLink = "https://www.datbim.com/inscription/oublie-mdp";
   } else if (REACT_APP_COMPANY === "VBMC") {
     lostPasswordLink = "https://boxboisbim.mydatbim.com/inscription/oublie-mdp";
-  } else if (REACT_APP_COMPANY === "ADB") {
+  } else if (REACT_APP_COMPANY === "Alliance-Batiment") {
     lostPasswordLink =
       "https://alliance-batiment.mydatbim.com/inscription/oublie-mdp";
+  } else {
+    lostPasswordLink =
+    "https://alliance-batiment.mydatbim.com/template/espace-client";
   }
 
   return (
