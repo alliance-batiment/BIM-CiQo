@@ -660,7 +660,7 @@ const Properties = ({
                                         >{`${property.value}`}</a>
                                       </TableCell>
                                     ) : (
-                                      <TableCell>{`${property.value}`}</TableCell>
+                                      <TableCell style={{maxWidth: "200px"}} >{`${property.value}`}</TableCell>
                                     )}
                                     <TableCell>{`${property.unit}`}</TableCell>
                                   </TableRow>
