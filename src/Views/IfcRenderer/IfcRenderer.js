@@ -653,11 +653,7 @@ const IfcRenderer = () => {
     setModelID(modelID);
   };
 
-  const handleClick = async () => {
-    console.log(
-      "viewer.IFC.loader.ifcManager.subsets",
-      viewer.IFC.loader.ifcManager.subsets
-    );
+  const handleClick = async (e) => {
     if (showContextMenu) {
       setShowContextMenu(false);
     }
@@ -672,24 +668,21 @@ const IfcRenderer = () => {
 
       return;
     }
+
     setModelID(found.modelID);
 
-    console.log("eids ==>", eids);
-    if (eids[0] !== found.id) {
+    if (e.shiftKey) {
+      const newEids = [...eids, found.id];
+      setEids(newEids);
+      select(viewer, setModelID, found.modelID, newEids, false);
+      await viewer.IFC.pickIfcItemsByID(0, newEids);
+    } else {
       setEids([found.id]);
+      select(viewer, setModelID, found.modelID, [found.id], false);
     }
 
-    select(viewer, setModelID, found.modelID, found.id, false);
-    console.log("found.id", found.id);
     setSelectedElementID(found.id);
-
-    // await getElementProperties({
-    //   viewer,
-    //   setModelID,
-    //   setElement,
-    // });
   };
-
   const handleClickOpen = () => {
     dropzoneRef.current.open();
   };
