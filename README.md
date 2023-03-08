@@ -14,6 +14,7 @@
 - [Créer notre première application](#create-my-own-app)
 - [Déployer son code sur GitHub](#github)
 - [Mettre son application en ligne](#online-webapp)
+- [Communauté & Assistance](#assistance)
 - [License](#license)
 
 ## <a name="installations"></a>Mise en route
