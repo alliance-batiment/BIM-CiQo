@@ -140,7 +140,11 @@ const useStyles = makeStyles((theme) => ({
 const {
   REACT_APP_COMPANY,
   REACT_APP_THIRD_PARTY_API,
+<<<<<<< HEAD
   REACT_APP_API_GATEWAY_URL
+=======
+  REACT_APP_IDS_API_URL
+>>>>>>> 5dd100f8 (save)
 } = process.env;
 
 const IfcRenderer = () => {
@@ -576,7 +580,11 @@ const IfcRenderer = () => {
       try {
         const resGetModel = await axios({
           method: "post",
+<<<<<<< HEAD
           url: `${REACT_APP_API_GATEWAY_URL}/tracim/getModel`,
+=======
+          url: `${REACT_APP_IDS_API_URL}/tracim/getModel`,
+>>>>>>> 5dd100f8 (save)
           headers: {
             "Content-Type": "application/json"
           },
