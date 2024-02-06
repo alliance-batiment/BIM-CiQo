@@ -139,7 +139,8 @@ const useStyles = makeStyles((theme) => ({
 
 const {
   REACT_APP_COMPANY,
-  REACT_APP_THIRD_PARTY_API
+  REACT_APP_THIRD_PARTY_API,
+  REACT_APP_IDS_API_URL
 } = process.env;
 
 const IfcRenderer = () => {
@@ -336,6 +337,8 @@ const IfcRenderer = () => {
       await handleInitAxeoBim({
         viewer: newViewer
       });
+
+      await handleInitTracim({viewer: newViewer});
 
       handleCheckNetworkStatus();
     }
@@ -549,6 +552,62 @@ const IfcRenderer = () => {
         ...apiConnectors,
         AxeoBim: true
       });
+    }
+  }
+
+  const handleInitTracim = async ({ viewer }) => {
+    // Accès à Tracim
+    const query = new URLSearchParams(window.location.search);
+
+    const content_id = query.get('content_id');
+    const space_id = query.get('space_id');
+    const user_id = query.get('user_id');
+
+    console.log('handleInitTracim Content ID:', content_id);
+    console.log('handleInitTracim Space ID:', space_id);
+    console.log('handleInitTracim User ID:', user_id);
+
+    if (content_id && space_id && user_id) {
+      setState({
+        state,
+        loading: true
+      });
+
+      try {
+        const resGetModel = await axios({
+          method: "post",
+          url: `${REACT_APP_IDS_API_URL}/tracim/getModel`,
+          headers: {
+            "Content-Type": "application/json"
+          },
+          data: {
+            space_id,
+            content_id,
+            user_id
+          }
+        })
+
+        console.log('Response :', resGetModel.data);
+        const file = resGetModel.data;
+        const ifcBlob = new Blob([file], { type: 'text/plain' });
+        console.log('ifcBlob', ifcBlob)
+        const model = new File([ifcBlob], 'ifcFile');
+        console.log('model', model)
+        onDrop({ files: [model], viewer });
+        setState({
+          ...state,
+          loading: false
+        });
+        
+      } catch (error) {
+        console.error('err', error);
+        setState({
+          ...state,
+          loading: false,
+          alertStatus: false,
+          alertMessage: "model loading failed"
+        })
+      }
     }
   }
 
