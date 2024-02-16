@@ -230,12 +230,22 @@ const Properties = ({
                   property.Description && property.Description !== ""
                     ? DecodeIFCString(property.Description.value)
                     : null;
-                const unit =
-                  property.Unit == null
-                    ? ""
-                    : property.Unit.value === "null"
-                      ? ""
-                      : property.Unit.value;
+                // const unit =
+                //   property.Unit == null
+                //     ? ""
+                //     : property.Unit.value === "null"
+                //       ? ""
+                //       : property.Unit.value;
+                const unit = property.Unit
+                  ? property.Unit.Prefix
+                    ? DecodeIFCString(property.Unit.Prefix.value) // unit defined by IFCSIUNIT
+                    : property.Unit.Name
+                      ? DecodeIFCString(property.Unit.Name.value) // unit defined by IFCCONTEXTDEPENDENTUNIT
+                      : property.Unit.value
+                        ? DecodeIFCString(property.Unit.value) // unit defined by 'text' (from opendthX connector)
+                        : ""
+                  : "";
+
                 // console.log("unit", unit);
                 newPset.push({
                   label,
