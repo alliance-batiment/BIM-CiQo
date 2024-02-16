@@ -258,26 +258,6 @@ function UseIfcRenderer({
     return data;
   }
 
-  const getPropertyUnit = async (viewer, modelId, expressID, type, Dimensions, UnitType, Name) => {
-    let ifcPropertyContextDependentUnit = new WebIFC.IfcContextDependentUnit(
-      expressID,
-      type,
-      Dimensions,
-      UnitType,
-      Name,
-      empty(),
-    );
-
-    let rawLineIfcPropertyContextDependentUnit = {
-      ID: ifcPropertyContextDependentUnit.expressID,
-      type: ifcPropertyContextDependentUnit.type,
-      arguments: ifcPropertyContextDependentUnit.ToTape()
-    };
-
-    await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertyContextDependentUnit);
-    
-    return rawLineIfcPropertyContextDependentUnit.ID;
-  }
 
   const addOrEditIfcPropertySingleValue = async ({
     expressID,
@@ -286,9 +266,7 @@ function UseIfcRenderer({
     description,
     value,
     unit,
-    property,
-    viewer,
-    modelId
+    property
   }) => {
     const getPropertyValue = (type, value) => {
 
@@ -307,7 +285,6 @@ function UseIfcRenderer({
       }
     }
 
-    let propertyUnitExpressId = unit? await getPropertyUnit(viewer, modelId, expressID+10000, WebIFC.IFCCONTEXTDEPENDENTUNIT, empty(), empty(), str(`${unit}`)) : undefined;
 
     let ifcPropertySingleValue = new WebIFC.IfcPropertySingleValue(
       expressID,
@@ -316,8 +293,7 @@ function UseIfcRenderer({
       description ? str(`${description}`) : str(`${name}`),
       // value ? ifcText(`${value}`) : ifcText(`no value`),
       getPropertyValue(property.ifc_type, value),
-      //unit ? str(`${unit}`) : empty(),
-      unit ? ref(propertyUnitExpressId) : empty(),
+      unit ? str(`${unit}`) : empty(),
       empty(),
     );
 
@@ -516,9 +492,7 @@ function UseIfcRenderer({
           description: DecodeIFCString(property.property_definition),
           value: property.text_value,
           unit: property.unit,
-          property,
-          viewer,
-          modelId
+          property
         });
         await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySingleValue);
         newPsetOpendthXEids.push(ref(eid));
@@ -674,9 +648,7 @@ function UseIfcRenderer({
             description: DecodeIFCString(property.property_definition),
             value: property.text_value,
             unit: property.unit,
-            property,
-            viewer,
-            modelId
+            property
           });
 
           await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySingleValue);
@@ -691,9 +663,7 @@ function UseIfcRenderer({
             description: DecodeIFCString(property.property_definition),
             value: property.text_value,
             unit: property.unit,
-            property,
-            viewer,
-            modelId
+            property
           });
 
           await viewer.IFC.loader.ifcManager.state.api.WriteRawLineData(modelId, rawLineIfcPropertySingleValue);
