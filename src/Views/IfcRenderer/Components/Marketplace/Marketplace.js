@@ -37,6 +37,8 @@ import DropBox from "./DropBox/DropBox";
 import DropboxChooser from "react-dropbox-chooser";
 import OpenDthxLogo from "./img/OpenDthxLogo.png";
 import SearchBar from "../../../../Components/SearchBar";
+import Tracim from "./Tracim/Tracim";
+import TracimLogo from "./Tracim/img/TracimLogo.svg"
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -138,6 +140,12 @@ const applications = [
   //   tags: ['Coming Soon'],
   //   description: 'Espace permettant le partage et le stockage de fichier'
   // },
+  {
+    name: "Tracim",
+    img: TracimLogo,
+    type: "storage",
+    description: "Espace permettant le partage et le stockage de fichier",
+  },
 ];
 
 const { REACT_APP_DROPBOX_APP_KEY } = process.env;
@@ -390,6 +398,9 @@ const Marketplace = ({
         )}
         {selectedApp === "DropBox" && (
           <DropBox viewer={viewer} onDrop={onDrop} />
+        )}
+        {selectedApp === "Tracim" && (
+          <Tracim viewer={viewer} onDrop={onDrop} />
         )}
       </CardContent>
     </Card>
