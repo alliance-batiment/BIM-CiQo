@@ -779,8 +779,7 @@ const IfcRenderer = () => {
 
     const modelId = modelID ? modelID : 0;
     // EXPORT FICHIER IFC
-    const ifcData =
-      await viewer.IFC.loader.ifcManager.state.api.ExportFileAsIFC(0);
+    const ifcData = await viewer.IFC.loader.ifcManager.state.api.ExportFileAsIFC(0);
     console.log('ifcData', ifcData);
     let ifcDataString = new TextDecoder().decode(ifcData);
     // console.log('IFC STRING', ifcDataString);
