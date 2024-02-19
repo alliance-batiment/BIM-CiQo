@@ -14,7 +14,7 @@ import MenuIcon from "@material-ui/icons/Menu";
 const NavBarElem = ({ title, classes, handleDrawerOpen, open }) => {
   // const classes = useStyles();
 
-  const { REACT_APP_LOGO, REACT_APP_COMPANY } = process.env;
+  const { REACT_APP_LOGO, REACT_APP_COMPANY, REACT_APP_VERSION } = process.env;
 
   return (
     <AppBar
@@ -40,8 +40,8 @@ const NavBarElem = ({ title, classes, handleDrawerOpen, open }) => {
         </Typography>
         <div style={{ position: "absolute", right: "10px" }}>
           <a style={{ color: "inherit", margin: "0 20px" }} target="_blank">
-            v0.0.18
-            </a>
+            {`${REACT_APP_VERSION}`}
+          </a>
           <a
             href="https://documentation-ciqo.notion.site/documentation-ciqo/Doc-CIQO-f47d770ccf344ea6ae50119e58c82198"
             style={{ color: "inherit", margin: "0 20px" }}
