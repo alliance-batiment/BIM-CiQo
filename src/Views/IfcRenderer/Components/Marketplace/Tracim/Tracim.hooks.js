@@ -3,7 +3,7 @@ import axios from "axios";
 
 const {
   REACT_APP_THIRD_PARTY_API,
-  REACT_APP_IDS_API_URL
+  REACT_APP_API_GATEWAY_URL
 } = process.env;
 
 function UseTracim({
@@ -53,7 +53,7 @@ function UseTracim({
       formData.append('space_id', space_id);
       formData.append('user_id', user_id);
       formData.append('file', ifcFile);
-      const res = await axios.put(`${REACT_APP_IDS_API_URL}/tracim/updateModel`, formData);
+      const res = await axios.put(`${REACT_APP_API_GATEWAY_URL}/tracim/updateModel`, formData);
 
       console.log('res', res);
 
