@@ -338,7 +338,7 @@ const IfcRenderer = () => {
         viewer: newViewer
       });
 
-      await handleInitTracim({viewer: newViewer});
+      await handleInitTracim({ viewer: newViewer });
 
       handleCheckNetworkStatus();
     }
@@ -576,7 +576,7 @@ const IfcRenderer = () => {
       try {
         const resGetModel = await axios({
           method: "post",
-          url: `${REACT_APP_IDS_API_URL}/tracim/getModel`,
+          url: `${REACT_APP_THIRD_PARTY_API}/tracim/getModel`,
           headers: {
             "Content-Type": "application/json"
           },
@@ -598,7 +598,7 @@ const IfcRenderer = () => {
           ...state,
           loading: false
         });
-        
+
       } catch (error) {
         console.error('err', error);
         setState({
