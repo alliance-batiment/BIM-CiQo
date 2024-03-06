@@ -138,9 +138,11 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const {
-  REACT_APP_COMPANY,
   REACT_APP_THIRD_PARTY_API,
+<<<<<<< HEAD
   REACT_APP_API_GATEWAY_URL
+=======
+>>>>>>> 763a7511 (change environnement variable)
 } = process.env;
 
 const IfcRenderer = () => {

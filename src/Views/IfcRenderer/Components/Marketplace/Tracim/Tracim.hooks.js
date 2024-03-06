@@ -2,8 +2,12 @@ import { useEffect, useState } from 'react';
 import axios from "axios";
 
 const {
+<<<<<<< HEAD
   REACT_APP_THIRD_PARTY_API,
   REACT_APP_API_GATEWAY_URL
+=======
+  REACT_APP_THIRD_PARTY_API
+>>>>>>> 763a7511 (change environnement variable)
 } = process.env;
 
 function UseTracim({
@@ -53,7 +57,11 @@ function UseTracim({
       formData.append('space_id', space_id);
       formData.append('user_id', user_id);
       formData.append('file', ifcFile);
+<<<<<<< HEAD
       const res = await axios.put(`${REACT_APP_API_GATEWAY_URL}/tracim/updateModel`, formData);
+=======
+      const res = await axios.put(`${REACT_APP_THIRD_PARTY_API}/tracim/updateModel`, formData);
+>>>>>>> 763a7511 (change environnement variable)
 
       console.log('res', res);
 
