@@ -138,9 +138,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const {
-  REACT_APP_COMPANY,
   REACT_APP_THIRD_PARTY_API,
-  REACT_APP_API_GATEWAY_URL
 } = process.env;
 
 const IfcRenderer = () => {
@@ -338,7 +336,7 @@ const IfcRenderer = () => {
         viewer: newViewer
       });
 
-      await handleInitTracim({viewer: newViewer});
+      await handleInitTracim({ viewer: newViewer });
 
       handleCheckNetworkStatus();
     }
@@ -576,7 +574,7 @@ const IfcRenderer = () => {
       try {
         const resGetModel = await axios({
           method: "post",
-          url: `${REACT_APP_API_GATEWAY_URL}/tracim/getModel`,
+          url: `${REACT_APP_THIRD_PARTY_API}/tracim/getModel`,
           headers: {
             "Content-Type": "application/json"
           },
@@ -598,7 +596,7 @@ const IfcRenderer = () => {
           ...state,
           loading: false
         });
-        
+
       } catch (error) {
         console.error('err', error);
         setState({
@@ -838,8 +836,7 @@ const IfcRenderer = () => {
 
     const modelId = modelID ? modelID : 0;
     // EXPORT FICHIER IFC
-    const ifcData =
-      await viewer.IFC.loader.ifcManager.state.api.ExportFileAsIFC(0);
+    const ifcData = await viewer.IFC.loader.ifcManager.state.api.ExportFileAsIFC(0);
     console.log('ifcData', ifcData);
     let ifcDataString = new TextDecoder().decode(ifcData);
     // console.log('IFC STRING', ifcDataString);

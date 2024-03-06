@@ -113,7 +113,6 @@ const App = () => {
             <Route exact path="/" component={IfcRenderer} />
             <Route exact path="/ifcrenderer" component={IfcRenderer} />
             <Route path="/link-from-tracim" component={IfcRenderer} />
-            <Redirect from="/" to={`/`} />
           </Switch>
         </AppContainerElem>
       </Router>
