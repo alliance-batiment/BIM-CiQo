@@ -64,6 +64,7 @@ function UseTracim({
         updateProject: 'Maquette mise à jour'
       })
     } catch (err) {
+      console.log('err', err);
       setApiInformation({
         ...apiInformation,
         updateProject: 'Non connecté à Tracim'
