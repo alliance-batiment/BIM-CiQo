@@ -30,7 +30,8 @@ import {
   TableCell,
   TableContainer,
   TableRow,
-  Stack
+  Stack,
+  LinearProgress
 } from "@mui/material";
 import ToolTipsElem from '../../../../../Components/ToolTipsElem/ToolTipsElem';
 import AddIcon from '@mui/icons-material/Add';
@@ -87,7 +88,9 @@ const Tracim = ({
     setLocked,
     apiInformation,
     setApiInformation,
-    handleUpdateProject
+    handleUpdateProject,
+    isUploading, 
+    uploadMessage
   } = UseTracim({
     viewer
   });
@@ -146,7 +149,18 @@ const Tracim = ({
           </ListItem>
         </List>
       </Grid >
-      
+      {isUploading && (
+        <Grid item xs={12}>
+          <LinearProgress variant="determinate" value={50} /> {/* Exemple avec valeur (ajustez au besoin) */}
+        </Grid>
+      )}
+      {uploadMessage && (
+        <Grid item xs={12}>
+          <Alert severity={uploadMessage === 'Maquette mise à jour' ? 'success' : 'error'}>
+            {uploadMessage}
+          </Alert>
+        </Grid>
+      )}
     </Grid >
   );
 };
