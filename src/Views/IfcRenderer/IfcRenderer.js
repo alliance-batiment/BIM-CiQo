@@ -138,9 +138,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const {
-  REACT_APP_COMPANY,
   REACT_APP_THIRD_PARTY_API,
-  REACT_APP_IDS_API_URL
 } = process.env;
 
 const IfcRenderer = () => {
