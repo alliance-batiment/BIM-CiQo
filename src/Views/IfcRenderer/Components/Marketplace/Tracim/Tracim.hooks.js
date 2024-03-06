@@ -2,12 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from "axios";
 
 const {
-<<<<<<< HEAD
-  REACT_APP_THIRD_PARTY_API,
-  REACT_APP_API_GATEWAY_URL
-=======
   REACT_APP_THIRD_PARTY_API
->>>>>>> 763a7511 (change environnement variable)
 } = process.env;
 
 function UseTracim({
@@ -20,9 +15,15 @@ function UseTracim({
     updateProject: "",
   });
 
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState('');
+
   const handleUpdateProject = async () => {
     try {
       // EXPORT FICHIER IFC
+      setIsUploading(true);
+      setUploadMessage('');
+
       const ifcData = await viewer.IFC.loader.ifcManager.state.api.ExportFileAsIFC(0);
       console.log('ifcData', ifcData);
       let ifcDataString = new TextDecoder().decode(ifcData);
@@ -48,31 +49,31 @@ function UseTracim({
       const space_id = query.get('space_id');
       const user_id = query.get('user_id');
 
-      console.log('handleInitTracim Content ID:', content_id);
-      console.log('handleInitTracim Space ID:', space_id);
-      console.log('handleInitTracim User ID:', user_id);
+      console.log('handleUpdateProject Content ID:', content_id);
+      console.log('handleUpdateProject Space ID:', space_id);
+      console.log('handleUpdateProject User ID:', user_id);
+      console.log('handleUpdateProject REACT_APP_THIRD_PARTY_API:', REACT_APP_THIRD_PARTY_API);
 
       const formData = new FormData();
       formData.append('content_id', content_id);
       formData.append('space_id', space_id);
       formData.append('user_id', user_id);
       formData.append('file', ifcFile);
-<<<<<<< HEAD
-      const res = await axios.put(`${REACT_APP_API_GATEWAY_URL}/tracim/updateModel`, formData);
-=======
       const res = await axios.put(`${REACT_APP_THIRD_PARTY_API}/tracim/updateModel`, formData);
->>>>>>> 763a7511 (change environnement variable)
 
       console.log('res', res);
-
+      setUploadMessage('Maquette mise à jour');
       //sessionStorage.setItem("axeobim_lock_token", res.data.lock_token);
       //setLocked(false);
       setApiInformation({
         ...apiInformation,
         updateProject: 'Maquette mise à jour'
       })
+      setIsUploading(false);
     } catch (err) {
-      console.log('err', err);
+      setUploadMessage('Échec de la mise à jour');
+      console.log('Echec de mise à jour de la maquette', err);
+      setIsUploading(false);
       setApiInformation({
         ...apiInformation,
         updateProject: 'Non connecté à Tracim'
@@ -83,7 +84,9 @@ function UseTracim({
   return {
     setLocked,
     setApiInformation,
-    handleUpdateProject
+    handleUpdateProject,
+    isUploading,
+    uploadMessage,
   }
 };
 
