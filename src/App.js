@@ -3,7 +3,8 @@ import Helmet from 'react-helmet';
 import {
   Router,
   Switch,
-  Route
+  Route,
+  Redirect
 } from 'react-router-dom';
 import './App.css';
 import history from './history';
