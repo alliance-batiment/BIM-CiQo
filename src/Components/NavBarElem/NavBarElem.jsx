@@ -23,7 +23,9 @@ const NavBarElem = ({ title, classes, handleDrawerOpen, open }) => {
         [classes.appBarShift]: open,
       })}
     >
-      <Toolbar>
+      <Toolbar
+        style={{ backgroundColor: 'white', color: 'black' }}
+      >
         <IconButton
           color="inherit"
           aria-label="open drawer"

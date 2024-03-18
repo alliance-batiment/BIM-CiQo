@@ -39,6 +39,7 @@ import OpenDthxLogo from "./img/OpenDthxLogo.png";
 import SearchBar from "../../../../Components/SearchBar";
 import Tracim from "./Tracim/Tracim";
 import TracimLogo from "./Tracim/img/TracimLogo.svg"
+import IdsLogo from "./img/IdsLogo.svg"
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -120,6 +121,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+
+const ID5899e0aca600741755433911 = React.lazy(() => import("ID5899e0aca600741755433911/App"));
+const ConnecteurOpenDthx = React.lazy(() => import("connecteurOpenDthx/App"));
+
+
 const applications = [
   {
     name: "Open dthX",
@@ -145,6 +151,18 @@ const applications = [
     img: TracimLogo,
     type: "storage",
     description: "Espace permettant le partage et le stockage de fichier",
+  },
+  {
+    name: "IDS",
+    img: IdsLogo,
+    type: "control",
+    description: "Solution opensource mise en place par Building Smart International permettant le contrôle des maquettes",
+  },
+  {
+    name: "Connecteur opendthX",
+    img: OpenDthxLogo,
+    type: "data",
+    description: "Base de données permettant l'enrichissement de la maquette",
   },
 ];
 
@@ -401,6 +419,23 @@ const Marketplace = ({
         )}
         {selectedApp === "Tracim" && (
           <Tracim viewer={viewer} onDrop={onDrop} />
+        )}
+        {selectedApp === "IDS" && (
+          <React.Suspense fallback={<>{`chargement...`}</>}>
+            <ID5899e0aca600741755433911 viewer={viewer} />
+          </React.Suspense>
+        )}
+        {selectedApp === "Connecteur opendthX" && (
+          <React.Suspense fallback={<>{`chargement...`}</>}>
+            <ConnecteurOpenDthx
+              viewer={viewer}
+              modelID={modelID}
+              eids={eids}
+              setEids={setEids}
+              addElementsNewProperties={addElementsNewProperties}
+              handleShowMarketplace={handleShowMarketplace}
+            />
+          </React.Suspense>
         )}
       </CardContent>
     </Card>

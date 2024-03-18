@@ -520,7 +520,10 @@ const IfcRenderer = () => {
     if (code && state) {
       setState({
         state,
-        loading: true
+        loading: true,
+        alertStatus: true,
+        alertMessage: 'Connection en cours',
+        loadingMessage: "Récupération de la maquette en cours..."
       });
       const accessToken = sessionStorage.getItem("axeobim_access_token");
       const refreshToken = sessionStorage.getItem("axeobim_refresh_token");
@@ -568,7 +571,10 @@ const IfcRenderer = () => {
     if (content_id && space_id && user_id) {
       setState({
         state,
-        loading: true
+        loading: true,
+        alertStatus: true,
+        alertMessage: 'Connection en cours',
+        loadingMessage: "Récupération de la maquette en cours..."
       });
 
       try {
