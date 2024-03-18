@@ -1,6 +1,6 @@
 FROM nginx:alpine
 COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
-COPY ./build-federation /usr/share/nginx/html
+COPY ./build /usr/share/nginx/html
 RUN apk add \
     xorg-server \
     libxi-dev \

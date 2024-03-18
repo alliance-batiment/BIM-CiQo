@@ -1,2 +1,0 @@
-(self.webpackChunkciqo=self.webpackChunkciqo||[]).push([[5671],{25671:function(n){function e(n){var e=new Error("Cannot find module '"+n+"'");throw e.code="MODULE_NOT_FOUND",e}e.keys=function(){return[]},e.resolve=e,e.id=25671,n.exports=e}}]);
-//# sourceMappingURL=5671.bundle.js.map
