@@ -8,7 +8,7 @@ const override = (config) => {
   config.plugins.push(new ModuleFederationPlugin(require('../../../modulefederation.config.js')));
 
   config.output = {
-    path: path.join(__dirname, "../../../build-federation"),
+    path: path.join(__dirname, "../../../build"),
     publicPath: '/',
     filename: "bundle.js",
   };
