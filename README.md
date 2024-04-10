@@ -66,4 +66,4 @@ A bientôt sur <a href="https://alliance-batiment.org/">Alliance du Batiment</a>
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL_v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 
 - **[GNU LGPL license](https://www.gnu.org/licenses/lgpl-3.0.html)**
-- Copyright 2022 © <a href="https://alliance-batiment.org/" target="_blank">Alliance du Batiment</a>.
+- Copyright 2024 © <a href="https://alliance-batiment.org/" target="_blank">Alliance du Batiment</a>.
