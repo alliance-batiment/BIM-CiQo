@@ -1,0 +1,121 @@
+# APPLICATION FRONT DE PRODUCTION
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ciqo
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ciqo
+  template:
+    metadata:
+      labels:
+        app: ciqo
+    spec:
+      containers:
+        - name: ciqo
+          image: "gcr.io/ciqo-343813/ciqo:v0.0.19"
+          ports:
+            - name: port-front
+              containerPort: 80
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ciqo
+spec:
+  selector:
+    app: ciqo
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: port-front
+  type: NodePort
+---
+# APPLICATION API GATEWAY
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ciqo-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ciqo
+  template:
+    metadata:
+      labels:
+        app: ciqo
+    spec:
+      containers:
+        - name: ciqo-api
+          image: "gcr.io/ciqo-343813/ciqo-api:v0.0.2"
+          ports:
+            - name: port-api
+              containerPort: 5600
+          resources:
+            requests:
+              cpu: 200m
+              memory: 328Mi
+            limits:
+              cpu: 400m
+              memory: 628Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ciqo-api
+spec:
+  selector:
+    app: ciqo
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: port-api
+  type: NodePort
+---
+# DEPLOIEMENT
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ciqo
+  annotations:
+    networking.gke.io/managed-certificates: ciqo
+    kubernetes.io/ingressClassName: gce
+    kubernetes.io/ingress.global-static-ip-name: ciqo-ip-https
+    kubernetes.io/ingress.allow-http: "true"
+spec:
+  rules:
+    - host: ciqo.tridyme.com
+      http:
+        paths:
+          - path: /*
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: ciqo
+                port:
+                  number: 80
+          - path: /api
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: ciqo-api
+                port:
+                  number: 80
+---
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: ciqo
+spec:
+  domains:
+    - ciqo.tridyme.com
