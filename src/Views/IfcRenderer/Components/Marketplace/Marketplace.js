@@ -123,7 +123,7 @@ const useStyles = makeStyles((theme) => ({
 
 
 const ID5899e0aca600741755433911 = React.lazy(() => import("ID5899e0aca600741755433911/App"));
-const ConnecteurOpenDthx = React.lazy(() => import("connecteurOpenDthx/App"));
+// const ConnecteurOpenDthx = React.lazy(() => import("connecteurOpenDthx/App"));
 
 
 const applications = [
@@ -158,12 +158,12 @@ const applications = [
     type: "control",
     description: "Solution opensource mise en place par Building Smart International permettant le contrôle des maquettes",
   },
-  {
-    name: "Connecteur opendthX",
-    img: OpenDthxLogo,
-    type: "data",
-    description: "Base de données permettant l'enrichissement de la maquette",
-  },
+  // {
+  //   name: "Connecteur opendthX",
+  //   img: OpenDthxLogo,
+  //   type: "data",
+  //   description: "Base de données permettant l'enrichissement de la maquette",
+  // },
 ];
 
 const { REACT_APP_DROPBOX_APP_KEY } = process.env;
