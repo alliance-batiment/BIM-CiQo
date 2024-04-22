@@ -139,10 +139,6 @@ const useStyles = makeStyles((theme) => ({
 
 const {
   REACT_APP_THIRD_PARTY_API,
-<<<<<<< HEAD
-  REACT_APP_API_GATEWAY_URL
-=======
->>>>>>> 763a7511 (change environnement variable)
 } = process.env;
 
 const IfcRenderer = () => {
@@ -584,15 +580,7 @@ const IfcRenderer = () => {
       try {
         const resGetModel = await axios({
           method: "post",
-<<<<<<< HEAD
-<<<<<<< HEAD
-          url: `${REACT_APP_API_GATEWAY_URL}/tracim/getModel`,
-=======
-          url: `${REACT_APP_IDS_API_URL}/tracim/getModel`,
->>>>>>> 5dd100f8 (save)
-=======
           url: `${REACT_APP_THIRD_PARTY_API}/tracim/getModel`,
->>>>>>> d7c9aee4 (change url for api gateway connection to tracim)
           headers: {
             "Content-Type": "application/json"
           },
