@@ -57,7 +57,7 @@ spec:
     spec:
       containers:
         - name: ciqo-api
-          image: "gcr.io/ciqo-343813/ciqo-api:v0.0.2"
+          image: "gcr.io/ciqo-343813/ciqo-api:v0.0.3"
           ports:
             - name: port-api
               containerPort: 5600
@@ -78,7 +78,7 @@ spec:
     app: ciqo
   ports:
     - protocol: TCP
-      port: 80
+      port: 31080
       targetPort: port-api
   type: NodePort
 ---
@@ -97,20 +97,20 @@ spec:
     - host: ciqo.tridyme.com
       http:
         paths:
-          - path: /*
-            pathType: ImplementationSpecific
+          - path: /
+            pathType: Prefix
             backend:
               service:
                 name: ciqo
                 port:
                   number: 80
           - path: /api
-            pathType: ImplementationSpecific
+            pathType: Prefix
             backend:
               service:
                 name: ciqo-api
                 port:
-                  number: 80
+                  number: 31080
 ---
 apiVersion: networking.gke.io/v1
 kind: ManagedCertificate
