@@ -345,7 +345,7 @@ const ObjectsSetsList = ({
             Portails
           </Typography>
           <Typography color="textPrimary">
-            {breadcrumbMap[0].length > 15
+            {breadcrumbMap[0]?.length > 15
               ? breadcrumbMap[0].slice(0, 15) + "..."
               : breadcrumbMap[0]}
           </Typography>

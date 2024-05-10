@@ -25,6 +25,9 @@ import moment from "moment";
 import SearchBar from "../../../../../../../Components/SearchBar/SearchBar.jsx";
 import DefineTypeComponent from "./DefineTypeComponent";
 import InfoIcon from "@mui/icons-material/Info";
+import { IFCSIUNIT } from "web-ifc";
+import CircularProgress from '@material-ui/core/CircularProgress';
+import LinearProgress from '@material-ui/core/LinearProgress';
 
 const useStyles = makeStyles((theme) => ({
   searchBar: {
@@ -87,6 +90,8 @@ const PropertyList = ({
   const [allChecked, setAllChecked] = useState(true);
   const history = useHistory();
   const classes = useStyles();
+  const [contextKey, setContextKey] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   function searchProperty(input) {
     const filtered = propertyListDefault.filter((property) => {
@@ -100,15 +105,57 @@ const PropertyList = ({
   useEffect(() => {
     const getPropertiesValues = async () => {
       try {
+        setLoading(true);
+        
+        if(!contextKey && modelID > -1){
+          const ifcSiUnits = await viewer.getAllItemsOfType(modelID, IFCSIUNIT, true, true);
+          console.log('ifcSiUnits', ifcSiUnits);
+          if(ifcSiUnits){
+            const contextPropertyType = {};
+            ifcSiUnits?.forEach(ifcSiUnit => {
+              if (ifcSiUnit?.UnitType?.value && ifcSiUnit?.Name?.value) {
+                const ifcPropertyType = mapIfcPropertyType(ifcSiUnit?.UnitType?.value);
+                const unitSymbol = mapUnitSymbol(ifcSiUnit?.Prefix?.value ? ifcSiUnit?.Prefix?.value : ifcSiUnit?.Name?.value);
+                contextPropertyType[ifcPropertyType] = unitSymbol;
+              }
+            });
+  
+            console.log("context==>", contextPropertyType);
+            const context = {
+              "propertyContext": {
+                "mappings": {
+                  "propertyType": "ifcPropertyType"
+                },
+                "units": {
+                  "propertyType": contextPropertyType,
+                  "propertyName": {}
+                }
+              }
+            }
+    
+            const creatContext = await axios({
+              method: "post",
+              url: `${process.env.REACT_APP_API_DATBIM}/contexts`,
+              headers: {
+                "content-type": "application/json",
+                "X-Auth-Token": sessionStorage.getItem("token"),
+              },
+              data: context
+            });
+            console.log('contextKey created', creatContext.data);
+            setContextKey(creatContext.data.contextKey);
+          }
+        }
+                
         const { data: dataProp } = await axios.get(
-          `${process.env.REACT_APP_API_DATBIM}/objects/${selectedObject}/properties-values`,
+          `${process.env.REACT_APP_API_DATBIM}/objects/${selectedObject}/properties-values?contextKey=${contextKey}`,
           {
             headers: {
               "X-Auth-Token": sessionStorage.getItem("token"),
             },
           }
         );
-        //console.log("data", dataProp);
+        console.log("dataProp", dataProp);
         const dataPropFilter = dataProp.data.filter(
           (prop) => prop.property_visibility
         );
@@ -144,15 +191,53 @@ const PropertyList = ({
 
         setPropertyListDefault(temporaryFixProperties);
         setProperties(temporaryFixProperties);
-
+        setLoading(false);
         // console.log("temporaryFixProperties", temporaryFixProperties);
       } catch (err) {
+        setLoading(false);
         console.log("error", err);
       }
     };
 
     getPropertiesValues();
-  }, [selectedObject]);
+  }, [selectedObject, contextKey]);
+
+  const mapIfcPropertyType = (unitType) => {
+    switch (unitType) {
+      case "LENGTHUNIT":
+        return "IfcLengthMeasure"
+      case "AREAUNIT":
+        return "IfcAreaMeasure"
+      case "VOLUMEUNIT":
+        return "IfcVolumeMeasure"
+      case "TIMEUNIT":
+        return "IfcTimeMeasure"
+      case "PLANEANGLEUNIT":
+        return "IfcPlaneAngleMeasure"
+      default:
+        return unitType
+    }
+  }
+
+  const mapUnitSymbol = (unitName) => {
+    switch (unitName) {
+      case "METRE":
+        return "m"
+      case "MILLI":
+        return "mm"
+      
+      case "SQUARE_METRE":
+        return "m²"
+      case "CUBIC_METRE":
+        return "m3"
+      case "SECOND":
+        return "s"
+      case "RADIAN":
+        return "rad"
+      default:
+        return unitType
+    }
+  }
 
   const handleCheckedProperties = (e) => {
     // console.log(`Checkbox id:`, e.target.id);
@@ -306,6 +391,10 @@ const PropertyList = ({
             className={classes.searchBar}
             placeholder="Chercher un Objet"
           /> */}
+
+      {loading && (
+        <LinearProgress color="secondary" />
+      )}
       <Table className={classes.table} aria-label="simple table">
         <TableHead>
           <TableRow className={`${classes.root} ${classes.datBimCardTitle}`}>
