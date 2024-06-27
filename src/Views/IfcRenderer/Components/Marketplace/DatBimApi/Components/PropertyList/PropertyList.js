@@ -25,9 +25,11 @@ import moment from "moment";
 import SearchBar from "../../../../../../../Components/SearchBar/SearchBar.jsx";
 import DefineTypeComponent from "./DefineTypeComponent";
 import InfoIcon from "@mui/icons-material/Info";
-import { IFCSIUNIT } from "web-ifc";
+import { IFCBUILDINGELEMENTPROXY, IFCSIUNIT } from "web-ifc";
+import { IFCPROPERTYSINGLEVALUE } from "web-ifc";
 import CircularProgress from '@material-ui/core/CircularProgress';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import Branche from './Components/Branche';
 
 const useStyles = makeStyles((theme) => ({
   searchBar: {
@@ -70,6 +72,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const {
+  REACT_APP_THIRD_PARTY_API,
+  REACT_APP_API_DATBIM_HISTORY
+} = process.env;
+
 const PropertyList = ({
   projectId,
   setLoader,
@@ -92,6 +99,8 @@ const PropertyList = ({
   const classes = useStyles();
   const [contextKey, setContextKey] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [project, setProject] = useState({});
+  const [branche, setBranche] = useState({});
 
   function searchProperty(input) {
     const filtered = propertyListDefault.filter((property) => {
@@ -369,20 +378,67 @@ const PropertyList = ({
       data: updateProperties
     });
 
-    console.log('data', response.data)
-
+    console.log('data', response.data)    
     await addElementsNewProperties({
       bimData,
       setBimData,
       viewer,
       modelID,
       expressIDs: eids,
-      properties: response.data.property ? response.data.property : updateProperties,
+      properties: response?.data?.property ? response?.data?.property : updateProperties,
     });
+
+    // Creat commit
+    await handleAddCommit(response?.data?.property, viewer, modelID, eids);
+
     handleShowMarketplace("home");
   };
 
-  console.log("properties", properties);
+  const handleAddCommit = async (properties, viewer, modelID, eids) => {
+    const ifcManager = await viewer.IFC.loader.ifcManager;
+    const bimModelId = {};
+    const integrityObjectSignatureValue = properties?.find(p => p?.datbim_code === "IntegrityObjectSignature")?.text_value;
+  
+    for (const expressId of eids) {
+      try {
+        const itemProperties = await ifcManager.getItemProperties(modelID, expressId);
+        const ifcGuid = itemProperties?.GlobalId?.value;
+        console.log('ifcGuid:', ifcGuid);
+        bimModelId[ifcGuid] = integrityObjectSignatureValue;
+      } catch (error) {
+        console.error('Error fetching item properties:', error);
+      }
+    }
+  
+    const commit = {
+      timestamp: new Date().toISOString(),
+      author: "string",
+      comment: "save enrichment",
+      bimModelId: bimModelId
+    };
+    console.log('commit to add', commit);
+
+    try {
+      const newCommit = await axios.post(`${REACT_APP_THIRD_PARTY_API}/history/addCommit`,
+      {
+        projectId: project?.id,
+        branchName: branche?.name,
+        commit: commit
+      }, 
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+
+      console.log('newCommit handleAddCommit', newCommit);
+     
+    } catch (err) {
+      console.log('Internal server error', err);
+    }
+  };
+
   return (
     <TableContainer component={Paper}>
       {/* <SearchBar
@@ -460,18 +516,32 @@ const PropertyList = ({
           ))}
         </TableBody>
       </Table>
-      <Grid row align="right">
-        <Button
-          variant="contained"
-          onClick={() => {
-            addElementsDatBimProperties(properties, selectedObject);
-          }}
-          color="primary"
-          className={classes.button}
-        >
-          Ajouter
-        </Button>
-      </Grid>
+      {selectedObject && properties?.length>0 && 
+        <>
+          <Grid item xs={12} style={{ marginLeft: '20px'}}>
+            <Branche 
+              selectedObject={selectedObject}
+              project={project}
+              setProject={setProject}
+              branche={branche}
+              setBranche={setBranche}
+            />
+          </Grid>
+          <Grid row align="right">
+            <Button
+              variant="contained"
+              onClick={() => {
+                addElementsDatBimProperties(properties, selectedObject);
+              }}
+              color="primary"
+              className={classes.button}
+            >
+              Ajouter
+            </Button>
+          </Grid>
+        </>
+      }
+      
     </TableContainer>
   );
 };
