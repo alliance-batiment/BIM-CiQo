@@ -525,6 +525,7 @@ const PropertyList = ({
               setProject={setProject}
               branche={branche}
               setBranche={setBranche}
+              viewer={viewer}
             />
           </Grid>
           <Grid row align="right">

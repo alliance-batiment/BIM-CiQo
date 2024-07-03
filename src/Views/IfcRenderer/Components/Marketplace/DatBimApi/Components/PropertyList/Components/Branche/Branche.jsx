@@ -7,6 +7,9 @@ import axios from "axios";
 import CircularProgress from '@material-ui/core/CircularProgress';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import SelectElem from "../../../../../../../../../Components/SelectElem";
+import { IfcViewerAPI } from "web-ifc-viewer";
+import * as WebIFC from "web-ifc";
+import { IfcAPI } from 'web-ifc';
 
 const useStyles = makeStyles((theme) => ({
   searchBar: {
@@ -55,18 +58,25 @@ const Branche = ({
   project,
   setProject,
   branche,
-  setBranche
+  setBranche,
+  viewer
 }) => {
   const classes = useStyles();
   const [loading, setLoading] = useState(false);
-  const [projects, setProjects] = useState([]);
   const [branches, setBranches] = useState([]);
 
   useEffect(() => {
     const init = async () => {
       if (sessionStorage.getItem("token")) {
         try {
-          const { data } = await axios({
+          const manager = await viewer.IFC.loader.ifcManager;
+          const ifcProjectExpressId = await manager.getAllItemsOfType(0, WebIFC.IFCPROJECT, false);
+          const ifcProjectProperties = await manager.getItemProperties(0, ifcProjectExpressId[0]);
+          const ifcGuid = ifcProjectProperties?.GlobalId?.value;
+          console.log('ifcProjectProperties=>', ifcProjectProperties);
+
+          // Fetch the list of projects from the API
+          const { data: projects } = await axios({
             method: "get",
             url: `${process.env.REACT_APP_API_DATBIM_HISTORY}/projects/`,
             headers: {
@@ -74,32 +84,25 @@ const Branche = ({
               //"X-Auth-Token": sessionStorage.getItem("token"),
             },
           });
+
+          // Find if the project ID exists in the list of projects
+          const projectExists = projects.find(p => p === ifcGuid);
+          if (projectExists) {
+            // Fetch the branches for the project
+            const { data: branches } = await axios({
+              method: "get",
+              url: `${process.env.REACT_APP_API_DATBIM_HISTORY}/projects/${projectExists}/branches`,
+              headers: {
+                "content-type": "application/json",
+              },
+            });
+            setBranches(branches);
+          }
+
+          
     
-          console.log('handleGetProjects data', data);
-          const data1 = [
-            {
-              id: '3f5ed202-39ee-454c-9041-51a113e76d23',
-              nameProject: 'Project 1',
-              description: 'Project 1'
-            },
-            {
-              id: 'c2cf4cf4-12ce-4c51-bf08-20060b3b83f8',
-              nameProject: 'Project 2',
-              description: 'Project 2'
-            },
-            {
-              id: '44e87a23-c30b-40f6-a3bc-75d05ddd44ba',
-              nameProject: 'Project 3',
-              description: 'Project 3'
-            },
-            {
-              id: '7c3c4c7b-51aa-4288-b64b-8342fe1ab000',
-              nameProject: 'project 1',
-              description: ''
-            },
-          ];
+          
     
-          setProjects(data1);
         } catch (err) {
           console.log('Error get projects history', err);
         }
@@ -111,23 +114,24 @@ const Branche = ({
   const handleChange = async (event) => {
     const { name, value } = event.target;
 
-    if (name === 'project') {
-      const selectedProject = projects.find(p => p.id === value);
-      setProject(selectedProject);
-      try {
-        const { data } = await axios({
-          method: "get",
-          url: `${process.env.REACT_APP_API_DATBIM_HISTORY}/projects/${selectedProject?.id}/branches`,
-          headers: {
-            "content-type": "application/json",
-          },
-        });
+    // if (name === 'project') {
+    //   const selectedProject = projects.find(p => p.id === value);
+    //   setProject(selectedProject);
+    //   try {
+    //     const { data } = await axios({
+    //       method: "get",
+    //       url: `${process.env.REACT_APP_API_DATBIM_HISTORY}/projects/${selectedProject?.id}/branches`,
+    //       headers: {
+    //         "content-type": "application/json",
+    //       },
+    //     });
 
-        setBranches(data);
-      } catch (error) {
-        console.error('Error fetching branches', error);
-      }
-    } else if (name === 'model') {
+    //     setBranches(data);
+    //   } catch (error) {
+    //     console.error('Error fetching branches', error);
+    //   }
+    // } 
+    if (name === 'model') {
       const selectedBranch = branches?.find(b => b?.name === value);
       setBranche(selectedBranch);
     }
@@ -135,7 +139,7 @@ const Branche = ({
 
   return (
     <Grid container spacing={3}>
-      <Grid item xs={4}>
+      {/* <Grid item xs={4}>
         <SelectElem
           label="project"
           placeholder="project"
@@ -147,9 +151,9 @@ const Branche = ({
           ))}
           required={true}
         />
-      </Grid>
+      </Grid> */}
       <Grid item xs={4}>
-        {project?.id && branches?.length  > 0 && 
+        {branches?.length  > 0 && 
           <SelectElem
             label="model"
             placeholder="model"
