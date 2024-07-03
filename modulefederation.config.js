@@ -10,7 +10,7 @@ module.exports = {
   name: 'remote',
   remotes: {
     "ID5899e0aca600741755433911": 'ID5899e0aca600741755433911@https://bim-ids.netlify.app/remoteEntry.js',
-    // "connecteurOpenDthx": 'connecteurOpenDthx@https://connecteur.opendthx.org/remoteEntry.js'
+    "connecteurOpenDthx": 'connecteurOpenDthx@https://connecteur.opendthx.org/remoteEntry.js'
   },
   shared: {
     ...dependencies,
