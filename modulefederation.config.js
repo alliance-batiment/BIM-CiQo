@@ -9,8 +9,9 @@ const {
 module.exports = {
   name: 'remote',
   remotes: {
-    "ID5899e0aca600741755433911": 'ID5899e0aca600741755433911@https://bim-ids.netlify.app/remoteEntry.js',
-    // "connecteurOpenDthx": 'connecteurOpenDthx@https://connecteur.opendthx.org/remoteEntry.js'
+    "ID5899e0aca600741755433911": 'ID5899e0aca600741755433911@http://localhost:3005/remoteEntry.js',
+    // "connecteurOpenDthx": 'connecteurOpenDthx@http://localhost:3004/remoteEntry.js',
+    "ID5899e0aca600741755433912": 'ID5899e0aca600741755433912@http://localhost:3006/remoteEntry.js'
   },
   shared: {
     ...dependencies,
@@ -25,6 +26,14 @@ module.exports = {
     'react-router-dom': {
       singleton: true,
       requiredVersion: dependencies["react-router-dom"],
+    },
+    'react-redux': {
+      singleton: true,
+      requiredVersion: dependencies['react-redux'],
+    },
+    '@reduxjs/toolkit': {
+      singleton: true,
+      requiredVersion: dependencies['@reduxjs/toolkit'],
     },
   },
 };

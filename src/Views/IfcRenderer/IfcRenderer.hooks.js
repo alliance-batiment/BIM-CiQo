@@ -452,24 +452,26 @@ function UseIfcRenderer({
       const relPset = database[parseInt(relPsetID)];
       console.log('relPset', relPset)
       // const relPset = await manager.getItemProperties(0, relPsetID);
-      const relPsetRelatingPropertyDefinition = relPset.RelatingPropertyDefinition;
+      const relPsetRelatingPropertyDefinition = relPset?.RelatingPropertyDefinition;
 
-      if (database[parseInt(relPsetRelatingPropertyDefinition)].Name === PsetSearch) {
-        const relPsetRelatedObjects = [...relPset.RelatedObjects];
-        let checkExpressID = false;
-        for (let expressID of expressIDs) {
-          const relPsetRelatedObjectIndex = relPsetRelatedObjects.findIndex(relPsetRelatedObject => relPsetRelatedObject === expressID);
-          if (relPsetRelatedObjectIndex > -1) {
-            checkExpressID = true;
-            relPsetRelatedObjects.splice(relPsetRelatedObjectIndex, 1);
+      if (relPsetRelatingPropertyDefinition) {
+        if (database[parseInt(relPsetRelatingPropertyDefinition)].Name === PsetSearch) {
+          const relPsetRelatedObjects = [...relPset.RelatedObjects];
+          let checkExpressID = false;
+          for (let expressID of expressIDs) {
+            const relPsetRelatedObjectIndex = relPsetRelatedObjects.findIndex(relPsetRelatedObject => relPsetRelatedObject === expressID);
+            if (relPsetRelatedObjectIndex > -1) {
+              checkExpressID = true;
+              relPsetRelatedObjects.splice(relPsetRelatedObjectIndex, 1);
+            }
           }
-        }
-        if (checkExpressID) {
-          const newRelPset = await manager.getItemProperties(0, relPsetID);
-          newRelPset.RelatedObjects = relPsetRelatedObjects.map((relPsetRelatedObject) => {
-            return ref(relPsetRelatedObject);
-          });
-          await manager.ifcAPI.WriteLine(0, newRelPset);
+          if (checkExpressID) {
+            const newRelPset = await manager.getItemProperties(0, relPsetID);
+            newRelPset.RelatedObjects = relPsetRelatedObjects.map((relPsetRelatedObject) => {
+              return ref(relPsetRelatedObject);
+            });
+            await manager.ifcAPI.WriteLine(0, newRelPset);
+          }
         }
       }
     }
