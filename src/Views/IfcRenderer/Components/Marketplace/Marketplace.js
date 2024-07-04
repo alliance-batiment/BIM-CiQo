@@ -24,6 +24,7 @@ import {
   ListItemText,
   Badge,
   Fab,
+  Button
 } from "@material-ui/core";
 import AppsIcon from "@material-ui/icons/Apps";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
@@ -40,6 +41,7 @@ import SearchBar from "../../../../Components/SearchBar";
 import Tracim from "./Tracim/Tracim";
 import TracimLogo from "./Tracim/img/TracimLogo.svg"
 import IdsLogo from "./img/IdsLogo.svg"
+import HistoryLogo from "./img/HistoryLogo.svg"
 
 const useStyles = makeStyles((theme) => ({
   heading: {
@@ -124,7 +126,7 @@ const useStyles = makeStyles((theme) => ({
 
 const ID5899e0aca600741755433911 = React.lazy(() => import("ID5899e0aca600741755433911/App"));
 const ConnecteurOpenDthx = React.lazy(() => import("connecteurOpenDthx/App"));
-
+const ID5899e0aca600741755433912 = React.lazy(() => import("ID5899e0aca600741755433912/App"));
 
 const applications = [
   {
@@ -163,6 +165,12 @@ const applications = [
     img: OpenDthxLogo,
     type: "data",
     description: "Base de données permettant l'enrichissement de la maquette",
+  },
+  {
+    name: "History",
+    img: HistoryLogo,
+    type: "management",
+    description: "Gestion de projet à base de maquettes IFC",
   },
 ];
 
@@ -402,6 +410,12 @@ const Marketplace = ({
             ))}
           </Grid>
         )}
+
+        {selectedApp !== "home" &&
+          <Grid item xs={12}>
+            <Button variant="text" style={{ color: "#1976d2", textTransform: "none" }} onClick={() => setSelectedApp("home")}>Retour</Button>
+          </Grid>
+        }
         {selectedApp === "Open dthX" && (
           <DatBimApi
             bimData={bimData}
@@ -423,6 +437,11 @@ const Marketplace = ({
         {selectedApp === "IDS" && (
           <React.Suspense fallback={<>{`chargement...`}</>}>
             <ID5899e0aca600741755433911 viewer={viewer} />
+          </React.Suspense>
+        )}
+        {selectedApp === "History" && (
+          <React.Suspense fallback={<>{`chargement...`}</>}>
+            <ID5899e0aca600741755433912 viewer={viewer} />
           </React.Suspense>
         )}
         {selectedApp === "Connecteur opendthX" && (
