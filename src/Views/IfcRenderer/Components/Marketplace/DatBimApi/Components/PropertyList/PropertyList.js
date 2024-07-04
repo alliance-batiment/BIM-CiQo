@@ -389,7 +389,7 @@ const PropertyList = ({
     });
 
     // Creat commit
-    await handleAddCommit(response?.data?.property, viewer, modelID, eids);
+    // await handleAddCommit(response?.data?.property, viewer, modelID, eids);
 
     handleShowMarketplace("home");
   };
@@ -421,7 +421,7 @@ const PropertyList = ({
     try {
       const newCommit = await axios.post(`${REACT_APP_THIRD_PARTY_API}/history/addCommit`,
       {
-        projectId: project?.id,
+        projectId: project,
         branchName: branche?.name,
         commit: commit
       }, 
