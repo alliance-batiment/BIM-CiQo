@@ -97,12 +97,8 @@ const Branche = ({
               },
             });
             setBranches(branches);
+            setProject(ifcGuid);
           }
-
-          
-    
-          
-    
         } catch (err) {
           console.log('Error get projects history', err);
         }
