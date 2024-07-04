@@ -125,7 +125,7 @@ const useStyles = makeStyles((theme) => ({
 
 
 const ID5899e0aca600741755433911 = React.lazy(() => import("ID5899e0aca600741755433911/App"));
-const ConnecteurOpenDthx = React.lazy(() => import("connecteurOpenDthx/App"));
+// const ConnecteurOpenDthx = React.lazy(() => import("connecteurOpenDthx/App"));
 const ID5899e0aca600741755433912 = React.lazy(() => import("ID5899e0aca600741755433912/App"));
 
 const applications = [
@@ -160,12 +160,12 @@ const applications = [
     type: "control",
     description: "Solution opensource mise en place par Building Smart International permettant le contrôle des maquettes",
   },
-  {
-    name: "Connecteur opendthX",
-    img: OpenDthxLogo,
-    type: "data",
-    description: "Base de données permettant l'enrichissement de la maquette",
-  },
+  // {
+  //   name: "Connecteur opendthX",
+  //   img: OpenDthxLogo,
+  //   type: "data",
+  //   description: "Base de données permettant l'enrichissement de la maquette",
+  // },
   {
     name: "History",
     img: HistoryLogo,
@@ -444,7 +444,7 @@ const Marketplace = ({
             <ID5899e0aca600741755433912 viewer={viewer} />
           </React.Suspense>
         )}
-        {selectedApp === "Connecteur opendthX" && (
+        {/* {selectedApp === "Connecteur opendthX" && (
           <React.Suspense fallback={<>{`chargement...`}</>}>
             <ConnecteurOpenDthx
               viewer={viewer}
@@ -455,7 +455,7 @@ const Marketplace = ({
               handleShowMarketplace={handleShowMarketplace}
             />
           </React.Suspense>
-        )}
+        )} */}
       </CardContent>
     </Card>
   );
