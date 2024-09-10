@@ -389,7 +389,7 @@ const PropertyList = ({
     });
 
     // Creat commit
-    // await handleAddCommit(response?.data?.property, viewer, modelID, eids);
+    await handleAddCommit(response?.data?.property, viewer, modelID, eids);
 
     handleShowMarketplace("home");
   };
@@ -397,6 +397,7 @@ const PropertyList = ({
   const handleAddCommit = async (properties, viewer, modelID, eids) => {
     const ifcManager = await viewer.IFC.loader.ifcManager;
     const bimModelId = {};
+    const bimModelUpdate = {};
     const integrityObjectSignatureValue = properties?.find(p => p?.datbim_code === "IntegrityObjectSignature")?.text_value;
   
     for (const expressId of eids) {
@@ -405,25 +406,64 @@ const PropertyList = ({
         const ifcGuid = itemProperties?.GlobalId?.value;
         console.log('ifcGuid:', ifcGuid);
         bimModelId[ifcGuid] = integrityObjectSignatureValue;
+
+        // const transformedProperties = properties.map(p => ({
+        //   property_id: p.property_id || "",
+        //   property_name: p.property_name || "", 
+        //   value: p.text_value || "" 
+        // }));
+        bimModelUpdate[ifcGuid] = {
+          "integrityId": integrityObjectSignatureValue,
+          // "properties": transformedProperties,
+          // "deleted": false
+        }
       } catch (error) {
         console.error('Error fetching item properties:', error);
       }
     }
   
     const commit = {
-      timestamp: new Date().toISOString(),
-      author: "string",
-      comment: "save enrichment",
-      bimModelId: bimModelId
+      "timestamp": new Date().toISOString(),
+      "author": "string",
+      "comment": "save enrichment",
+      "bimModel": bimModelId
     };
     console.log('commit to add', commit);
 
+    // try {
+    //   const newCommit = await axios.post(`${REACT_APP_THIRD_PARTY_API}/history/addCommit`,
+    //   {
+    //     projectId: project,
+    //     branchName: branche?.name,
+    //     commit: commit
+    //   }, 
+    //   {
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       'Access-Control-Allow-Origin': '*',
+    //     },
+    //   });
+
+    //   console.log('newCommit handleAddCommit', newCommit);
+     
+    // } catch (err) {
+    //   console.log('Internal server error addCommit', err);
+    // }
+
+    const dataUpdateModelAndCommit = {
+      "timestamp": new Date().toISOString(),
+      "author": "Author of the commit",
+      "comment": "Comment for the commit",
+      "bimModelUpdate": bimModelUpdate
+    }
+
+    console.log('dataUpdateModelAndCommit to add', dataUpdateModelAndCommit);
     try {
-      const newCommit = await axios.post(`${REACT_APP_THIRD_PARTY_API}/history/addCommit`,
+      const updateModelAndCommit = await axios.post(`${REACT_APP_THIRD_PARTY_API}/history/updateModelAndCommit`,
       {
         projectId: project,
         branchName: branche?.name,
-        commit: commit
+        data: dataUpdateModelAndCommit
       }, 
       {
         headers: {
@@ -432,10 +472,10 @@ const PropertyList = ({
         },
       });
 
-      console.log('newCommit handleAddCommit', newCommit);
+      console.log('updateModelAndCommit handleAddCommit', updateModelAndCommit);
      
     } catch (err) {
-      console.log('Internal server error', err);
+      console.log('Internal server error updateModelAndCommit', err);
     }
   };
 

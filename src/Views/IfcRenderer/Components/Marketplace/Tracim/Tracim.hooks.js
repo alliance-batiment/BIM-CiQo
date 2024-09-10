@@ -49,6 +49,10 @@ function UseTracim({
       const space_id = query.get('space_id');
       const user_id = query.get('user_id');
 
+      sessionStorage.setItem("content_id", content_id);
+      sessionStorage.setItem("space_id", space_id);
+      sessionStorage.setItem("user_id", user_id);
+
       console.log('handleUpdateProject Content ID:', content_id);
       console.log('handleUpdateProject Space ID:', space_id);
       console.log('handleUpdateProject User ID:', user_id);

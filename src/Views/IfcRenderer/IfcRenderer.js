@@ -564,6 +564,10 @@ const IfcRenderer = () => {
     const space_id = query.get('space_id');
     const user_id = query.get('user_id');
 
+    sessionStorage.setItem("content_id", content_id);
+    sessionStorage.setItem("space_id", space_id);
+    sessionStorage.setItem("user_id", user_id);
+
     console.log('handleInitTracim Content ID:', content_id);
     console.log('handleInitTracim Space ID:', space_id);
     console.log('handleInitTracim User ID:', user_id);

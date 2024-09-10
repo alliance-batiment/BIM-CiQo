@@ -450,7 +450,7 @@ function UseIfcRenderer({
       count++;
       // console.log('relPsetID', relPsetID)
       const relPset = database[parseInt(relPsetID)];
-      console.log('relPset', relPset)
+      // console.log('relPset', relPset)
       // const relPset = await manager.getItemProperties(0, relPsetID);
       const relPsetRelatingPropertyDefinition = relPset?.RelatingPropertyDefinition;
 
