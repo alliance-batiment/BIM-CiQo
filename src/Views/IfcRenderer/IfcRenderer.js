@@ -563,16 +563,19 @@ const IfcRenderer = () => {
     const content_id = query.get('content_id');
     const space_id = query.get('space_id');
     const user_id = query.get('user_id');
+    const source = query.get('source');
 
     sessionStorage.setItem("content_id", content_id);
     sessionStorage.setItem("space_id", space_id);
     sessionStorage.setItem("user_id", user_id);
+    sessionStorage.setItem("source", source);
 
     console.log('handleInitTracim Content ID:', content_id);
     console.log('handleInitTracim Space ID:', space_id);
     console.log('handleInitTracim User ID:', user_id);
+    console.log('handleInitTracim source:', source);
 
-    if (content_id && space_id && user_id) {
+    if (content_id && space_id && user_id && source) {
       setState({
         state,
         loading: true,
@@ -591,7 +594,8 @@ const IfcRenderer = () => {
           data: {
             space_id,
             content_id,
-            user_id
+            user_id,
+            source
           }
         })
 

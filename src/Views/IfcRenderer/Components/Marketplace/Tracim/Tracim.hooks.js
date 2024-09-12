@@ -48,21 +48,25 @@ function UseTracim({
       const content_id = query.get('content_id');
       const space_id = query.get('space_id');
       const user_id = query.get('user_id');
+      const source = query.get('source');
 
       sessionStorage.setItem("content_id", content_id);
       sessionStorage.setItem("space_id", space_id);
       sessionStorage.setItem("user_id", user_id);
+      sessionStorage.setItem("source", source);
 
       console.log('handleUpdateProject Content ID:', content_id);
       console.log('handleUpdateProject Space ID:', space_id);
       console.log('handleUpdateProject User ID:', user_id);
       console.log('handleUpdateProject REACT_APP_THIRD_PARTY_API:', REACT_APP_THIRD_PARTY_API);
+      console.log('handleInitTracim source:', source);
 
       const formData = new FormData();
       formData.append('content_id', content_id);
       formData.append('space_id', space_id);
       formData.append('user_id', user_id);
       formData.append('file', ifcFile);
+      formData.append('source', source);
       const res = await axios.put(`${REACT_APP_THIRD_PARTY_API}/tracim/updateModel`, formData);
 
       console.log('res', res);
