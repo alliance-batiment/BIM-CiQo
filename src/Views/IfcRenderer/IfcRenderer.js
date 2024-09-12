@@ -575,7 +575,7 @@ const IfcRenderer = () => {
     console.log('handleInitTracim User ID:', user_id);
     console.log('handleInitTracim source:', source);
 
-    if (content_id && space_id && user_id && source) {
+    if (content_id && space_id && user_id) {
       setState({
         state,
         loading: true,
