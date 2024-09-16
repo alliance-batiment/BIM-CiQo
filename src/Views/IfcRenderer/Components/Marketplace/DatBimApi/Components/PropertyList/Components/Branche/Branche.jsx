@@ -76,26 +76,40 @@ const Branche = ({
           console.log('ifcProjectProperties=>', ifcProjectProperties);
 
           // Fetch the list of projects from the API
-          const { data: projects } = await axios({
-            method: "get",
-            url: `${process.env.REACT_APP_API_DATBIM_HISTORY}/projects/`,
-            headers: {
-              "content-type": "application/json",
-              //"X-Auth-Token": sessionStorage.getItem("token"),
-            },
-          });
+          // const { data: projects } = await axios({
+          //   method: "get",
+          //   url: `${process.env.REACT_APP_API_DATBIM_HISTORY}/projects/`,
+          //   headers: {
+          //     "content-type": "application/json",
+          //     //"X-Auth-Token": sessionStorage.getItem("token"),
+          //   },
+          // });
+          const allProjectsRes = await axios.get(`${process.env.REACT_APP_API_GATEWAY_URL}/history/projects`);
+          const projects = allProjectsRes?.data;
 
           // Find if the project ID exists in the list of projects
           const projectExists = projects.find(p => p === ifcGuid);
           if (projectExists) {
             // Fetch the branches for the project
-            const { data: branches } = await axios({
-              method: "get",
-              url: `${process.env.REACT_APP_API_DATBIM_HISTORY}/projects/${projectExists}/branches`,
-              headers: {
-                "content-type": "application/json",
-              },
-            });
+            // const { data: branches } = await axios({
+            //   method: "get",
+            //   url: `${process.env.REACT_APP_API_DATBIM_HISTORY}/projects/${projectExists}/branches`,
+            //   headers: {
+            //     "content-type": "application/json",
+            //   },
+            // });
+            const { data: branches } = await axios.post(`${process.env.REACT_APP_API_GATEWAY_URL}/history/branches`,
+              {
+                projectId: projectExists,
+              }, 
+              {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Access-Control-Allow-Origin': '*',
+                },
+              }
+            );
+
             setBranches(branches);
             setProject(ifcGuid);
           }
