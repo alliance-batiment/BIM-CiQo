@@ -45,15 +45,20 @@ function UseTracim({
       // Accès à Tracim
       const query = new URLSearchParams(window.location.search);
 
-      const content_id = query.get('content_id');
-      const space_id = query.get('space_id');
-      const user_id = query.get('user_id');
-      const source = query.get('source');
+      // const content_id = query.get('content_id');
+      // const space_id = query.get('space_id');
+      // const user_id = query.get('user_id');
+      // const source = query.get('source');
 
-      sessionStorage.setItem("content_id", content_id);
-      sessionStorage.setItem("space_id", space_id);
-      sessionStorage.setItem("user_id", user_id);
-      sessionStorage.setItem("source", source);
+      // sessionStorage.setItem("content_id", content_id);
+      // sessionStorage.setItem("space_id", space_id);
+      // sessionStorage.setItem("user_id", user_id);
+      // sessionStorage.setItem("source", source);
+
+      const space_id = query.get('space_id') || sessionStorage.getItem("space_id");
+      const content_id = query.get('content_id') || sessionStorage.getItem("content_id");
+      const user_id = query.get('user_id') || sessionStorage.getItem("user_id");
+      const source = query.get('source') || sessionStorage.getItem("source");
 
       console.log('handleUpdateProject Content ID:', content_id);
       console.log('handleUpdateProject Space ID:', space_id);
