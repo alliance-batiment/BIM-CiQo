@@ -452,7 +452,7 @@ const PropertyList = ({
 
     const dataUpdateModelAndCommit = {
       "timestamp": new Date().toISOString(),
-      "author": "Author of the commit",
+      "author": localStorage.getItem("email") || "user",
       "comment": "Comment for the commit",
       "bimModelUpdate": bimModelUpdate
     }
