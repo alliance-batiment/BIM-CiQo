@@ -98,19 +98,57 @@ const Branche = ({
             //     "content-type": "application/json",
             //   },
             // });
-            const { data: branches } = await axios.post(`${process.env.REACT_APP_API_GATEWAY_URL}/history/branches`,
-              {
-                projectId: projectExists,
-              }, 
+
+            const userInformation = await axios.get(
+              `${process.env.REACT_APP_API_DATBIM}/user/information`,
               {
                 headers: {
-                  'Content-Type': 'application/json',
-                  'Access-Control-Allow-Origin': '*',
+                  "X-Auth-Token": sessionStorage.getItem("token"),
                 },
               }
             );
+            const userRole = userInformation?.data?.roles?.[0]?.role_description;
 
-            setBranches(branches);
+            if(userRole === "Administrateur de tous les portails" || 
+              userRole === "Administrateur de portail" || 
+              userRole === "Gestionnaire"
+            ){
+              const { data: branches } = await axios.post(`${process.env.REACT_APP_API_GATEWAY_URL}/history/branches`,
+                {
+                  projectId: projectExists,
+                }, 
+                {
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                  },
+                }
+              );
+  
+              setBranches(branches);
+            }
+            else {
+              // "Utilisateur simple" n'a accès qu'à sa branche
+              const { data } = await axios.post(`${process.env.REACT_APP_API_GATEWAY_URL}/history/userDefaultBranch`,
+                {
+                  projectId: projectExists,
+                  userId: sessionStorage.getItem('userId'),
+                }, 
+                {
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                  },
+                }
+              );
+    
+              console.log('userDefaultBranch', data)
+    
+    
+              setBranches([data])
+            }
+
+            
             setProject(ifcGuid);
           }
         } catch (err) {
