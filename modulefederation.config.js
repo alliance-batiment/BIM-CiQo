@@ -11,8 +11,8 @@ module.exports = {
   remotes: {
     "ID5899e0aca600741755433911": 'ID5899e0aca600741755433911@https://ids-editor.netlify.app/remoteEntry.js',
     // "connecteurOpenDthx": 'connecteurOpenDthx@http://localhost:3004/remoteEntry.js',
-    "ID5899e0aca600741755433912": 'ID5899e0aca600741755433912@http://localhost:3001/remoteEntry.js'
-    // "ID5899e0aca600741755433912": 'ID5899e0aca600741755433912@https://history.tridyme.com/remoteEntry.js'
+    // "ID5899e0aca600741755433912": 'ID5899e0aca600741755433912@http://localhost:3001/remoteEntry.js'
+    "ID5899e0aca600741755433912": 'ID5899e0aca600741755433912@https://history.tridyme.com/remoteEntry.js'
   },
   shared: {
     ...dependencies,
