@@ -101,6 +101,8 @@ const PropertyList = ({
   const [loading, setLoading] = useState(false);
   const [project, setProject] = useState({});
   const [branche, setBranche] = useState({});
+  const [integrityObjectSignature, setIntegrityObjectSignature] = useState('');
+
 
   function searchProperty(input) {
     const filtered = propertyListDefault.filter((property) => {
@@ -110,54 +112,82 @@ const PropertyList = ({
     setProperties(filtered);
   }
 
+  // Définir les paramètres
+  let order = 'asc';
+  let limit = 1000;
+  let offset = 1;
+  let params = '';
 
+  if (integrityObjectSignature !== undefined && integrityObjectSignature !== '' && integrityObjectSignature !== null) {
+    params = `?order=${order}&limit=${limit}&offset=${offset}&IntegrityObjectSignature=${integrityObjectSignature}`;
+  }
+
+  useEffect(() => {
+    const getIntegrity = async () => {
+      const integrityProperty = await handleSendIntegrity();
+      setIntegrityObjectSignature(integrityProperty);
+    }
+
+    getIntegrity();
+  }, [selectedObject]);
+
+
+  const handleSendIntegrity = async () => {
+    let integrityProperty;
+    if (typeof window.CefSharp !== "undefined") {
+      await window.CefSharp.BindObjectAsync("connector");
+      integrityProperty = await window.connector.sendObjectIntegrity();
+    }
+    return integrityProperty;
+  }
+  
   useEffect(() => {
     const getPropertiesValues = async () => {
       try {
         setLoading(true);
         
-        if(!contextKey && modelID > -1){
-          const ifcSiUnits = await viewer.getAllItemsOfType(modelID, IFCSIUNIT, true, true);
-          console.log('ifcSiUnits', ifcSiUnits);
-          if(ifcSiUnits){
-            const contextPropertyType = {};
-            ifcSiUnits?.forEach(ifcSiUnit => {
-              if (ifcSiUnit?.UnitType?.value && ifcSiUnit?.Name?.value) {
-                const ifcPropertyType = mapIfcPropertyType(ifcSiUnit?.UnitType?.value);
-                const unitSymbol = mapUnitSymbol(ifcSiUnit?.Prefix?.value ? ifcSiUnit?.Prefix?.value : ifcSiUnit?.Name?.value);
-                contextPropertyType[ifcPropertyType] = unitSymbol;
-              }
-            });
+        // if(!contextKey && modelID > -1){
+        //   const ifcSiUnits = await viewer.getAllItemsOfType(modelID, IFCSIUNIT, true, true);
+        //   console.log('ifcSiUnits', ifcSiUnits);
+        //   if(ifcSiUnits){
+        //     const contextPropertyType = {};
+        //     ifcSiUnits?.forEach(ifcSiUnit => {
+        //       if (ifcSiUnit?.UnitType?.value && ifcSiUnit?.Name?.value) {
+        //         const ifcPropertyType = mapIfcPropertyType(ifcSiUnit?.UnitType?.value);
+        //         const unitSymbol = mapUnitSymbol(ifcSiUnit?.Prefix?.value ? ifcSiUnit?.Prefix?.value : ifcSiUnit?.Name?.value);
+        //         contextPropertyType[ifcPropertyType] = unitSymbol;
+        //       }
+        //     });
   
-            console.log("context==>", contextPropertyType);
-            const context = {
-              "propertyContext": {
-                "mappings": {
-                  "propertyType": "ifcPropertyType"
-                },
-                "units": {
-                  "propertyType": contextPropertyType,
-                  "propertyName": {}
-                }
-              }
-            }
+        //     console.log("context==>", contextPropertyType);
+        //     const context = {
+        //       "propertyContext": {
+        //         "mappings": {
+        //           "propertyType": "ifcPropertyType"
+        //         },
+        //         "units": {
+        //           "propertyType": contextPropertyType,
+        //           "propertyName": {}
+        //         }
+        //       }
+        //     }
     
-            const creatContext = await axios({
-              method: "post",
-              url: `${process.env.REACT_APP_API_DATBIM}/contexts`,
-              headers: {
-                "content-type": "application/json",
-                "X-Auth-Token": sessionStorage.getItem("token"),
-              },
-              data: context
-            });
-            console.log('contextKey created', creatContext.data);
-            setContextKey(creatContext.data.contextKey);
-          }
-        }
+        //     const creatContext = await axios({
+        //       method: "post",
+        //       url: `${process.env.REACT_APP_API_DATBIM}/contexts`,
+        //       headers: {
+        //         "content-type": "application/json",
+        //         "X-Auth-Token": sessionStorage.getItem("token"),
+        //       },
+        //       data: context
+        //     });
+        //     console.log('contextKey created', creatContext.data);
+        //     setContextKey(creatContext.data.contextKey);
+        //   }
+        // }
                 
         const { data: dataProp } = await axios.get(
-          `${process.env.REACT_APP_API_DATBIM}/objects/${selectedObject}/properties-values?contextKey=${contextKey}`,
+          `${process.env.REACT_APP_API_DATBIM}/objects/${selectedObject}/properties-values${params}`,
           {
             headers: {
               "X-Auth-Token": sessionStorage.getItem("token"),
@@ -211,42 +241,42 @@ const PropertyList = ({
     getPropertiesValues();
   }, [selectedObject, contextKey]);
 
-  const mapIfcPropertyType = (unitType) => {
-    switch (unitType) {
-      case "LENGTHUNIT":
-        return "IfcLengthMeasure"
-      case "AREAUNIT":
-        return "IfcAreaMeasure"
-      case "VOLUMEUNIT":
-        return "IfcVolumeMeasure"
-      case "TIMEUNIT":
-        return "IfcTimeMeasure"
-      case "PLANEANGLEUNIT":
-        return "IfcPlaneAngleMeasure"
-      default:
-        return unitType
-    }
-  }
+  // const mapIfcPropertyType = (unitType) => {
+  //   switch (unitType) {
+  //     case "LENGTHUNIT":
+  //       return "IfcLengthMeasure"
+  //     case "AREAUNIT":
+  //       return "IfcAreaMeasure"
+  //     case "VOLUMEUNIT":
+  //       return "IfcVolumeMeasure"
+  //     case "TIMEUNIT":
+  //       return "IfcTimeMeasure"
+  //     case "PLANEANGLEUNIT":
+  //       return "IfcPlaneAngleMeasure"
+  //     default:
+  //       return unitType
+  //   }
+  // }
 
-  const mapUnitSymbol = (unitName) => {
-    switch (unitName) {
-      case "METRE":
-        return "m"
-      case "MILLI":
-        return "mm"
+  // const mapUnitSymbol = (unitName) => {
+  //   switch (unitName) {
+  //     case "METRE":
+  //       return "m"
+  //     case "MILLI":
+  //       return "mm"
       
-      case "SQUARE_METRE":
-        return "m²"
-      case "CUBIC_METRE":
-        return "m3"
-      case "SECOND":
-        return "s"
-      case "RADIAN":
-        return "rad"
-      default:
-        return unitType
-    }
-  }
+  //     case "SQUARE_METRE":
+  //       return "m²"
+  //     case "CUBIC_METRE":
+  //       return "m3"
+  //     case "SECOND":
+  //       return "s"
+  //     case "RADIAN":
+  //       return "rad"
+  //     default:
+  //       return unitType
+  //   }
+  // }
 
   const handleCheckedProperties = (e) => {
     // console.log(`Checkbox id:`, e.target.id);
