@@ -34,8 +34,10 @@ import VisibilityIcon from "@material-ui/icons/Visibility";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import DatBimApi from "./DatBimApi/DatBimApi";
+import AxeoBim from "./AxeoBim";
 import DropBox from "./DropBox/DropBox";
 import DropboxChooser from "react-dropbox-chooser";
+import AxeoBimLogo from "./img/AxeoBimLogo.jpeg";
 import OpenDthxLogo from "./img/OpenDthxLogo.png";
 import SearchBar from "../../../../Components/SearchBar";
 import Tracim from "./Tracim/Tracim";
@@ -152,6 +154,13 @@ const applications = [
     name: "Tracim",
     img: TracimLogo,
     type: "storage",
+    description: "Espace permettant le partage et le stockage de fichier",
+  },
+  {
+    name: "AxeoBIM",
+    img: AxeoBimLogo,
+    type: "storage",
+    tags: ["Coming Soon"],
     description: "Espace permettant le partage et le stockage de fichier",
   },
   {
@@ -433,6 +442,19 @@ const Marketplace = ({
         )}
         {selectedApp === "Tracim" && (
           <Tracim viewer={viewer} onDrop={onDrop} />
+        )}
+        {selectedApp === "AxeoBIM" && (
+          <>
+            <AxeoBim
+              viewer={viewer}
+              modelID={modelID}
+              eids={eids}
+              setEids={setEids}
+              addElementsNewProperties={addElementsNewProperties}
+              handleShowMarketplace={handleShowMarketplace}
+              setSelectedApp={setSelectedApp}
+            />
+          </>
         )}
         {selectedApp === "IDS" && (
           <React.Suspense fallback={<>{`chargement...`}</>}>
