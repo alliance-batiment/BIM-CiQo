@@ -326,10 +326,19 @@ const ObjectsSetsList = ({
     }
   };
 
+  const removeDuplicates = (list) => {
+    const seen = new Set();
+    return list?.filter((item) => {
+      const duplicate = seen.has(item?.object_id);
+      seen.add(item?.object_id);
+      return !duplicate;
+    });
+  };
+
   let usedList =
     (eids.length > 0) & (searchInput.length === 0)
-      ? objectsSetsListWithEIDS
-      : objectsSetsList;
+      ? removeDuplicates(objectsSetsListWithEIDS)
+      : removeDuplicates(objectsSetsList);
 
   return (
     <Grid container spacing={3}>
@@ -387,6 +396,9 @@ const ObjectsSetsList = ({
               </Grid>
             ) : (
               <Grid container spacing={1}>
+                {console.log('eids', eids)}
+                {console.log('usedList', usedList)}
+
                 {usedList.length === 0 ? (
                   <Grid item sm={12} className={classes.noObjectSetsMessage}>
                     Aucune collection trouvée. Veuillez faire une recherche par
