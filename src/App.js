@@ -49,7 +49,7 @@ const App = () => {
           type: prefersDarkMode ? 'dark' : 'light',
           primary: {
             // light: will be calculated from palette.primary.main,
-            main: '#ffffff',
+            main: REACT_APP_COMPANY === "VBMC" ? '#000000' : '#ffffff',
             // dark: will be calculated from palette.primary.main,
             // contrastText: will be calculated to contrast with palette.primary.main
           },
