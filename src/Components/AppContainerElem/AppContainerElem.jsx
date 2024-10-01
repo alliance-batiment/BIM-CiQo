@@ -18,6 +18,13 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import NavBarElem from '../NavBarElem';
 
+const {
+  REACT_APP_FAVICON,
+  REACT_APP_LOGO,
+  REACT_APP_COMPANY
+} = process.env;
+
+
 const drawerWidth = 240;
 
 const useStyles = makeStyles(theme => ({
@@ -25,6 +32,7 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
   },
   appBar: {
+    backgroundColor: "black",
     transition: theme.transitions.create(['margin', 'width'], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
@@ -37,6 +45,10 @@ const useStyles = makeStyles(theme => ({
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
+  },
+  toolbar: {
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText
   },
   menuButton: {
     marginRight: theme.spacing(2),
