@@ -387,41 +387,46 @@ const PropertyList = ({
 
 
   const addElementsDatBimProperties = async (properties, objSelected) => {
-    const filteredProperties = properties.filter(
-      (property) => property.checked
-    );
-
-    const updateProperties = [];
-    for (let property of filteredProperties) {
-      updateProperties.push(updatePorperty(property));
+    try {
+      const filteredProperties = properties.filter(
+        (property) => property.checked
+      );
+  
+      const updateProperties = [];
+      for (let property of filteredProperties) {
+        updateProperties.push(updatePorperty(property));
+      }
+  
+      console.log('updateProperties', updateProperties)
+      console.log('objSelected', objSelected)
+      const response = await axios({
+        method: "post",
+        url: `${process.env.REACT_APP_API_DATBIM}/objects/${objSelected}/signing`,
+        headers: {
+          "content-type": "application/json",
+          "X-Auth-Token": sessionStorage.getItem("token"),
+        },
+        data: updateProperties
+      });
+  
+      console.log('data', response.data)    
+      await addElementsNewProperties({
+        bimData,
+        setBimData,
+        viewer,
+        modelID,
+        expressIDs: eids,
+        properties: response?.data?.property ? response?.data?.property : updateProperties,
+      });
+  
+      // Creat commit
+      await handleAddCommit(response?.data?.property, viewer, modelID, eids);
+  
+      handleShowMarketplace("home");
+    } catch (error) {
+      console.error("Erreur lors de l'ajout des propriétés :", error);
     }
-
-    console.log('updateProperties', updateProperties)
-    console.log('objSelected', objSelected)
-    const response = await axios({
-      method: "post",
-      url: `${process.env.REACT_APP_API_DATBIM}/objects/${objSelected}/signing`,
-      headers: {
-        "content-type": "application/json",
-        "X-Auth-Token": sessionStorage.getItem("token"),
-      },
-      data: updateProperties
-    });
-
-    console.log('data', response.data)    
-    await addElementsNewProperties({
-      bimData,
-      setBimData,
-      viewer,
-      modelID,
-      expressIDs: eids,
-      properties: response?.data?.property ? response?.data?.property : updateProperties,
-    });
-
-    // Creat commit
-    await handleAddCommit(response?.data?.property, viewer, modelID, eids);
-
-    handleShowMarketplace("home");
+    
   };
 
   const handleAddCommit = async (properties, viewer, modelID, eids) => {
