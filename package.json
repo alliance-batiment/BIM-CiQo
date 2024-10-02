@@ -107,7 +107,7 @@
     "start-win-federation": "set PORT=3002 && env-cmd ./.env.development node ./module-federation/scripts/start.js",
     "build": "CI=false && react-scripts build",
     "build-federation": "env-cmd ./.env.production node ./module-federation/scripts/build.js",
-    "build-federation:vbmc": "CI=false && env-cmd ./.env.production.vbmc ./module-federation/scripts/build.js",
+    "build-federation:vbmc": "env-cmd ./.env.production.vbmc node ./module-federation/scripts/build.js",
     "test": "react-scripts test",
     "coverage": "npm test -- --coverage",
     "eject": "react-scripts eject"
