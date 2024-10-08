@@ -396,7 +396,7 @@ function UseIfcRenderer({
     bimData,
     setBimData,
     viewer,
-    modelId,
+    // modelId,
     expressIDs,
     properties
   }) => {
@@ -407,8 +407,8 @@ function UseIfcRenderer({
       alertStatus: true,
       alertMessage: "Connecté"
     });
-    console.log('bimBata', bimData.models)
-
+    console.log('bimBata', bimData)
+    const modelId = 0;
     const model = bimData.models.list[modelId];
     const database = bimData.models.data[modelId];
     console.log('database CiQo==>', database)
