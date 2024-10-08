@@ -441,7 +441,10 @@ const Marketplace = ({
         )}
         {selectedApp === "History" && (
           <React.Suspense fallback={<>{`chargement...`}</>}>
-            <ID5899e0aca600741755433912 viewer={viewer} />
+            <ID5899e0aca600741755433912 viewer={viewer} onDrop={onDrop} 
+              bimData={bimData}
+              setBimData={setBimData}
+            />
           </React.Suspense>
         )}
         {/* {selectedApp === "Connecteur opendthX" && (

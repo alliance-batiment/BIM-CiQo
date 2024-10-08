@@ -411,6 +411,7 @@ function UseIfcRenderer({
 
     const model = bimData.models.list[modelId];
     const database = bimData.models.data[modelId];
+    console.log('database CiQo==>', database)
     const manager = await viewer.IFC.loader.ifcManager;
     const allLines = await manager.ifcAPI.GetAllLines(modelId);
     let maxExpressId = 0;
