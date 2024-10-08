@@ -1,0 +1,72 @@
+# APPLICATION FRONT DE PRODUCTION
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vbmc-ciqo
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: vbmc-ciqo
+  template:
+    metadata:
+      labels:
+        app: vbmc-ciqo
+    spec:
+      containers:
+        - name: vbmc-ciqo
+          image: "gcr.io/ciqo-343813/vbmc-ciqo:v0.0.1"
+          ports:
+            - name: port-front
+              containerPort: 80
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vbmc-ciqo
+spec:
+  selector:
+    app: vbmc-ciqo
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: port-front
+  type: NodePort
+---
+# DEPLOIEMENT
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vbmc-ciqo
+  annotations:
+    networking.gke.io/managed-certificates: vbmc-ciqo
+    kubernetes.io/ingressClassName: gce
+    kubernetes.io/ingress.global-static-ip-name: vbmc-ciqo-ip-https
+    kubernetes.io/ingress.allow-http: "true"
+spec:
+  rules:
+    - host: vbmc-ciqo.tridyme.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: vbmc-ciqo
+                port:
+                  number: 80
+---
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: vbmc-ciqo
+spec:
+  domains:
+    - vbmc-ciqo.tridyme.com

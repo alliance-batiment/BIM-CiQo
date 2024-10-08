@@ -103,9 +103,11 @@
   "scripts": {
     "start": "react-scripts start",
     "start-federation": "PORT=3002 env-cmd ./.env.development node ./module-federation/scripts/start.js",
+    "start-federation:vbmc": "PORT=3002 env-cmd ./.env.development.vbmc node ./module-federation/scripts/start.js",
     "start-win-federation": "set PORT=3002 && env-cmd ./.env.development node ./module-federation/scripts/start.js",
     "build": "CI=false && react-scripts build",
     "build-federation": "env-cmd ./.env.production node ./module-federation/scripts/build.js",
+    "build-federation:vbmc": "env-cmd ./.env.production.vbmc node ./module-federation/scripts/build.js",
     "test": "react-scripts test",
     "coverage": "npm test -- --coverage",
     "eject": "react-scripts eject"

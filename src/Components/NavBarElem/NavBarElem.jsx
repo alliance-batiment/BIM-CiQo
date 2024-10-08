@@ -24,7 +24,7 @@ const NavBarElem = ({ title, classes, handleDrawerOpen, open }) => {
       })}
     >
       <Toolbar
-        style={{ backgroundColor: 'white', color: 'black' }}
+        className={classes.toolbar}
       >
         <IconButton
           color="inherit"
@@ -50,21 +50,21 @@ const NavBarElem = ({ title, classes, handleDrawerOpen, open }) => {
             target="_blank"
           >
             Documentation
-            </a>
+          </a>
           <a
             href="https://alliance-batiment.mydatbim.com/mydatbimCom/mentions-legales"
             style={{ color: "inherit", margin: "0 20px" }}
             target="_blank"
           >
             Mentions légales
-            </a>
+          </a>
           <a
             href="https://alliance-batiment.mydatbim.com/template/contact/387982"
             style={{ color: "inherit", margin: "0 20px" }}
             target="_blank"
           >
             Contact
-            </a>
+          </a>
         </div>
       </Toolbar>
     </AppBar>
