@@ -444,8 +444,7 @@ const IfcRenderer = () => {
 
       // const data = await handleGetJsonData(viewer, flatten(updateSpatialStructures[0], 'children'));
       const tribim = new TriBim();
-
-      setState({
+      const newBimData = {
         ...state,
         loading: false,
         api: tribim,
@@ -459,7 +458,12 @@ const IfcRenderer = () => {
           value: { ...newSpatialStructure },
           list: [...updateSpatialStructures]
         }
-      });
+      }
+      setState(newBimData);
+      return {
+        viewer,
+        bimData: newBimData
+      }
     }
   };
 
