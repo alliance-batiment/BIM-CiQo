@@ -94,6 +94,7 @@ const Branche = ({
             console.log('userInformation=>', userInformation);
             const firstUserRole = userInformation?.data?.roles?.[0]?.role_description;
 
+            console.log('firstUserRole=>', firstUserRole);
 
             const { data } = await axios.post(`${process.env.REACT_APP_API_GATEWAY_URL}/history/project`,
               {
@@ -109,6 +110,7 @@ const Branche = ({
             const projectPortalId = data?.metadata?.portailId;
             const portalUserRole = userInformation?.data?.roles?.find(role => role?.portal_id == projectPortalId)?.role_description;
 
+            console.log('portalUserRole=>', portalUserRole);
             const userRole = portalUserRole ? portalUserRole : firstUserRole;
 
             if(userRole === "Administrateur de tous les portails" || 
@@ -146,8 +148,9 @@ const Branche = ({
     
               console.log('userDefaultBranch', data)
     
-    
+              setBranche(data);  // Sélectionner automatiquement la branche par défaut
               setBranches([data])
+
             }
 
             

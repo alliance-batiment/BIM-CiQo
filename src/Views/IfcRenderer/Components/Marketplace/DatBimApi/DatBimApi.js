@@ -237,6 +237,7 @@ const DatBimApi = ({
       .then((r) => {
         console.log("TOKEN", r.data);
         sessionStorage.setItem("token", r.data.token);
+        sessionStorage.setItem("userId", r.data.id);
         setValidation({
           status: true,
           message: 'Connecté'
