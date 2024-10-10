@@ -61,8 +61,6 @@ const ContextMenu = ({
     if (eids.length > 0) {
       setShowProperties(true);
       setShowContextMenu(false);
-
-      handleShowMarketplace(''); // Fermer Marketplace 
     }
   }
 
