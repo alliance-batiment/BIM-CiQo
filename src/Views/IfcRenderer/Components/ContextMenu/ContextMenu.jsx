@@ -61,6 +61,8 @@ const ContextMenu = ({
     if (eids.length > 0) {
       setShowProperties(true);
       setShowContextMenu(false);
+
+      handleShowMarketplace(''); // Fermer Marketplace 
     }
   }
 
@@ -80,34 +82,54 @@ const ContextMenu = ({
     setShowContextMenu(false);
   }
 
+  // const handleHideElement = async () => {
+  //   viewer.IFC.loader.ifcManager.removeFromSubset(
+  //     0,
+  //     eids,
+  //     'full-model-subset',
+  //   );
+  // }
   const handleHideElement = async () => {
-    viewer.IFC.loader.ifcManager.removeFromSubset(
-      0,
-      eids,
-      'full-model-subset',
-    );
-  }
+    const models = viewer.context.items.ifcModels;
+    console.log('Tous les modèles chargés:', models);
+    console.log('Elements à cacher (eids):', eids);
+  
+    // Parcourir chaque modèle chargé
+    models.forEach((ifcModel) => {
+      console.log('Traitement du modèle ID:', ifcModel.modelID);
+  
+      // Cacher les éléments `eids` dans ce modèle
+      viewer.IFC.loader.ifcManager.removeFromSubset(
+        ifcModel.modelID,
+        eids,             
+        'full-model-subset'
+      );
+    });
+  };
+  
 
 
   const handleIsolateElement = async () => {
     const models = viewer.context.items.ifcModels;
-    const ifcModel = models[0];
-    const allIDs = Array.from(
-      new Set(ifcModel.geometry.attributes.expressID.array)
-    )
-
-    const idsHidden = allIDs.reduce(function (acc, id) {
-      if (eids.indexOf(id) === -1) {
-        acc.push(id);
-      }
-      return acc;
-    }, []);
-
-    viewer.IFC.loader.ifcManager.removeFromSubset(
-      0,
-      idsHidden,
-      'full-model-subset',
-    );
+    models.forEach((ifcModel, modelIndex) => {
+      // const ifcModel = models[0];
+      const allIDs = Array.from(
+        new Set(ifcModel.geometry.attributes.expressID.array)
+      )
+  
+      const idsHidden = allIDs.reduce(function (acc, id) {
+        if (eids.indexOf(id) === -1) {
+          acc.push(id);
+        }
+        return acc;
+      }, []);
+  
+      viewer.IFC.loader.ifcManager.removeFromSubset(
+        ifcModel.modelID,
+        idsHidden,
+        'full-model-subset',
+      );
+    })
 
   }
 
