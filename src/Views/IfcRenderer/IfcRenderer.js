@@ -345,6 +345,9 @@ const IfcRenderer = () => {
 
   const onDrop = async ({ files, viewer }) => {
     if (files && viewer) {
+      // Supprimer les anciens modèles avant de charger un nouveau
+      removePreviousModels(viewer);
+
       setState({
         ...state,
         loading: true
@@ -451,12 +454,15 @@ const IfcRenderer = () => {
         viewer: viewer,
         models: {
           ...state.models,
-          list: [...state.models.list, model],
-          data: [...state.models.data, data]
+          // list: [...state.models.list, model],
+          // data: [...state.models.data, data]
+          list: [model],
+          data: [data]
         },
         spatialStructures: {
           value: { ...newSpatialStructure },
-          list: [...updateSpatialStructures]
+          // list: [...updateSpatialStructures]
+          list: [newSpatialStructure]
         }
       }
       setState(newBimData);
@@ -464,6 +470,21 @@ const IfcRenderer = () => {
         viewer,
         bimData: newBimData
       }
+    }
+  };
+
+  // Fonction pour supprimer tous les modèles précédents
+  const removePreviousModels = (viewer) => {
+    const ifcModels = viewer.context.items.ifcModels;
+
+    if (ifcModels.length > 0) {
+      ifcModels.forEach((model) => {
+        // Supprimer chaque modèle de la scène
+        viewer.context.scene.remove(model);
+      });
+      // Vider la liste des modèles
+      viewer.context.items.ifcModels = [];
+      console.log('Tous les modèles précédents ont été supprimés.');
     }
   };
 
