@@ -335,7 +335,13 @@ const SearchData = ({
       setEids(filteredEids);
       console.log('newFilteredData', newFilteredData)
       setSelectedElements(newFilteredData);
-      await viewer.IFC.pickIfcItemsByID(0, filteredEids);
+
+      const models = viewer?.context?.items?.ifcModels;
+      // Appliquer la sélection pour chaque modèle
+      for (const model of models) {
+        await viewer.IFC.pickIfcItemsByID(model?.modelID, filteredEids);
+      }
+      // await viewer.IFC.pickIfcItemsByID(0, filteredEids);
     }
     setValidation({
       loading: false,
