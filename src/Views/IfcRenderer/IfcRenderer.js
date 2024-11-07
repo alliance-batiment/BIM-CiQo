@@ -771,7 +771,12 @@ const IfcRenderer = () => {
       const newEids = [...eids, found.id];
       setEids(newEids);
       select(viewer, setModelID, found.modelID, newEids, false);
-      await viewer.IFC.pickIfcItemsByID(0, newEids);
+
+      const models = viewer.context.items.ifcModels;
+      models?.forEach(async (ifcModel) => {
+        await viewer.IFC.pickIfcItemsByID(ifcModel.modelID, newEids);        
+      });
+      
     } else {
       setEids([found.id]);
       select(viewer, setModelID, found.modelID, [found.id], false);
