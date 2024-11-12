@@ -603,20 +603,20 @@ const Properties = ({
                         <TableBody>
                           <TableRow key={0}>
                             <TableCell>{`GlobalId`}</TableCell>
-                            <TableCell>{`${ifcElement.GlobalId.value}`}</TableCell>
+                            <TableCell>{`${ifcElement?.GlobalId?.value}`}</TableCell>
                           </TableRow>
                           <TableRow key={1}>
                             <TableCell>{`Name`}</TableCell>
-                            <TableCell>{`${ifcElement.name}`}</TableCell>
+                            <TableCell>{`${ifcElement?.name}`}</TableCell>
                           </TableRow>
                           <TableRow key={2}>
                             <TableCell>{`Type`}</TableCell>
-                            <TableCell>{`${ifcElement.type}`}</TableCell>
+                            <TableCell>{`${ifcElement?.type}`}</TableCell>
                           </TableRow>
-                          {ifcElement.PredefinedType &&
+                          {ifcElement?.PredefinedType &&
                             <TableRow key={2}>
                               <TableCell>{`Predifined Type`}</TableCell>
-                              <TableCell>{`${ifcElement.PredefinedType.value}`}</TableCell>
+                              <TableCell>{`${ifcElement?.PredefinedType?.value}`}</TableCell>
                             </TableRow>
                           }
                         </TableBody>
