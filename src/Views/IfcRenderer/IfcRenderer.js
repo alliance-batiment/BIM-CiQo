@@ -343,10 +343,16 @@ const IfcRenderer = () => {
     init();
   }, []);
 
-  const onDrop = async ({ files, viewer }) => {
+  const onDrop = async ({ files, viewer , fromHistory=false}) => {
+    const hasLoadedModel = viewer?.context?.items?.ifcModels?.length > 0;
+    console.log('hasLoadedModel', hasLoadedModel); 
+
     if (files && viewer) {
-      // Supprimer les anciens modèles avant de charger un nouveau
-      removePreviousModels(viewer);
+      console.log('viewer.scene.children',viewer); 
+      if (fromHistory || hasLoadedModel) {
+        // Supprimer les anciens modèles avant de charger un nouveau
+        viewer = await resetViewer();
+      }
 
       setState({
         ...state,
@@ -400,10 +406,13 @@ const IfcRenderer = () => {
 
       const newIfcModels = [...ifcModels, model];
       setIfcModels(newIfcModels);
+      setModelID(model.modelID);
 
       await handleInitSubset(viewer, 0);
       // const properties = await viewer.IFC.properties.serializeAllProperties(model);
       // console.log('properties', properties)
+
+      console.time("Chargement des données");
       const properties = await viewer.IFC.properties.serializeAllProperties(model, undefined, (current, total) => {
         const progress = current / total;
         const formatted = Math.trunc(progress * 100);
@@ -415,6 +424,8 @@ const IfcRenderer = () => {
           loadingMessage: `Chargement des données: ${formatted} %`
         });
       });
+      console.timeEnd("Chargement des données");
+
       const file = new File(properties, 'properties');
       const data = JSON.parse(await file.text());
       console.log('data', data);
@@ -449,7 +460,7 @@ const IfcRenderer = () => {
       const tribim = new TriBim();
       const newBimData = {
         ...state,
-        loading: false,
+        loading: fromHistory ? true : false,
         api: tribim,
         viewer: viewer,
         models: {
@@ -473,19 +484,32 @@ const IfcRenderer = () => {
     }
   };
 
-  // Fonction pour supprimer tous les modèles précédents
-  const removePreviousModels = (viewer) => {
-    const ifcModels = viewer.context.items.ifcModels;
-
-    if (ifcModels.length > 0) {
-      ifcModels.forEach((model) => {
-        // Supprimer chaque modèle de la scène
-        viewer.context.scene.remove(model);
-      });
-      // Vider la liste des modèles
-      viewer.context.items.ifcModels = [];
-      console.log('Tous les modèles précédents ont été supprimés.');
+  const resetViewer = async() => {
+    if (viewer) {
+      viewer.dispose();
     }
+  
+    // Créez une nouvelle instance du viewer
+    const container = document.getElementById("viewer-container");
+    const newViewer = new IfcViewerAPI({
+      container,
+      backgroundColor: new Color(0xffffff),
+    });
+    
+    // Reconfigurez le viewer
+    newViewer.IFC.setWasmPath("../../files/");
+    newViewer.IFC.applyWebIfcConfig({
+      COORDINATE_TO_ORIGIN: true,
+      USE_FAST_BOOLS: false
+    });
+    newViewer.IFC.loader.ifcManager.useWebWorkers(
+      true,
+      "../../files/IFCWorker.js"
+    );
+    console.log("Nouveau viewer créé et configuré.");
+    setViewer(newViewer);
+
+    return newViewer;
   };
 
   let fills = [];
