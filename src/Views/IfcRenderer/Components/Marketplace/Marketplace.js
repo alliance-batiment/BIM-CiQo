@@ -198,6 +198,7 @@ const Marketplace = ({
   specificApplication,
   apiConnectors,
   setApiConnectors,
+  handleSelectObjects
 }) => {
   const [selectedApp, setSelectedApp] = useState("home");
   const [anchorEl, setAnchorEl] = useState(null);
@@ -466,6 +467,7 @@ const Marketplace = ({
             <ID5899e0aca600741755433912 viewer={viewer} onDrop={onDrop} 
               bimData={bimData}
               setBimData={setBimData}
+              handleSelectObjects={handleSelectObjects}
             />
           </React.Suspense>
         )}
