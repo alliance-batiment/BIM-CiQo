@@ -773,9 +773,26 @@ const IfcRenderer = () => {
     setModelID(modelID);
   };
 
-  const handleClick = async (e) => {
+  const handleClick = async (e, eidsFromHistory=null) => {
     if (showContextMenu) {
       setShowContextMenu(false);
+    }
+
+    // Si eidsFromHistory n'est pas null, convertir les IFCGUID en IDs
+    if (eidsFromHistory !== null && Array.isArray(eidsFromHistory)) {
+      const models = viewer.context.items.ifcModels;
+      console.log('models =>>', models)
+
+      
+      setEids(eidsFromHistory);
+      select(viewer, setModelID, models[0]?.modelID, eidsFromHistory, false);
+
+      models?.forEach(async (ifcModel) => {
+        await viewer.IFC.pickIfcItemsByID(ifcModel.modelID, eidsFromHistory);
+      });
+
+      return;
+      
     }
 
     const found = await viewer.IFC.pickIfcItem(false, 1);
@@ -1038,6 +1055,7 @@ const IfcRenderer = () => {
                 addElementsNewProperties={addElementsNewProperties}
                 apiConnectors={apiConnectors}
                 setApiConnectors={setApiConnectors}
+                handleSelectObjects={handleClick}
               />
             </DraggableCard>
           )}

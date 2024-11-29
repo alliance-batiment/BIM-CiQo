@@ -147,9 +147,13 @@ const Branche = ({
               );
     
               console.log('userDefaultBranch', data)
-    
-              setBranche(data);  // Sélectionner automatiquement la branche par défaut
-              setBranches([data])
+              if( data?.name === 'main'){
+                setBranche(null);
+                setBranches([]);
+              } else {
+                setBranche(data);  // Sélectionner automatiquement la branche par défaut
+                setBranches([data])
+              }
 
             }
 
