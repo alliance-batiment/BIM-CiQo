@@ -156,10 +156,8 @@ const PropertyList = ({
       const integrityObjectSignature = openDthxProperties?.find((prop => prop?.Name?.value === "IntegrityObjectSignature"));
 
       const integrityId = integrityObjectSignature?.NominalValue?.value;
-      console.warn("openDthxProperties========>.", openDthxProperties);
 
       if (!integrityId || integrityId.trim() === "") {
-        console.warn("integrityId invalide ou absent. Utilisation des propriétés de l'IFC directement.");
         return openDthxProperties?.map((prop) => ({
           property_name: prop?.Name?.value || "Propriété inconnue",
           text_value: prop?.NominalValue?.value || "Valeur non définie",
@@ -179,12 +177,10 @@ const PropertyList = ({
 
         if (datBimData?.property) {
           integrityIdProperties = datBimData.property;
-          console.log("Propriétés obtenues de DATBIM:", integrityIdProperties);
         } else {
           throw new Error("Aucune donnée valide de DATBIM");
         }
       } catch (error) {
-        console.warn(`Erreur avec DATBIM pour targetIntegrityId ${integrityId}:`, error);
         
         // Fallback vers GATEWAY
         const { data: gatewayData } = await axios.post(
@@ -199,7 +195,6 @@ const PropertyList = ({
         );
 
         integrityIdProperties = gatewayData?.[0]?.property || [];
-        console.log("Propriétés obtenues de GATEWAY:", integrityIdProperties);
       }
       return integrityIdProperties;
     } catch (error) {
@@ -298,9 +293,6 @@ const PropertyList = ({
 
         // Préremplir avec les valeurs existantes du Pset Open dthx
         const existingProperties = await getExistingProperties();
-        console.log("existingProperties====>", existingProperties);
-        console.log("temporaryFixProperties====>", temporaryFixProperties);
-
 
         let prefilledProperties;
         if (existingProperties){
