@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: ciqo
-          image: "gcr.io/ciqo-343813/ciqo:v0.0.36"
+          image: "gcr.io/ciqo-343813/ciqo:v0.0.37"
           ports:
             - name: port-front
               containerPort: 80
