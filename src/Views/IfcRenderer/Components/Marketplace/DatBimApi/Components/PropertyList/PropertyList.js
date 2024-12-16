@@ -140,6 +140,74 @@ const PropertyList = ({
     }
     return integrityProperty;
   }
+
+  const getExistingProperties = async () => {
+    try {
+      const existingProperties = await viewer.IFC.getProperties(
+        modelID,
+        eids?.[0],
+        true,
+        true
+      );
+      const psetOpendthx = existingProperties?.psets?.filter((pset) =>
+        pset?.Name?.value === "Pset_opendthx"
+      );
+      const openDthxProperties = psetOpendthx?.[0]?.HasProperties;
+      const integrityObjectSignature = openDthxProperties?.find((prop => prop?.Name?.value === "IntegrityObjectSignature"));
+
+      const integrityId = integrityObjectSignature?.NominalValue?.value;
+      console.warn("openDthxProperties========>.", openDthxProperties);
+
+      if (!integrityId || integrityId.trim() === "") {
+        console.warn("integrityId invalide ou absent. Utilisation des propriétés de l'IFC directement.");
+        return openDthxProperties?.map((prop) => ({
+          property_name: prop?.Name?.value || "Propriété inconnue",
+          text_value: prop?.NominalValue?.value || "Valeur non définie",
+          unit: prop?.Unit?.value || "Unité non définie",
+        })) || [];
+      }
+
+      let integrityIdProperties = [];
+      // Tentative de récupération depuis DATBIM
+      try {
+        const { data: datBimData } = await axios.get(
+          `${process.env.REACT_APP_API_DATBIM}/objects-integrity/${integrityId}`,
+          {
+            headers: { "X-Auth-Token": sessionStorage.getItem("token") },
+          }
+        );
+
+        if (datBimData?.property) {
+          integrityIdProperties = datBimData.property;
+          console.log("Propriétés obtenues de DATBIM:", integrityIdProperties);
+        } else {
+          throw new Error("Aucune donnée valide de DATBIM");
+        }
+      } catch (error) {
+        console.warn(`Erreur avec DATBIM pour targetIntegrityId ${integrityId}:`, error);
+        
+        // Fallback vers GATEWAY
+        const { data: gatewayData } = await axios.post(
+          `${process.env.REACT_APP_API_GATEWAY_URL}/history/integrityObjectSignature`,
+          { integrityId: integrityId },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*',
+            },
+          }
+        );
+
+        integrityIdProperties = gatewayData?.[0]?.property || [];
+        console.log("Propriétés obtenues de GATEWAY:", integrityIdProperties);
+      }
+      return integrityIdProperties;
+    } catch (error) {
+      console.error("Erreur lors de la récupération des propriétés existantes :", error);
+      return [];
+    }
+  };
+  
   
   useEffect(() => {
     const getPropertiesValues = async () => {
@@ -228,8 +296,36 @@ const PropertyList = ({
           return property;
         });
 
-        setPropertyListDefault(temporaryFixProperties);
-        setProperties(temporaryFixProperties);
+        // Préremplir avec les valeurs existantes du Pset Open dthx
+        const existingProperties = await getExistingProperties();
+        console.log("existingProperties====>", existingProperties);
+        console.log("temporaryFixProperties====>", temporaryFixProperties);
+
+
+        let prefilledProperties;
+        if (existingProperties){
+          prefilledProperties = temporaryFixProperties.map((property) => {
+            const existingProperty = existingProperties?.find(
+              (exProp) => exProp.datbim_code === property.datbim_code
+            );
+  
+            if(!existingProperty){
+              setAllChecked(false)
+            }
+  
+            return existingProperty
+              ? { ...property, text_value: existingProperty?.text_value }
+              : { ...property, checked: false };
+          });
+        } else {
+          // Si existingProperties n'est pas défini, on utilise directement temporaryFixProperties sans modification
+          prefilledProperties = [...temporaryFixProperties];
+        }
+
+        setPropertyListDefault(prefilledProperties);
+        setProperties(prefilledProperties);
+        // setPropertyListDefault(temporaryFixProperties);
+        // setProperties(temporaryFixProperties);
         setLoading(false);
         // console.log("temporaryFixProperties", temporaryFixProperties);
       } catch (err) {
@@ -239,7 +335,7 @@ const PropertyList = ({
     };
 
     getPropertiesValues();
-  }, [selectedObject, contextKey]);
+  }, [selectedObject, contextKey, eids]);
 
   // const mapIfcPropertyType = (unitType) => {
   //   switch (unitType) {

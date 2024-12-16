@@ -151,8 +151,25 @@ const Branche = ({
                 setBranche(null);
                 setBranches([]);
               } else {
-                setBranche(data);  // Sélectionner automatiquement la branche par défaut
-                setBranches([data])
+
+                // vérifier si la branch est validée
+                const { data: mergeRequests } = await axios.post(
+                  `${process.env.REACT_APP_API_GATEWAY_URL}/history/branches/merge-request`,
+                  {
+                    projectId: projectExists,
+                    branches: [data?.name],
+                  }
+                );
+                console.log('mergeRequests validation', mergeRequests?.[0]?.mergeRequest?.validated);
+
+                if(mergeRequests?.[0]?.mergeRequest?.validated == true){
+                  setBranche(null);
+                  setBranches([]);
+                } else {
+                  setBranche(data);  // Sélectionner automatiquement la branche par défaut
+                  setBranches([data])
+                }
+                
               }
 
             }
