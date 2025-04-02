@@ -99,8 +99,8 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
-    #cert-manager.io/cluster-issuer: letsencrypt-staging
-    cert-manager.io/cluster-issuer: letsencrypt-prod
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+    #cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   ingressClassName: nginx
   rules:
