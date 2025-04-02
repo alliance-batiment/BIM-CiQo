@@ -1,0 +1,127 @@
+# APPLICATION FRONT DE PRODUCTION
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ciqo
+  namespace: ciqo
+spec:
+  replicas: 2
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: ciqo
+  template:
+    metadata:
+      labels:
+        app: ciqo
+    spec:
+      containers:
+        - name: ciqo
+          image: "docker-registry.iknova.corp/datbim/ciqo:v0.0.19"
+          ports:
+            - name: port-front
+              containerPort: 80
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ciqo
+  namespace: ciqo
+spec:
+  selector:
+    app: ciqo
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: port-front
+      name: http
+  type: ClusterIP
+---
+# APPLICATION API GATEWAY
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ciqo-api
+  namespace: ciqo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ciqo
+  template:
+    metadata:
+      labels:
+        app: ciqo
+    spec:
+      containers:
+        - name: ciqo-api
+          image: "docker-registry.iknova.corp/datbim/ciqo-api:v0.0.3"
+          ports:
+            - name: port-api
+              containerPort: 5600
+          resources:
+            requests:
+              cpu: 200m
+              memory: 328Mi
+            limits:
+              cpu: 400m
+              memory: 628Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ciqo-api
+  namespace: ciqo
+spec:
+  selector:
+    app: ciqo-api
+  ports:
+    - protocol: TCP
+      port: 31080
+      targetPort: port-api
+      name: http
+  type: ClusterIP
+---
+# DEPLOIEMENT
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ciqo
+  namespace: ciqo
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    #cert-manager.io/cluster-issuer: letsencrypt-staging
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: alliance-batiment.ciqo.eu
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ciqo
+                port:
+                  number: 80
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: ciqo-api
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - alliance-batiment.ciqo.eu
+      secretName: ciqo-tls 
