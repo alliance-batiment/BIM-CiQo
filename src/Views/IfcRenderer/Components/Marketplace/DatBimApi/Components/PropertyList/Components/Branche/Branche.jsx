@@ -177,6 +177,8 @@ const Branche = ({
             
             setProject(ifcGuid);
             setLoading(false);
+          } else {
+            setLoading(false);
           }
         } catch (err) {
           console.log('Error get projects history', err);
