@@ -143,7 +143,7 @@ const Drawings = ({ viewer, showDrawings, setShowDrawings }) => {
       window.removeEventListener("resize", resizeListener);
 
       for (let ifcPlan of plans) {
-        await viewer.plans.clipper.deletePlane(ifcPlan.plane);
+        // await viewer.plans.clipper.deletePlane(ifcPlan.plane);
       }
     };
   }, [plans]);
