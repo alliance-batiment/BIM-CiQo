@@ -15,7 +15,8 @@ spec:
     spec:
       containers:
         - name: ciqo
-          image: "gcr.io/ciqo-343813/ciqo:v0.0.38"
+          # image: "gcr.io/ciqo-343813/ciqo:v0.0.39"
+          image: "europe-docker.pkg.dev/ciqo-343813/eu.gcr.io/ciqo:v0.0.40"
           ports:
             - name: port-front
               containerPort: 80
